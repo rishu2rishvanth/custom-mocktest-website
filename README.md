@@ -24,18 +24,8 @@ Save Questions.xlsx and supporting images in a folder and update the path in lin
 Create run_quiz_website.ps1 and stop_quiz_website.ps1 files
 
 ### run_quiz_website.ps1:-
-cd <your-path>\custom-mocktest-website\backend
-.\venv\Scripts\Activate
-tasklist | findstr pythonw.exe
-taskkill /im pythonw.exe /F
-pythonw prevent_sleep.py
-deactivate
-npm start
+cd <your-path>\custom-mocktest-website\backend  .\venv\Scripts\Activate  tasklist | findstr pythonw.exe  taskkill /im pythonw.exe /F  pythonw prevent_sleep.py  deactivate  npm start
 
 ### stop_quiz_website.ps1:-
 
-cd <your-path>\Final-quiz\backend
-.\venv\Scripts\Activate
-tasklist | findstr pythonw.exe
-taskkill /im pythonw.exe /F
-deactivate
+cd <your-path>\Final-quiz\backend  .\venv\Scripts\Activate  tasklist | findstr pythonw.exe  taskkill /im pythonw.exe /F  deactivate
