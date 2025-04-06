@@ -38,8 +38,9 @@ def update_ip_in_script(file_path, new_ip):
     except IOError as e:
         print(f"Error reading/writing file: {e}")
 
-# File path to your script.js
-script_js_path = r'D:\website\Final-quiz\backend\frontend\script.js'  # Correct path specified
+# ✅ Use current script directory and join relative path
+current_dir = os.path.dirname(os.path.abspath(__file__))
+script_js_path = os.path.join(current_dir, 'backend', 'frontend', 'script.js')
 
 # Fetch the current IP address
 current_ip = get_current_ip()
