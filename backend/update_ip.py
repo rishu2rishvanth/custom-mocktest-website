@@ -40,7 +40,7 @@ def update_ip_in_script(file_path, new_ip):
 
 # ✅ Use current script directory and join relative path
 current_dir = os.path.dirname(os.path.abspath(__file__))
-script_js_path = os.path.join(current_dir, 'backend', 'frontend', 'script.js')
+script_js_path = os.path.join(current_dir, 'frontend', 'script.js')
 
 # Fetch the current IP address
 current_ip = get_current_ip()
