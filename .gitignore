@@ -1,0 +1,23 @@
+# Node.js
+node_modules/
+package-lock.json
+
+# Python
+venv/
+__pycache__/
+*.pyc
+
+# Logs
+*.log
+
+# VS Code
+.vscode/
+
+# System
+.DS_Store
+Thumbs.db
+
+# Temp or data files
+*.xlsx
+*.txt
+*.jpg

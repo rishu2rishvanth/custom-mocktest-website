@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mock Test</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="quiz-container">
+        <h1>Mock Test</h1>
+        
+        <!-- Setup Section -->
+        <div class="setup">
+            <label for="numQuestions">Number of Questions per Section:</label>
+            <input type="number" id="numQuestions" min="1" max="50" value="10"> <!-- Adjust default value as needed -->
+            
+            <label for="timer">Adjust Time Required for Section in (seconds):</label>
+            <input type="number" id="timer" min="60" max="1800" value="900"> <!-- Adjust default value as needed -->
+
+            <label for="sectionSelect">Select Test Section:</label>
+            <select id="sectionSelect">
+                <option value="">Select Section</option>
+                <!-- Options will be populated dynamically -->
+            </select>
+            
+            <button id="startQuiz">Start Test</button>
+        </div>
+
+        <!-- Quiz Section -->
+        <div class="quiz" style="display: none; position: relative;">
+            <div id="questionContainer"></div>
+            <div id="optionsContainer"></div>
+            <button id="nextQuestion" style="display: none;">Next Question</button>
+            
+            <!-- Timer Display -->
+            <div class="timer-container">
+                <div id="timerDisplay"><b>All the Best! <span id="timeInMins"></span></b></div>
+            </div>
+            
+            <!-- Calculator Button -->
+            <div class="calculator-container">
+                <button id="openCalculator" onclick="openCalculator()">Calculator</button>
+            </div>
+            
+            <!-- Skip Question Button -->
+            <button id="skipQuestion" class="skip-button">Skip Question</button>
+        </div>
+
+        <!-- Result Section -->
+        <div class="result" style="display: none;">
+            <h2>Test Submitted</h2>
+            <p id="score"></p>
+            <button id="restartQuiz">Restart Test</button>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
