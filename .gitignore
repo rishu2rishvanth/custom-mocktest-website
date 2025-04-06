@@ -21,3 +21,8 @@ Thumbs.db
 *.xlsx
 *.txt
 *.jpg
+
+# some codes
+prevent_sleep.py
+Run_quiz_website.ps1
+stop_quiz_website.ps1
