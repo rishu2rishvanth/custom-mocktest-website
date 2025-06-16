@@ -130,3 +130,6 @@ cd <your-path>\Final-quiz\backend<br>
 tasklist | findstr pythonw.exe<br>
 taskkill /im pythonw.exe /F<br>
 deactivate
+
+
+Thank you!!
