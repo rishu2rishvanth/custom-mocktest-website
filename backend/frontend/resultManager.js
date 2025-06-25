@@ -59,43 +59,34 @@ function generateTableRows(groupedData) {
 function viewResponseDetails(data, username, timestamp) {
     const container = document.getElementById('resultsContainer');
     const responses = data.filter(r => r.username === username && r.timestamp === timestamp);
+    const sectionName = responses[0]?.section || 'Unknown';
 
     let html = `<h3>Response Details for ${sanitize(username)}</h3>`;
-    html += `<p>Attempted at: ${sanitize(timestamp)}</p>`;
+    html += `<p>Section: <b>${sanitize(sectionName)}</b><br>Attempted at: ${sanitize(timestamp)}</p>`;
 
-    html += `
-        <table border="1" style="border-collapse: collapse; width: 100%;">
-            <thead>
-                <tr>
-                    <th>Question</th>
-                    <th>Comprehension</th>
-                    <th>Response</th>
-                    <th>Correct</th>
-                    <th>Time (s)</th>
-                </tr>
-            </thead>
-            <tbody>
-                ${responses.map(r => {
-                    const questionHTML = r.question && r.question.startsWith('/images/')
-                        ? `<img src="${sanitize(r.question)}" alt="Question Image" style="max-width: 200px;">`
-                        : sanitize(r.question) || 'N/A';
+    responses.forEach((r, index) => {
+        const questionContent = r.question?.startsWith('/images/')
+            ? `<img src="${sanitize(r.question)}" alt="Question Image" style="max-width: 100%;">`
+            : `<div>${sanitize(r.question)}</div>`;
 
-                    return `
-                        <tr>
-                            <td>${questionHTML}</td>
-                            <td>${sanitize(r.comprehension) || '-'}</td>
-                            <td>${sanitize(r.response)}</td>
-                            <td>${r.correct ? '✅' : '❌'}</td>
-                            <td>${r.responseTime || 'Skipped'}</td>
-                        </tr>
-                    `;
-                }).join('')}
-            </tbody>
-        </table>
-        <br>
-        <button onclick="window.location.reload()">Back</button>
-    `;
+        const comprehensionContent = sanitize(r.comprehension) || '-';
+        const responseContent = sanitize(r.response) || 'Skipped';
+        const correctness = r.correct ? '✅ Correct' : '❌ Incorrect';
+        const time = r.responseTime !== undefined ? `${r.responseTime} seconds` : 'Skipped';
 
+        html += `
+            <div style="border: 1px solid #ccc; border-radius: 5px; margin: 15px 0; padding: 15px; background: #f9f9f9;">
+                <h4>Question ${index + 1}</h4>
+                <p><strong>Question:</strong><br>${questionContent}</p>
+                <p><strong>Comprehension:</strong><br>${comprehensionContent}</p>
+                <p><strong>Your Response:</strong> ${responseContent}</p>
+                <p><strong>Status:</strong> ${correctness}</p>
+                <p><strong>Time Taken:</strong> ${time}</p>
+            </div>
+        `;
+    });
+
+    html += `<br><button onclick="window.location.reload()">Home</button>`;
     container.innerHTML = html;
 }
 

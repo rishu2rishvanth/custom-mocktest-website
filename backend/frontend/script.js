@@ -28,17 +28,15 @@ let sections = {};
 let examStartTime = null;
 let questionStartTime = null;
 
-// Initialize on page load
 document.addEventListener('DOMContentLoaded', () => {
   initResultsButton();
   if (sectionSelect) populateSections();
-  else console.error('sectionSelect element not found.');
 });
 
 // Populate sections dropdown
 function populateSections() {
-  fetch('http://192.168.1.46:5000/api/questions/sections')
-    .then(response => response.json())
+  fetch('http://10.10.182.9:5000/api/questions/sections')
+    .then(res => res.json())
     .then(data => {
       if (Array.isArray(data)) {
         sections = data.reduce((acc, section) => {
@@ -46,34 +44,28 @@ function populateSections() {
           return acc;
         }, {});
         sectionSelect.innerHTML = '<option value="">Select Section</option>';
-        for (const section in sections) {
+        Object.keys(sections).forEach(section => {
           const option = document.createElement('option');
           option.value = section;
           option.textContent = section;
           sectionSelect.appendChild(option);
-        }
-      } else {
-        console.error('Unexpected section data:', data);
+        });
       }
     })
-    .catch(error => console.error('Error fetching sections:', error));
+    .catch(err => console.error('Error fetching sections:', err));
 }
 
-// Update question count based on selected section
-sectionSelect.addEventListener('change', (event) => {
-  const selectedSection = event.target.value;
-  if (sections[selectedSection]) {
-    numQuestionsInput.value = sections[selectedSection].length;
-  } else {
-    numQuestionsInput.value = '';
-  }
+// Update number of questions on section change
+sectionSelect.addEventListener('change', e => {
+  const section = e.target.value;
+  numQuestionsInput.value = sections[section]?.length || '';
 });
 
 // Start quiz
 startQuizButton.addEventListener('click', () => {
-  const selectedSection = sectionSelect.value;
-  if (!selectedSection) return alert('Please select a section.');
-  startQuiz(selectedSection);
+  const section = sectionSelect.value;
+  if (!section) return alert('Please select a section.');
+  startQuiz(section);
 });
 
 // Restart quiz
@@ -82,8 +74,20 @@ restartQuizButton.addEventListener('click', () => {
   setupSection.style.display = 'block';
 });
 
-// Skip question
+// Skip question logic
 skipQuestionButton.addEventListener('click', () => {
+  if (hasAnswered) return;
+  const current = selectedQuestions[currentQuestionIndex];
+  const timeSpent = Date.now() - questionStartTime;
+
+  userResponses[currentQuestionIndex] = {
+    question: current['Question'] || current['Question Image URL'] || 'N/A',
+    comprehension: current['Comprehension'] || '',
+    response: 'Skipped',
+    correct: false,
+    responseTime: Math.round(timeSpent / 1000)
+  };
+
   if (currentQuestionIndex < selectedQuestions.length - 1) {
     currentQuestionIndex++;
     showNextQuestion();
@@ -92,7 +96,7 @@ skipQuestionButton.addEventListener('click', () => {
   }
 });
 
-// Next question
+// Next question logic
 nextQuestionButton.addEventListener('click', () => {
   if (currentQuestionIndex < selectedQuestions.length - 1) {
     currentQuestionIndex++;
@@ -102,36 +106,29 @@ nextQuestionButton.addEventListener('click', () => {
   }
 });
 
-// Start quiz logic
+// Start the quiz
 function startQuiz(section) {
   const numQuestions = parseInt(numQuestionsInput.value);
-  const timePerExam = parseInt(timerInput.value);
-
-  if (!sections[section]) {
-    alert('Invalid section.');
-    return;
-  }
+  const duration = parseInt(timerInput.value);
 
   selectedQuestions = [...sections[section]];
   shuffleArray(selectedQuestions);
-
   selectedQuestions = selectedQuestions.slice(0, Math.min(numQuestions, selectedQuestions.length));
+
+  currentQuestionIndex = 0;
+  score = 0;
+  wrong = 0;
+  examTimeRemaining = duration;
+  userResponses = new Array(selectedQuestions.length).fill(null);
+  examStartTime = new Date().toISOString();
 
   setupSection.style.display = 'none';
   quizSection.style.display = 'block';
-
-  score = 0;
-  wrong = 0;
-  currentQuestionIndex = 0;
-  userResponses = new Array(selectedQuestions.length).fill(null);
-  examTimeRemaining = timePerExam;
-  examStartTime = new Date().toISOString();
-
   showNextQuestion();
   startExamTimer();
 }
 
-// Shuffle array (Fisher–Yates)
+// Shuffle questions
 function shuffleArray(array) {
   for (let i = array.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -139,79 +136,74 @@ function shuffleArray(array) {
   }
 }
 
+// Display the current question
 function showNextQuestion() {
-  const currentQuestion = selectedQuestions[currentQuestionIndex];
-  if (!currentQuestion) {
-    console.error('Missing question at index', currentQuestionIndex);
-    return;
-  }
+  const current = selectedQuestions[currentQuestionIndex];
+  if (!current) return console.error('No question at index', currentQuestionIndex);
 
   questionContainer.innerHTML = '';
   optionsContainer.innerHTML = '';
-  const questionNumber = currentQuestionIndex + 1;
+  const qNum = currentQuestionIndex + 1;
 
   const questionText = document.createElement('div');
-  const formattedText = formatTextWithSuperSubscript(formatTextWithParagraphs(currentQuestion['Question']));
-  questionText.innerHTML = `<b>Question ${questionNumber}</b><br>${formattedText}`;
+  questionText.innerHTML = `<b>Question ${qNum}</b><br>${formatTextWithSuperSubscript(formatTextWithParagraphs(current['Question']))}`;
 
-  if (currentQuestion['Comprehension']) {
-    const comprehensionText = document.createElement('div');
-    comprehensionText.innerHTML = `<p><strong>Comprehension:</strong> ${formatTextWithSuperSubscript(formatTextWithParagraphs(currentQuestion['Comprehension']))}</p>`;
-    questionContainer.appendChild(comprehensionText);
+  if (current['Comprehension']) {
+    const comp = document.createElement('div');
+    comp.innerHTML = `<p><strong>Comprehension:</strong> ${formatTextWithSuperSubscript(formatTextWithParagraphs(current['Comprehension']))}</p>`;
+    questionContainer.appendChild(comp);
   }
 
   questionContainer.appendChild(questionText);
 
-  if (currentQuestion['Question Image URL']) {
+  if (current['Question Image URL']) {
     const img = document.createElement('img');
-    img.src = `http://192.168.1.46:5000${currentQuestion['Question Image URL']}`;
+    img.src = `http://10.10.182.9:5000${current['Question Image URL']}`;
     img.alt = 'Question Image';
     questionContainer.appendChild(img);
   }
 
   for (let i = 1; i <= 4; i++) {
-    const answerText = formatTextWithSuperSubscript(currentQuestion[`Answer ${i} Text`]);
-    const answerImageUrl = currentQuestion[`Answer ${i} Image URL`];
+    const text = formatTextWithSuperSubscript(current[`Answer ${i} Text`]);
+    const imgUrl = current[`Answer ${i} Image URL`];
+    const btn = document.createElement('button');
+    btn.classList.add('answer-option');
 
-    const button = document.createElement('button');
-    button.classList.add('answer-option');
-    if (answerText) button.innerHTML = answerText;
-
-    if (answerImageUrl) {
+    if (text) btn.innerHTML = text;
+    if (imgUrl) {
       const img = document.createElement('img');
-      img.src = `http://192.168.1.46:5000${answerImageUrl}`;
-      img.alt = answerText || 'Option';
-      button.appendChild(img);
+      img.src = `http://10.10.182.9:5000${imgUrl}`;
+      img.alt = text || `Option ${i}`;
+      btn.appendChild(img);
     }
 
-    button.addEventListener('click', () => selectAnswer(i - 1, button));
-    optionsContainer.appendChild(button);
+    btn.addEventListener('click', () => selectAnswer(i - 1, btn));
+    optionsContainer.appendChild(btn);
   }
 
   if (selectedButton) selectedButton.classList.remove('selected');
-
+  selectedButton = null;
   nextQuestionButton.style.display = 'none';
   skipQuestionButton.style.display = 'block';
   hasAnswered = false;
   questionStartTime = Date.now();
 }
 
+// Answer selection
 function selectAnswer(index, button) {
   if (hasAnswered) return;
 
-  const currentQuestion = selectedQuestions[currentQuestionIndex];
-  if (!currentQuestion) return;
+  const current = selectedQuestions[currentQuestionIndex];
+  const isCorrect = index === current['Correct Answer Index'];
+  const responseTimeMs = Date.now() - questionStartTime;
 
-  const isCorrect = index === currentQuestion['Correct Answer Index'];
   if (isCorrect) score++;
   else wrong++;
 
-  const responseTimeMs = Date.now() - questionStartTime;
-
   userResponses[currentQuestionIndex] = {
-    question: currentQuestion['Question'] || currentQuestion['Question Image URL'] || 'N/A',
-    comprehension: currentQuestion['Comprehension'] || 'N/A',
-    response: button.textContent || currentQuestion[`Answer ${index + 1} Image URL`] || 'N/A',
+    question: current['Question'] || current['Question Image URL'] || 'N/A',
+    comprehension: current['Comprehension'] || '',
+    response: button.textContent || current[`Answer ${index + 1} Image URL`] || 'N/A',
     correct: isCorrect,
     responseTime: Math.round(responseTimeMs / 1000)
   };
@@ -219,20 +211,20 @@ function selectAnswer(index, button) {
   if (selectedButton) selectedButton.classList.remove('selected');
   selectedButton = button;
   selectedButton.classList.add('selected');
-
-  nextQuestionButton.style.display = 'block';
+  hasAnswered = true;
 
   document.querySelectorAll('.answer-option').forEach(btn => btn.disabled = true);
-  hasAnswered = true;
+  nextQuestionButton.style.display = 'block';
 }
 
+// Timer countdown
 function startExamTimer() {
   clearInterval(examTimer);
   examTimer = setInterval(() => {
-    const minutes = Math.floor(examTimeRemaining / 60);
-    const seconds = examTimeRemaining % 60;
+    const min = Math.floor(examTimeRemaining / 60).toString().padStart(2, '0');
+    const sec = (examTimeRemaining % 60).toString().padStart(2, '0');
 
-    timerDisplay.textContent = `t- ${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+    timerDisplay.textContent = `t- ${min}:${sec}`;
     timerDisplay.style.color = examTimeRemaining <= 300 ? 'red' : 'black';
     timerDisplay.style.fontWeight = examTimeRemaining <= 300 ? 'bold' : 'normal';
 
@@ -245,6 +237,7 @@ function startExamTimer() {
   }, 1000);
 }
 
+// End the quiz and show result section
 function endQuiz() {
   clearInterval(examTimer);
   quizSection.style.display = 'none';
@@ -253,32 +246,42 @@ function endQuiz() {
   submitResponses();
 }
 
+// Submit response and score to backend
 function submitResponses() {
   const username = prompt("Enter your username:");
   const section = sectionSelect.value;
+  const submitTime = new Date().toISOString();
 
   const responses = selectedQuestions.map((question, index) => {
-    const userResponse = userResponses[index] || { response: 'N/A', correct: false };
+    const userResponse = userResponses[index] || {
+      response: 'Skipped',
+      correct: false,
+      responseTime: 'Skipped'
+    };
 
     return {
       question: question['Question'] || question['Question Image URL'] || 'N/A',
-      comprehension: question['Comprehension'] || 'N/A',
+      comprehension: question['Comprehension'] || '',
       response: userResponse.response,
       correct: userResponse.correct,
-      responseTime: userResponse.responseTime ?? 'Skipped'
+      responseTime: userResponse.responseTime ?? 'Skipped',
+      timestamp: examStartTime,
+      submitTime,
+      section,
+      score
     };
   });
 
-  fetch('http://192.168.1.46:5000/api/response', {
+  fetch('http://10.10.182.9:5000/api/response', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ username, responses, score, section, examStartTime })
+    body: JSON.stringify({ username, responses, score, section, examStartTime, submitTime })
   })
     .then(res => res.json())
     .then(data => alert(data.message))
     .catch(err => console.error('Error submitting responses:', err));
 
-  fetch('http://192.168.1.46:5000/api/score', {
+  fetch('http://10.10.182.9:5000/api/score', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ username, score, wrong })
@@ -288,12 +291,13 @@ function submitResponses() {
     .catch(err => console.error('Error submitting score:', err));
 }
 
-// Helpers
+// Format question text with paragraphs
 function formatTextWithParagraphs(text) {
   if (typeof text !== 'string') return '';
   return text.split(/\r?\n/).map(line => `<p>${line}</p>`).join('');
 }
 
+// Handle superscripts and subscripts
 function formatTextWithSuperSubscript(text) {
   if (typeof text !== 'string') return text;
   return text
@@ -301,7 +305,7 @@ function formatTextWithSuperSubscript(text) {
     .replace(/\_\((.*?)\)/g, '<sub>$1</sub>');
 }
 
-// Calculator popup
+// Open calculator in popup
 let calculatorWindow = null;
 document.getElementById('openCalculator').addEventListener('click', () => {
   if (!calculatorWindow || calculatorWindow.closed) {

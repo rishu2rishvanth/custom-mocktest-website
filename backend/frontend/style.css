@@ -12,7 +12,8 @@ body {
   background-color: #fff;
   padding: 30px;
   border-radius: 10px;
-  width: 700px;
+  width: 100%;
+  max-width: 750px;
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
 }
 
@@ -30,7 +31,7 @@ label {
   margin: 10px 0 5px;
 }
 
-input {
+input, select {
   width: 100%;
   padding: 8px;
   margin-bottom: 15px;
@@ -50,17 +51,19 @@ button {
   border: none;
   border-radius: 5px;
   cursor: pointer;
+  transition: background-color 0.2s ease;
 }
 
 button:hover {
   background-color: #003060;
 }
 
-/* Skip Button */
+/* ====== Skip Button ====== */
 .skip-button {
   position: fixed;
   bottom: 10px;
   left: 10px;
+  z-index: 1000;
 }
 
 #skipQuestion {
@@ -73,11 +76,12 @@ button:hover {
   background-color: #d32f2f;
 }
 
-/* Calculator Button */
+/* ====== Calculator Button ====== */
 .calculator-container {
   position: fixed;
   top: 10px;
   left: 10px;
+  z-index: 1000;
 }
 
 #openCalculator {
@@ -108,17 +112,20 @@ button:hover {
   right: 10px;
   margin-right: 10px;
   margin-top: 20px;
-  padding: 7px;
-  background: rgba(255, 255, 255, 0.15);
+  padding: 7px 12px;
+  background: rgba(255, 255, 255, 0.25);
+  color: #000;
   border-radius: 10px;
+  font-weight: bold;
   backdrop-filter: blur(10px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
 }
 
 /* ====== Answer Options ====== */
 #optionsContainer {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(45%, 1fr));
   gap: 10px;
 }
 
@@ -132,6 +139,7 @@ button:hover {
   cursor: pointer;
   overflow: hidden;
   color: #000;
+  transition: background-color 0.2s ease;
 }
 
 .answer-option:hover {
@@ -142,10 +150,10 @@ button:hover {
   display: block;
   margin: 0 auto;
   height: auto;
-  width: auto;
+  max-width: 100%;
 }
 
-/* Selected Option */
+/* ====== Selected Option ====== */
 .selected {
   background-color: #d3d3d3;
   border: 2px solid #000;
