@@ -8,20 +8,11 @@
 	<script type="text/javascript" src="js/jquery-ui.min.js"></script>
 	<meta http-equiv="X-UA-Compatible" content="IE=8" />
 	<script type="text/javascript">
-            $(function() {
-    <!--  $("#keyPad").draggable({ -->
-      <!--    start: function() { -->
-      <!--   $(this).css({ height: "auto", width: "463px" }); -->
-   <!--  }, -->
-    <!-- stop: function() { -->
-       <!--  $(this).css({ height: "auto", width: "463px" }); -->
-   <!--  } -->
-  <!--   }); -->
-    
+$(function() {
 	$(".calc_min").live('click', function(){
 		$('#mainContentArea').toggle();
-		<!-- $('#keyPad_Help').hide(); -->
-               <!--  $('#keyPad_Helpback').hide();  -->
+		 $('#keyPad_Help').hide(); 
+                 $('#keyPad_Helpback').hide();  
 				 $(".help_back").hide();
 		$('#keyPad').addClass("reduceWidth");
 		$('#helptopDiv span').addClass("reduceHeader");
@@ -37,11 +28,11 @@
         else{
             $('#keyPad_Helpback').show();
         }
-		<!-- $('#keyPad_Help').show(); -->
+		 $('#keyPad_Help').show(); 
 		$('#keyPad').removeClass("reduceWidth");
 		$('#helptopDiv span').removeClass("reduceHeader");
-	});
-  });
+		});
+});
 		$('#closeButton').click(function(){
 			$('#loadCalc').hide();
 		});
@@ -89,8 +80,8 @@
     <!-- new Help changes -->
     <div id="helptopDiv">
 	<span>Scientific Calculator</span>
-	<div href="#nogo" id="keyPad_Help" class="help_back"></div>
-	<div style="display:none;" href="#nogo" id="keyPad_Helpback" class="help_back"></div>
+	<div href="#nogo" id="keyPad_Help" class="help_back">Help</div>
+	<div style="display:none;" href="#nogo" id="keyPad_Helpback" class="help_back">Close</div>
 	</div>
      <!-- new Help changes -->
      <div class="calc_min" id="calc_min"></div>

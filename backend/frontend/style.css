@@ -1,189 +1,229 @@
-/* Basic styling for images */
-.quiz-container img {
-    max-width: 100%; /* Ensures images are responsive */
-    height: auto;    /* Maintains aspect ratio */
-}
-
-/* Grid layout for answer options */
-#optionsContainer {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr); /* 2 columns */
-    gap: 10px; /* Space between grid items */
-}
-
-/* Styling for answer buttons */
-.answer-option {
-    /* display: flex; */
-    align-items: center; /* Vertically centers the image and text */
-    padding: 10px;
-    background-color: #e9ecef;
-    color: #333;
-    border: 1px solid #ced4da;
-    border-radius: 5px;
-    text-align: center;
-    overflow: hidden; /* Ensures content doesn't overflow */
-    box-sizing: border-box; /* Includes padding and border in element's total width and height */
-    font-size: 16px;
-    cursor: pointer;
-}
-
-/* Styling for images inside answer options */
-.answer-option img {
-    display: block;
-    width: auto; /* Adjust as needed */
-    height: auto;
-    margin-left: auto;
-    margin-right: auto;
-}
-
-/* Hover effect for buttons */
-.answer-option:hover {
-    background-color: #dee2e6;
-}
-
-/* General body styling */
+/* ====== Layout & Body ====== */
 body {
-    font-family: 'Arial', sans-serif;
-    background-color: #f4f4f4;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: auto;
-    margin: 25px;
-    color: #333;
+  font-family: Arial, sans-serif;
+  background-color: #f4f4f4;
+  color: #333;
+  display: flex;
+  justify-content: center;
+  margin: 25px;
 }
 
-/* Container for the quiz */
 .quiz-container {
-    background-color: #ffffff;
-    padding: 30px;
-    border-radius: 10px;
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
-    width: 700px;
-    text-align: left;
-    position: initial;
+  background-color: #fff;
+  padding: 30px;
+  border-radius: 10px;
+  width: 700px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
 }
 
-/* Headings */
+/* ====== Headings ====== */
 h1, h2 {
-    color: #004085;
-    margin-bottom: 20px;
-    text-align: center;
+  color: #004085;
+  text-align: center;
+  margin-bottom: 20px;
 }
 
-/* Labels for inputs */
+/* ====== Form Elements ====== */
 label {
-    font-weight: bold;
-    display: block;
-    margin-top: 10px;
-    margin-bottom: 5px;
+  font-weight: bold;
+  display: block;
+  margin: 10px 0 5px;
 }
 
-/* Input fields */
 input {
-    width: 100%;
-    padding: 8px;
-    margin-bottom: 15px;
-    border: 1px solid #ced4da;
-    border-radius: 5px;
-    font-size: 16px;
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 15px;
+  font-size: 16px;
+  border: 1px solid #ced4da;
+  border-radius: 5px;
 }
 
-/* Buttons */
+/* ====== Buttons ====== */
 button {
-    padding: 10px 15px;
-    background-color: #004085;
-    color: #fff;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    width: 100%;
-    font-size: 16px;
-    margin-top: 20px;
+  width: 100%;
+  padding: 10px 15px;
+  font-size: 16px;
+  margin-top: 20px;
+  background-color: #004085;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
 }
 
 button:hover {
-    background-color: #003060;
+  background-color: #003060;
 }
 
-/* Timer display styling */
-#timerDisplay {
-    background: rgba(255, 255, 255, 0.15); /* Light background with opacity */
-    border-radius: 10px;
-    padding: 7px;
-    position: fixed; /* Fixed position to keep it in the same place */
-    top: 10px;       /* Distance from the top of the viewport */
-    right: 10px;     /* Distance from the right of the viewport */
-    margin-right: 10px;
-    margin-top: 20px;
-    backdrop-filter: blur(10px); /* Blur effect */
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-}
-
-/* Result section styling */
-.result {
-    text-align: center;
-    color: #004085;
-}
-
-/* Timer container styling */
-.timer-container {
-    position: relative;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 0;
-    height: 0;
-}
-
-/* Selected option styling */
-.selected {
-    background-color: #d3d3d3; /* Light grey background for selected option */
-    border: 2px solid #000; /* Border to make it stand out */
-}
-
-/* Calculator button container */
-.calculator-container {
-    position: fixed;
-    top: 10px; /* Distance from the top */
-    left: 10px; /* Distance from the left */
-}
-
-/* Calculator button styling */
-#openCalculator {
-    padding: 5px 15px; /* Adjust padding as needed */
-    font-size: 16px; /* Font size */
-    color: #fff; /* Text color */
-    background-color: black; /* Background color */
-    border: none; /* Remove border */
-    border-radius: 4px; /* Rounded corners */
-    cursor: pointer; /* Pointer cursor on hover */
-    width: auto; /* Adjust width as needed */
-}
-
-#openCalculator:hover {
-    background-color: #0056b3; /* Darker background on hover */
-}
-
-/* Skip Question button container */
+/* Skip Button */
 .skip-button {
-    position: fixed;
-    bottom: 10px; /* Distance from the bottom */
-    left: 10px; /* Distance from the left */
+  position: fixed;
+  bottom: 10px;
+  left: 10px;
 }
 
-/* Skip button styling */
 #skipQuestion {
-    padding: 5px 15px; /* Adjust padding as needed */
-    font-size: 16px; /* Font size */
-    color: #fff; /* Text color */
-    background-color: red; /* Background color */
-    border: none; /* Remove border */
-    border-radius: 4px; /* Rounded corners */
-    cursor: pointer; /* Pointer cursor on hover */
-    width: auto; /* Adjust width as needed */
+  width: auto;
+  padding: 5px 15px;
+  background-color: red;
 }
 
 #skipQuestion:hover {
-    background-color: #d32f2f; /* Darker red for hover effect */
+  background-color: #d32f2f;
+}
+
+/* Calculator Button */
+.calculator-container {
+  position: fixed;
+  top: 10px;
+  left: 10px;
+}
+
+#openCalculator {
+  width: auto;
+  padding: 5px 15px;
+  font-size: 16px;
+  background-color: black;
+  color: #fff;
+  border-radius: 4px;
+}
+
+#openCalculator:hover {
+  background-color: #0056b3;
+}
+
+/* ====== Timer ====== */
+.timer-container {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  width: 0;
+  height: 0;
+}
+
+#timerDisplay {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  margin-right: 10px;
+  margin-top: 20px;
+  padding: 7px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* ====== Answer Options ====== */
+#optionsContainer {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.answer-option {
+  padding: 10px;
+  background-color: #e9ecef;
+  border: 1px solid #ced4da;
+  border-radius: 5px;
+  text-align: center;
+  font-size: 16px;
+  cursor: pointer;
+  overflow: hidden;
+  color: #000;
+}
+
+.answer-option:hover {
+  background-color: #dee2e6;
+}
+
+.answer-option img {
+  display: block;
+  margin: 0 auto;
+  height: auto;
+  width: auto;
+}
+
+/* Selected Option */
+.selected {
+  background-color: #d3d3d3;
+  border: 2px solid #000;
+}
+
+/* ====== Results Section ====== */
+.result {
+  text-align: center;
+  color: #004085;
+}
+
+/* ====== Results Table ====== */
+#resultsTableContainer {
+  max-width: 800px;
+  margin: 30px auto 0;
+}
+
+.results-table,
+.details-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+  font-size: 15px;
+}
+
+.results-table th,
+.results-table td,
+.details-table th,
+.details-table td {
+  border: 1px solid #ccc;
+  padding: 8px 12px;
+  text-align: left;
+}
+
+.results-table th {
+  background-color: #004085;
+  color: white;
+}
+
+.results-table tr:nth-child(even),
+.details-table tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+/* ====== Modal ====== */
+.results-modal {
+  position: fixed;
+  top: 5%;
+  left: 10%;
+  right: 10%;
+  bottom: 5%;
+  background-color: #fff;
+  border: 2px solid #333;
+  padding: 20px;
+  overflow-y: auto;
+  z-index: 9999;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+  border-radius: 8px;
+}
+
+.close-modal {
+  float: right;
+  background-color: crimson;
+  color: white;
+  border: none;
+  padding: 6px 10px;
+  font-size: 14px;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-bottom: 10px;
+}
+
+.close-modal:hover {
+  background-color: darkred;
+}
+
+/* ====== Image Styling ====== */
+.quiz-container img {
+  max-width: 100%;
+  height: auto;
 }
