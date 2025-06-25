@@ -18,7 +18,7 @@ try {
 }
 
 // Load questions from Excel file
-const excelFilePath = path.join(__dirname, 'Gate-ME-Exam/questions.xlsx');
+const excelFilePath = path.join(__dirname, 'Gate-AE-Exam/questions.xlsx');
 let jsonData = {};
 
 try {
@@ -32,7 +32,7 @@ try {
 }
 
 // Static file serving
-app.use('/images', express.static(path.join(__dirname, 'Gate-ME-Exam/images')));
+app.use('/images', express.static(path.join(__dirname, 'Gate-AE-Exam/images')));
 app.use(express.static(path.join(__dirname, 'frontend')));
 
 // Serve main HTML file
@@ -78,11 +78,13 @@ app.post('/api/response', (req, res) => {
         username,
         section: section || 'unknown',
         question: r.question,
-        response: r.response,
         comprehension: r.comprehension || '',
+        response: r.response,
         correct: r.correct,
         score,
         responseTime: r.responseTime ?? '',
+        correctAnswer: r.correctAnswer || '',
+        options: JSON.stringify(r.options || []), // Store options as JSON string
         submitTime: moment().format('YYYY-MM-DD HH:mm:ss')
     }));
 
@@ -123,8 +125,14 @@ app.get('/api/all-responses', (req, res) => {
     try {
         const workbook = XLSX.readFile(filePath);
         const worksheet = workbook.Sheets['Responses'];
-        const data = XLSX.utils.sheet_to_json(worksheet);
-        res.json(data);
+        const rawData = XLSX.utils.sheet_to_json(worksheet);
+
+        const parsedData = rawData.map(entry => ({
+            ...entry,
+            options: entry.options ? JSON.parse(entry.options) : []
+        }));
+
+        res.json(parsedData);
     } catch (error) {
         console.error('Error reading responses file:', error);
         res.status(500).json({ message: 'Failed to read responses.' });
@@ -172,9 +180,12 @@ app.get('/api/attemptDetails', (req, res) => {
     const sheet = workbook.Sheets['Responses'];
     const data = XLSX.utils.sheet_to_json(sheet);
 
-    const filtered = data.filter(entry =>
-        entry.Timestamp === timestamp && entry.Username === username
-    );
+    const filtered = data
+        .filter(entry => entry.Timestamp === timestamp && entry.Username === username)
+        .map(entry => ({
+            ...entry,
+            options: entry.options ? JSON.parse(entry.options) : []
+        }));
 
     res.json(filtered);
 });

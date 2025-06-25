@@ -12,7 +12,6 @@ function calculateTimeDifference(start, end) {
     const startTime = new Date(start);
     const endTime = new Date(end);
     const diff = Math.floor((endTime - startTime) / 1000);
-
     if (isNaN(diff) || diff < 0) return '-';
     const minutes = Math.floor(diff / 60).toString().padStart(2, '0');
     const seconds = (diff % 60).toString().padStart(2, '0');
@@ -59,31 +58,74 @@ function generateTableRows(groupedData) {
 function viewResponseDetails(data, username, timestamp) {
     const container = document.getElementById('resultsContainer');
     const responses = data.filter(r => r.username === username && r.timestamp === timestamp);
-    const sectionName = responses[0]?.section || 'Unknown';
 
+    const sectionName = responses[0]?.section || 'Unknown';
     let html = `<h3>Response Details for ${sanitize(username)}</h3>`;
     html += `<p>Section: <b>${sanitize(sectionName)}</b><br>Attempted at: ${sanitize(timestamp)}</p>`;
 
     responses.forEach((r, index) => {
-        const questionContent = r.question?.startsWith('/images/')
+        const isImageQuestion = r.question && r.question.startsWith('/images/');
+        const questionHTML = isImageQuestion
             ? `<img src="${sanitize(r.question)}" alt="Question Image" style="max-width: 100%;">`
-            : `<div>${sanitize(r.question)}</div>`;
+            : sanitize(r.question) || 'N/A';
 
-        const comprehensionContent = sanitize(r.comprehension) || '-';
-        const responseContent = sanitize(r.response) || 'Skipped';
-        const correctness = r.correct ? '✅ Correct' : '❌ Incorrect';
-        const time = r.responseTime !== undefined ? `${r.responseTime} seconds` : 'Skipped';
+        let userAnswerHTML = '';
+        let correctAnswerHTML = '';
+
+        if (r.response && /\.(png|jpe?g)$/i.test(r.response)) {
+            userAnswerHTML = `<img src="http://10.10.182.9:5000${r.response}" alt="Your Answer" style="max-height: 80px;">`;
+        } else {
+            userAnswerHTML = sanitize(r.response);
+        }
+
+        if (r.correctAnswer && /\.(png|jpe?g)$/i.test(r.correctAnswer)) {
+            correctAnswerHTML = `<img src="http://10.10.182.9:5000${r.correctAnswer}" alt="Correct Answer" style="max-height: 80px;">`;
+        } else {
+            correctAnswerHTML = sanitize(r.correctAnswer);
+        }
+
+        const timeTaken = r.responseTime || 'Skipped';
+
+        const correctAnswerIndex = typeof r.correctAnswerIndex === 'string'
+            ? parseInt(r.correctAnswerIndex)
+            : r.correctAnswerIndex;
+
+        let optionsHTML = '';
+        if (Array.isArray(r.options)) {
+            optionsHTML = '<ul style="list-style-type:none; padding-left: 0;">';
+            r.options.forEach((opt, i) => {
+                const text = sanitize(opt.text || '');
+                const image = opt.image
+                    ? `<br><img src="http://10.10.182.9:5000${opt.image}" alt="Option ${i + 1}" style="max-height: 80px;">`
+                    : '';
+
+                const isCorrect = i === correctAnswerIndex;
+                const isUserResponse = r.response === opt.text || r.response === opt.image;
+
+                let style = '';
+                if (isCorrect) {
+                    style += 'background-color: #d4edda; border: 2px solid green;';
+                }
+                if (isUserResponse && !isCorrect) {
+                    style += 'background-color: #f8d7da; border: 1px solid red;';
+                }
+
+                optionsHTML += `<li style="margin-bottom: 8px; padding: 6px; border-radius: 6px; ${style}">
+                    ${text || ''}${image}
+                </li>`;
+            });
+            optionsHTML += '</ul>';
+        }
 
         html += `
-            <div style="border: 1px solid #ccc; border-radius: 5px; margin: 15px 0; padding: 15px; background: #f9f9f9;">
-                <h4>Question ${index + 1}</h4>
-                <p><strong>Question:</strong><br>${questionContent}</p>
-                <p><strong>Comprehension:</strong><br>${comprehensionContent}</p>
-                <p><strong>Your Response:</strong> ${responseContent}</p>
-                <p><strong>Status:</strong> ${correctness}</p>
-                <p><strong>Time Taken:</strong> ${time}</p>
-            </div>
-        `;
+        <div style="border: 1px solid #ccc; padding: 15px; margin-top: 20px; border-radius: 8px;">
+            <p><b>Q${index + 1}:</b> ${questionHTML}</p>
+            ${r.comprehension ? `<p><b>Comprehension:</b> ${sanitize(r.comprehension)}</p>` : ''}
+            ${optionsHTML || ''}
+            <p><b>Your Response:</b> ${userAnswerHTML} ${r.correct ? '✅' : '❌'}</p>
+            <p><b>Correct Answer:</b> ${correctAnswerHTML || r.correctAnswer}</p>
+            <p><b>Time Taken:</b> ${timeTaken} seconds</p>
+        </div>`;
     });
 
     html += `<br><button onclick="window.location.reload()">Home</button>`;
@@ -104,7 +146,9 @@ export async function fetchAndRenderResults() {
             return;
         }
 
-        const grouped = groupByAttempts(data);
+        const grouped = groupByAttempts(data).sort((a, b) =>
+            new Date(b.timestamp) - new Date(a.timestamp)
+            );
 
         container.innerHTML = `
             <input type="text" id="resultsSearch" placeholder="Search username, section, date..." style="margin-bottom: 10px; padding: 8px; width: 100%; font-size: 16px;" />
@@ -125,17 +169,14 @@ export async function fetchAndRenderResults() {
             </table>
         `;
 
-        // Filter handler
         document.getElementById('resultsSearch').addEventListener('input', function () {
             const filter = this.value.toLowerCase();
             const rows = document.querySelectorAll('#resultsTable tbody tr');
-
             rows.forEach(row => {
                 row.style.display = row.textContent.toLowerCase().includes(filter) ? '' : 'none';
             });
         });
 
-        // Attach view button handlers
         document.querySelectorAll('.view-button').forEach(btn => {
             btn.addEventListener('click', () => {
                 const user = btn.getAttribute('data-username');

@@ -128,7 +128,7 @@ function startQuiz(section) {
   startExamTimer();
 }
 
-// Shuffle questions
+// Shuffle questions (Fisher-Yates)
 function shuffleArray(array) {
   for (let i = array.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -200,10 +200,13 @@ function selectAnswer(index, button) {
   if (isCorrect) score++;
   else wrong++;
 
+  const responseText = button.textContent?.trim() || '';
+  const responseImage = current[`Answer ${index + 1} Image URL`] ? `http://10.10.182.9:5000${current[`Answer ${index + 1} Image URL`]}` : '';
+
   userResponses[currentQuestionIndex] = {
     question: current['Question'] || current['Question Image URL'] || 'N/A',
     comprehension: current['Comprehension'] || '',
-    response: button.textContent || current[`Answer ${index + 1} Image URL`] || 'N/A',
+    response: responseImage || responseText || 'N/A',
     correct: isCorrect,
     responseTime: Math.round(responseTimeMs / 1000)
   };
@@ -216,6 +219,29 @@ function selectAnswer(index, button) {
   document.querySelectorAll('.answer-option').forEach(btn => btn.disabled = true);
   nextQuestionButton.style.display = 'block';
 }
+
+// Skip question logic (if user skips without selecting)
+skipQuestionButton.addEventListener('click', () => {
+  if (hasAnswered) return;
+
+  const current = selectedQuestions[currentQuestionIndex];
+  const timeSpent = Date.now() - questionStartTime;
+
+  userResponses[currentQuestionIndex] = {
+    question: current['Question'] || current['Question Image URL'] || 'N/A',
+    comprehension: current['Comprehension'] || '',
+    response: 'Skipped',
+    correct: false,
+    responseTime: Math.round(timeSpent / 1000)
+  };
+
+  if (currentQuestionIndex < selectedQuestions.length - 1) {
+    currentQuestionIndex++;
+    showNextQuestion();
+  } else {
+    endQuiz();
+  }
+});
 
 // Timer countdown
 function startExamTimer() {
@@ -243,7 +269,7 @@ function endQuiz() {
   quizSection.style.display = 'none';
   resultSection.style.display = 'block';
   scoreDisplay.textContent = `You scored ${score} & lost ${wrong} out of ${selectedQuestions.length}!`;
-  submitResponses();
+  submitResponses(); // now fully fixed
 }
 
 // Submit response and score to backend
@@ -259,9 +285,25 @@ function submitResponses() {
       responseTime: 'Skipped'
     };
 
+    const options = [];
+    for (let i = 1; i <= 4; i++) {
+      options.push({
+        text: question[`Answer ${i} Text`] || '',
+        image: question[`Answer ${i} Image URL`] || ''
+      });
+    }
+
+    const correctAnswerIndex = question['Correct Answer Index'];
+    const correctAnswer =
+      (question[`Answer ${correctAnswerIndex + 1} Text`] || '') ||
+      (question[`Answer ${correctAnswerIndex + 1} Image URL`] || '');
+
     return {
       question: question['Question'] || question['Question Image URL'] || 'N/A',
       comprehension: question['Comprehension'] || '',
+      options,
+      correctAnswerIndex,
+      correctAnswer, // ✅ ADD THIS LINE
       response: userResponse.response,
       correct: userResponse.correct,
       responseTime: userResponse.responseTime ?? 'Skipped',
@@ -271,6 +313,7 @@ function submitResponses() {
       score
     };
   });
+
 
   fetch('http://10.10.182.9:5000/api/response', {
     method: 'POST',
@@ -297,7 +340,7 @@ function formatTextWithParagraphs(text) {
   return text.split(/\r?\n/).map(line => `<p>${line}</p>`).join('');
 }
 
-// Handle superscripts and subscripts
+// Handle superscripts and subscripts like ^(x+1), _(n)
 function formatTextWithSuperSubscript(text) {
   if (typeof text !== 'string') return text;
   return text
