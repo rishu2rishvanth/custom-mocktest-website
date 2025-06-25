@@ -252,7 +252,7 @@ function endQuiz() {
   clearInterval(examTimer);
   quizSection.style.display = 'none';
   resultSection.style.display = 'block';
-  scoreDisplay.textContent = `You scored ${score} & lost ${wrong} out of ${selectedQuestions.length}!`;
+  scoreDisplay.textContent = `You scored ${score} & lost ${wrong} out of ${selectedQuestions.length}! Your Final Score is ${(score-0.3*wrong).toFixed(2)}`;
   submitResponses();
 }
 

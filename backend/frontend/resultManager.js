@@ -59,9 +59,11 @@ function viewResponseDetails(data, username, timestamp) {
     const container = document.getElementById('resultsContainer');
     const responses = data.filter(r => r.username === username && r.timestamp === timestamp);
 
+    const CurrentScore = responses[0]?.score || 'Unknown';
     const sectionName = responses[0]?.section || 'Unknown';
     let html = `<h3>Response Details for ${sanitize(username)}</h3>`;
-    html += `<p>Section: <b>${sanitize(sectionName)}</b><br>Attempted at: ${sanitize(timestamp)}</p>`;
+    html += `<p>Section: <b>${sanitize(sectionName)}</b>  |   Attempted at: <b>${sanitize(timestamp)}</b>  |   Scored: <b>${sanitize(CurrentScore)}</b></p>`;
+    html += `<button onclick="window.location.reload()">Home</button>`;
 
     responses.forEach((r, index) => {
         const isImageQuestion = r.question && r.question.startsWith('/images/');
@@ -128,8 +130,72 @@ function viewResponseDetails(data, username, timestamp) {
         </div>`;
     });
 
-    html += `<br><button onclick="window.location.reload()">Home</button>`;
+    html += `
+        <div style="margin-top: 40px;">
+            <h4>Time Distribution</h4>
+            <canvas id="timeHistogram" height="200"></canvas>
+        </div>
+        <br><button onclick="window.location.reload()">Home</button>`;
     container.innerHTML = html;
+
+    // Collect valid numeric response times
+    const timeBins = responses
+    .map(r => typeof r.responseTime === 'number' ? r.responseTime : parseFloat(r.responseTime))
+    .filter(time => !isNaN(time));
+
+    // Create histogram data
+    const binSize = 10; // seconds per bin
+    const maxTime = Math.max(...timeBins, 60);
+    const binCount = Math.ceil(maxTime / binSize);
+    const bins = Array(binCount).fill(0);
+
+    timeBins.forEach(time => {
+        const binIndex = Math.floor(time / binSize);
+        bins[binIndex]++;
+    });
+
+    const labels = bins.map((_, i) => `${i * binSize}-${(i + 1) * binSize}s`);
+
+    // Destroy old chart if exists
+    if (window.histogramChart) window.histogramChart.destroy();
+
+    // Render histogram
+    const ctx = document.getElementById('timeHistogram').getContext('2d');
+    window.histogramChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels,
+            datasets: [{
+                label: 'Number of Questions',
+                data: bins,
+                backgroundColor: '#4e79a7'
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Time Per Question Distribution'
+                }
+            },
+            scales: {
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Time Range (seconds)'
+                    }
+                },
+                y: {
+                    title: {
+                        display: true,
+                        text: 'Questions'
+                    },
+                    beginAtZero: true
+                }
+            }
+        }
+    });
 }
 
 // Fetch and display all results
@@ -167,6 +233,7 @@ export async function fetchAndRenderResults() {
                     ${generateTableRows(grouped)}
                 </tbody>
             </table>
+            <br><button onclick="window.location.reload()">Home</button>
         `;
 
         document.getElementById('resultsSearch').addEventListener('input', function () {
