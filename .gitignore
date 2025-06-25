@@ -21,6 +21,7 @@ Thumbs.db
 *.xlsx
 *.txt
 *.jpg
+*.zip
 
 # some codes
 Run_quiz_website.ps1

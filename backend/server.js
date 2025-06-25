@@ -18,7 +18,7 @@ try {
 }
 
 // Load questions from Excel file
-const excelFilePath = path.join(__dirname, 'Gate-AE-Exam/questions.xlsx');
+const excelFilePath = path.join(__dirname, 'Exam/questions.xlsx');
 let jsonData = {};
 
 try {
@@ -32,7 +32,7 @@ try {
 }
 
 // Static file serving
-app.use('/images', express.static(path.join(__dirname, 'Gate-AE-Exam/images')));
+app.use('/images', express.static(path.join(__dirname, 'Exam/images')));
 app.use(express.static(path.join(__dirname, 'frontend')));
 
 // Serve main HTML file

@@ -99,7 +99,7 @@ function viewResponseDetails(data, username, timestamp) {
                     ? `<br><img src="http://10.10.182.9:5000${opt.image}" alt="Option ${i + 1}" style="max-height: 80px;">`
                     : '';
 
-                const isCorrect = i === correctAnswerIndex;
+                const isCorrect =  r.correctAnswer === opt.text || r.correctAnswer === opt.image;
                 const isUserResponse = r.response === opt.text || r.response === opt.image;
 
                 let style = '';
