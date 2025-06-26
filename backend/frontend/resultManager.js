@@ -101,14 +101,21 @@ function viewResponseDetails(data, username, timestamp) {
                     ? `<br><img src="http://10.10.182.9:5000${opt.image}" alt="Option ${i + 1}" style="max-height: 80px;">`
                     : '';
 
-                const isCorrect =  r.correctAnswer === opt.text || r.correctAnswer === opt.image;
-                const isUserResponse = r.response === opt.text || r.response === opt.image;
+                const isCorrect = (
+                    r.correctAnswer === opt.text ||
+                    r.correctAnswer === `http://10.10.182.9:5000${opt.image}`
+                );
+
+                const isUserResponse = (
+                    r.response === opt.text ||
+                    r.response === `http://10.10.182.9:5000${opt.image}`
+                );
 
                 let style = '';
                 if (isCorrect) {
                     style += 'background-color: #d4edda; border: 2px solid green;';
                 }
-                if (isUserResponse && !isCorrect) {
+                else {
                     style += 'background-color: #f8d7da; border: 1px solid red;';
                 }
 
