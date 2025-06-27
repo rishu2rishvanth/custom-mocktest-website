@@ -152,15 +152,17 @@ function showNextQuestion() {
 
   const qNum = currentQuestionIndex + 1;
   const questionText = document.createElement('div');
+
+  if (current['Comprehension']) {
+    const comp = document.createElement('div');
+    comp.innerHTML = `<p><strong>Comprehension / Directions</strong> ${formatTextWithSuperSubscript(formatTextWithParagraphs(current['Comprehension']))}</p>`;
+    questionContainer.appendChild(comp);
+  }
+
   questionText.innerHTML = `<b>Question ${qNum}</b><br>${formatTextWithSuperSubscript(formatTextWithParagraphs(current['Question']))}`;  
   questionText.innerHTML = `<b>Question ${qNum}</b><br>${formatText(current['Question'])}`;
   questionContainer.appendChild(questionText);
 
-  if (current['Comprehension']) {
-    const comp = document.createElement('div');
-    comp.innerHTML = `<p><strong>Comprehension:</strong> ${formatTextWithSuperSubscript(formatTextWithParagraphs(current['Comprehension']))}</p>`;
-    questionContainer.appendChild(comp);
-  }
 
   if (current['Question Image URL']) {
     const img = document.createElement('img');
