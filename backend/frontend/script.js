@@ -5,6 +5,7 @@ const startQuizButton = document.getElementById('startQuiz');
 const nextQuestionButton = document.getElementById('nextQuestion');
 const skipQuestionButton = document.getElementById('skipQuestion');
 const restartQuizButton = document.getElementById('restartQuiz');
+const submitQuizButton = document.getElementById('submitQuiz');
 const sectionSelect = document.getElementById('sectionSelect');
 const numQuestionsInput = document.getElementById('numQuestions');
 const timerInput = document.getElementById('timer');
@@ -39,7 +40,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Load section names and their questions
 function populateSections() {
-  fetch('http://192.168.1.46:5000/api/questions/sections')
+  fetch('http://10.10.182.9:5000/api/questions/sections')
     .then(res => res.json())
     .then(data => {
       if (!Array.isArray(data)) return;
@@ -78,6 +79,17 @@ startQuizButton.addEventListener('click', () => {
 restartQuizButton.addEventListener('click', () => {
   resultSection.style.display = 'none';
   setupSection.style.display = 'block';
+});
+
+// Submit quiz button
+submitQuizButton.addEventListener('click', () => {
+    const confirmSubmit = confirm("Are you sure you want to submit the quiz?");
+    if (!confirmSubmit) return;
+
+    // If not already ended, trigger quiz end
+    if (!quizEnded) {
+        endQuiz(); // This should handle final scoring and call submitResponses()
+    }
 });
 
 // Start quiz setup
@@ -152,7 +164,7 @@ function showNextQuestion() {
 
   if (current['Question Image URL']) {
     const img = document.createElement('img');
-    img.src = `http://192.168.1.46:5000${current['Question Image URL']}`;
+    img.src = `http://10.10.182.9:5000${current['Question Image URL']}`;
     img.alt = 'Question Image';
     questionContainer.appendChild(img);
   }
@@ -168,7 +180,7 @@ function showNextQuestion() {
     if (text) btn.innerHTML = text;
     if (imgUrl) {
       const img = document.createElement('img');
-      img.src = `http://192.168.1.46:5000${imgUrl}`;
+      img.src = `http://10.10.182.9:5000${imgUrl}`;
       img.alt = text || `Option ${i}`;
       btn.appendChild(img);
     }
@@ -198,7 +210,7 @@ function handleAnswer(index, button) {
 
   const text = button.textContent?.trim() || '';
   const img = current[`Answer ${index + 1} Image URL`]
-    ? `http://192.168.1.46:5000${current[`Answer ${index + 1} Image URL`]}`
+    ? `http://10.10.182.9:5000${current[`Answer ${index + 1} Image URL`]}`
     : '';
 
   recordResponse(img || text || 'N/A', isCorrect, timeSpent);
@@ -258,7 +270,7 @@ function endQuiz() {
 
 // Submit responses to backend
 function submitResponses() {
-  const username = prompt("Enter your username:");
+  const username = 'Admin';
   const section = sectionSelect.value;
   const submitTime = new Date().toISOString();
 
@@ -296,7 +308,7 @@ function submitResponses() {
     };
   });
 
-  fetch('http://192.168.1.46:5000/api/response', {
+  fetch('http://10.10.182.9:5000/api/response', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ username, responses, score, section, examStartTime, submitTime })
@@ -305,7 +317,7 @@ function submitResponses() {
     .then(data => alert(data.message))
     .catch(err => console.error('Error submitting responses:', err));
 
-  fetch('http://192.168.1.46:5000/api/score', {
+  fetch('http://10.10.182.9:5000/api/score', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ username, score, wrong })

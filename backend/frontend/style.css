@@ -58,6 +58,24 @@ button:hover {
   background-color: #003060;
 }
 
+/* ====== Submit Button ====== */
+.submit-button {
+  position: fixed;
+  bottom: 10px;
+  right: 10px;
+  z-index: 1000;
+}
+
+#submitQuiz {
+  width: auto;
+  padding: 5px 15px;
+  background-color: rgb(5, 154, 0);
+}
+
+#submitQuiz:hover {
+  background-color: #47ce5d;
+}
+
 /* ====== Skip Button ====== */
 .skip-button {
   position: fixed;
