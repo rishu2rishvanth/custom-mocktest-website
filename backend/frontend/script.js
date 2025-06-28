@@ -118,6 +118,41 @@ skipQuestionButton.addEventListener('click', () => {
   goToNextOrEnd();
 });
 
+const clearButton = document.createElement('button');
+clearButton.id = 'clearResponse';
+clearButton.textContent = 'Clear Response';
+clearButton.classList.add('clear-response-button');
+
+skipQuestionButton.parentNode.insertBefore(clearButton, skipQuestionButton.nextSibling);
+
+document.getElementById('clearResponse').addEventListener('click', () => {
+  if (!quizSection.style.display || quizSection.style.display === 'none') return;
+
+  const prev = userResponses[currentQuestionIndex];
+  if (prev) {
+    if (prev.correct === true) score--;
+    else if (prev.correct === false && prev.response !== 'Skipped') wrong--;
+  }
+
+  // Enable all options
+  document.querySelectorAll('.answer-option').forEach(btn => {
+    btn.disabled = false;
+    btn.classList.remove('selected');
+  });
+
+  // Clear user comment
+  const commentBox = document.getElementById('userComment');
+  if (commentBox) commentBox.value = '';
+
+  // Clear recorded response
+  userResponses[currentQuestionIndex] = null;
+
+  // Reset state
+  selectedButton = null;
+  hasAnswered = false;
+  nextQuestionButton.style.display = 'none';
+});
+
 // Next button (after answering)
 nextQuestionButton.addEventListener('click', () => {
   goToNextOrEnd();
@@ -230,6 +265,13 @@ function handleAnswer(index, button) {
   const isCorrect = index === current['Correct Answer Index'];
   const timeSpent = Math.round((Date.now() - questionStartTime) / 1000);
 
+  // --- Undo previous score if any ---
+  const prev = userResponses[currentQuestionIndex];
+  if (prev) {
+    if (prev.correct === true) score--;
+    else if (prev.correct === false && prev.response !== 'Skipped') wrong--;
+  }
+  
   if (isCorrect) score++;
   else wrong++;
 
