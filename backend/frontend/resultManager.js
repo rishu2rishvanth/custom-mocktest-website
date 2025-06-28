@@ -50,8 +50,33 @@ function generateTableRows(groupedData) {
                     View
                 </button>
             </td>
+            <td>
+                <button class="delete-button" data-username="${row.username}" data-timestamp="${row.timestamp}">
+                    Delete
+                </button>
+            </td>
         </tr>
     `).join('');
+}
+
+// Delete response details for a given attempt
+function deleteResponseDetails(data, username, timestamp) {
+    if (!confirm(`Are you sure you want to delete ${username}'s attempt at ${timestamp}?`)) return;
+
+    fetch('/api/delete-response', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, timestamp })
+    })
+    .then(res => res.json())
+    .then(res => {
+        alert(res.message || 'Deleted successfully.');
+        fetchAndRenderResults(); // Refresh the table
+    })
+    .catch(err => {
+        console.error('Error deleting response:', err);
+        alert('Failed to delete response.');
+    });
 }
 
 // Show response details for a given attempt
@@ -234,6 +259,7 @@ export async function fetchAndRenderResults() {
                         <th>Score</th>
                         <th>Time Taken</th>
                         <th>View</th>
+                        <th>Delete</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -250,12 +276,20 @@ export async function fetchAndRenderResults() {
                 row.style.display = row.textContent.toLowerCase().includes(filter) ? '' : 'none';
             });
         });
-
+        
         document.querySelectorAll('.view-button').forEach(btn => {
             btn.addEventListener('click', () => {
                 const user = btn.getAttribute('data-username');
                 const time = btn.getAttribute('data-timestamp');
                 viewResponseDetails(data, user, time);
+            });
+        });
+
+        document.querySelectorAll('.delete-button').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const user = btn.getAttribute('data-username');
+                const time = btn.getAttribute('data-timestamp');
+                deleteResponseDetails(data, user, time);
             });
         });
 

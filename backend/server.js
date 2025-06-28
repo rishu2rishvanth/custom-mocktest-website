@@ -190,6 +190,46 @@ app.get('/api/attemptDetails', (req, res) => {
     res.json(filtered);
 });
 
+// Delete response API
+app.post('/api/delete-response', (req, res) => {
+    const { username, timestamp } = req.body;
+    if (!username || !timestamp) {
+        return res.status(400).json({ message: 'Missing username or timestamp.' });
+    }
+
+    const filePath = path.join(__dirname, 'responses.xlsx');
+    if (!fs.existsSync(filePath)) {
+        return res.status(404).json({ message: 'responses.xlsx not found.' });
+    }
+
+    try {
+        const workbook = XLSX.readFile(filePath);
+        const sheet = workbook.Sheets['Responses'];
+        let data = XLSX.utils.sheet_to_json(sheet);
+
+        // Filter out rows that match username + timestamp
+        const originalLength = data.length;
+        data = data.filter(entry => 
+            !(entry.username === username && entry.timestamp === timestamp)
+        );
+
+        const deletedCount = originalLength - data.length;
+        if (deletedCount === 0) {
+            return res.status(404).json({ message: 'No matching records found to delete.' });
+        }
+
+        // Write updated data back
+        const newSheet = XLSX.utils.json_to_sheet(data);
+        workbook.Sheets['Responses'] = newSheet;
+        XLSX.writeFile(workbook, filePath);
+
+        res.json({ message: `Deleted ${deletedCount} records for ${username} at ${timestamp}.` });
+    } catch (error) {
+        console.error('Error deleting response:', error);
+        res.status(500).json({ message: 'Failed to delete response.' });
+    }
+});
+
 // Start server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
