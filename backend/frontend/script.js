@@ -191,6 +191,29 @@ function showNextQuestion() {
     optionsContainer.appendChild(btn);
   }
 
+  // --- Comment box AFTER options ---
+  const commentWrapper = document.createElement('div');
+  commentWrapper.style.marginTop = '20px';
+
+  const commentLabel = document.createElement('label');
+  commentLabel.textContent = 'Your Comment (Optional):';
+  commentLabel.setAttribute('for', 'userComment');
+  commentLabel.style.display = 'block';
+  commentLabel.style.marginBottom = '5px';
+
+  const commentBox = document.createElement('textarea');
+  commentBox.id = 'userComment';
+  commentBox.rows = 2;
+  commentBox.style.width = '200%';
+  commentBox.style.maxWidth = '200%';
+  commentBox.style.boxSizing = 'border-box';
+  commentBox.placeholder = 'Write your approach, doubt, or notes...';
+
+  commentWrapper.appendChild(commentLabel);
+  commentWrapper.appendChild(commentBox);
+
+  optionsContainer.appendChild(commentWrapper); // ✅ Appended after options
+
   if (selectedButton) selectedButton.classList.remove('selected');
   selectedButton = null;
   hasAnswered = false;
@@ -228,13 +251,16 @@ function handleAnswer(index, button) {
 // Record user response
 function recordResponse(response, correct, timeSpent = null) {
   const current = selectedQuestions[currentQuestionIndex];
+  const commentInput = document.getElementById('userComment');
+  const userComment = commentInput ? commentInput.value.trim() : '';
   userResponses[currentQuestionIndex] = {
     question: current['Question'] || current['Question Image URL'] || 'N/A',
     comprehension: current['Comprehension'] || '',
     response,
     correct,
     responseTime: timeSpent ?? Math.round((Date.now() - 
-    questionStartTime) / 1000)
+    questionStartTime) / 1000),
+    comment: userComment
   };
   hasAnswered = true;
 }
@@ -301,6 +327,7 @@ function submitResponses() {
       correctAnswerIndex: correctIndex,
       correctAnswer,
       response: u.response,
+      comment: u.comment || '',
       correct: u.correct,
       responseTime: u.responseTime,
       timestamp: examStartTime,

@@ -80,6 +80,7 @@ app.post('/api/response', (req, res) => {
         question: r.question,
         comprehension: r.comprehension || '',
         response: r.response,
+        comment: r.comment || '',
         correct: r.correct,
         score,
         responseTime: r.responseTime ?? '',
