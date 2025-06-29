@@ -18,7 +18,7 @@ try {
 }
 
 // Load questions from Excel file
-const excelFilePath = path.join(__dirname, 'Exam/questions.xlsx');
+const excelFilePath = path.join(__dirname, 'Database/Exam/questions.xlsx');
 let jsonData = {};
 
 try {
@@ -32,7 +32,7 @@ try {
 }
 
 // Static file serving
-app.use('/images', express.static(path.join(__dirname, 'Exam/images')));
+app.use('/images', express.static(path.join(__dirname, 'Database/Exam/images')));
 app.use(express.static(path.join(__dirname, 'frontend')));
 
 // Serve main HTML file
@@ -65,7 +65,7 @@ app.post('/api/response', (req, res) => {
         return res.status(400).json({ message: 'Invalid data format.' });
     }
 
-    const filePath = path.join(__dirname, 'responses.xlsx');
+    const filePath = path.join(__dirname, 'Database/responses.xlsx');
     const workbook = fs.existsSync(filePath)
         ? XLSX.readFile(filePath)
         : XLSX.utils.book_new();
@@ -118,7 +118,7 @@ app.post('/api/score', (req, res) => {
 
 // All raw responses API
 app.get('/api/all-responses', (req, res) => {
-    const filePath = path.join(__dirname, 'responses.xlsx');
+    const filePath = path.join(__dirname, 'Database/responses.xlsx');
     if (!fs.existsSync(filePath)) {
         return res.status(404).json({ message: 'No responses found.' });
     }
@@ -142,7 +142,7 @@ app.get('/api/all-responses', (req, res) => {
 
 // Quiz attempts summary
 app.get('/api/attempts', (req, res) => {
-    const filePath = path.join(__dirname, 'responses.xlsx');
+    const filePath = path.join(__dirname, 'Database/responses.xlsx');
     if (!fs.existsSync(filePath)) return res.json([]);
 
     const workbook = XLSX.readFile(filePath);
@@ -172,7 +172,7 @@ app.get('/api/attemptDetails', (req, res) => {
         return res.status(400).json({ message: 'Missing timestamp or username.' });
     }
 
-    const filePath = path.join(__dirname, 'responses.xlsx');
+    const filePath = path.join(__dirname, 'Database/responses.xlsx');
     if (!fs.existsSync(filePath)) {
         return res.status(404).json({ message: 'No responses file found.' });
     }
@@ -198,9 +198,9 @@ app.post('/api/delete-response', (req, res) => {
         return res.status(400).json({ message: 'Missing username or timestamp.' });
     }
 
-    const filePath = path.join(__dirname, 'responses.xlsx');
+    const filePath = path.join(__dirname, 'Database/responses.xlsx');
     if (!fs.existsSync(filePath)) {
-        return res.status(404).json({ message: 'responses.xlsx not found.' });
+        return res.status(404).json({ message: 'Database/responses.xlsx not found.' });
     }
 
     try {
