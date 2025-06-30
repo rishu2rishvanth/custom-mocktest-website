@@ -1,0 +1,3 @@
+[submodule "backend/quiz-database"]
+	path = backend/quiz-database
+	url = git@github.com-personal:rishu2rishvanth/quiz-database.git
