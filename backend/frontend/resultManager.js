@@ -229,6 +229,7 @@ function viewResponseDetails(data, username, timestamp) {
             }
         }
     });
+    handleScrollButtonsVisibility();
 }
 
 // Fetch and display all results
@@ -294,6 +295,8 @@ export async function fetchAndRenderResults() {
             });
         });
 
+        handleScrollButtonsVisibility();
+
     } catch (err) {
         console.error('Failed to load results:', err);
         container.innerHTML = '<p>Error loading results.</p>';
@@ -312,4 +315,29 @@ export function initResultsButton() {
             fetchAndRenderResults();
         });
     }
+}
+
+function handleScrollButtonsVisibility() {
+  const scrollButtons = document.getElementById('scrollButtons');
+  if (!scrollButtons) return;
+
+  window.addEventListener('scroll', () => {
+    const isResultsVisible = document.getElementById('resultsContainer')?.style.display !== 'none';
+    const scrolled = window.scrollY > 100;
+
+    if (isResultsVisible && scrolled) {
+      scrollButtons.style.display = 'flex';
+    } else {
+      scrollButtons.style.display = 'none';
+    }
+  });
+
+  // Scroll actions
+  document.getElementById('goTop').addEventListener('click', () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+
+  document.getElementById('goBottom').addEventListener('click', () => {
+    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+  });
 }

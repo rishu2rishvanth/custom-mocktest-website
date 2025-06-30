@@ -268,3 +268,29 @@ button:hover {
   max-width: 100%;
   height: auto;
 }
+
+#scrollButtons {
+  position: fixed;
+  bottom: 20px;
+  right: 250px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 999;
+}
+
+#scrollButtons button {
+  padding: 8px 12px;
+  font-size: 18px;
+  border-radius: 6px;
+  border: none;
+  background-color: #333;
+  color: #fff;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  transition: background-color 0.3s;
+}
+
+#scrollButtons button:hover {
+  background-color: #555;
+}
