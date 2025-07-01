@@ -153,8 +153,8 @@ function viewResponseDetails(data, username, timestamp) {
 
         html += `
         <div style="border: 1px solid #ccc; padding: 15px; margin-top: 20px; border-radius: 8px;">
-            <p><b>Q${index + 1}:</b> ${questionHTML}</p>
             ${r.comprehension ? `<p><b>Comprehension:</b> ${sanitize(r.comprehension)}</p>` : ''}
+            <p><b>Q${index + 1}:</b> ${questionHTML}</p>
             ${optionsHTML || ''}
             <p><b>Your Response:</b> ${userAnswerHTML} ${r.correct ? '✅' : '❌'}</p>
             ${r.comment ? `<p><b>Comment:</b> ${sanitize(r.comment)}</p>` : ''}
