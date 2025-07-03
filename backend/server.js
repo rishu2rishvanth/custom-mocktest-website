@@ -7,7 +7,8 @@ const moment = require('moment');
 const { execSync } = require('child_process');
 
 const app = express();
-app.use(express.json());
+app.use(express.json({ limit: '5mb' })); // or higher if needed
+app.use(express.urlencoded({ extended: true, limit: '5mb' }));
 app.use(cors());
 
 // Update script.js with local IP using Python script

@@ -94,7 +94,7 @@ function viewResponseDetails(data, username, timestamp) {
         const isImageQuestion = r.question && r.question.startsWith('/images/');
         const questionHTML = isImageQuestion
             ? `<img src="${sanitize(r.question)}" alt="Question Image" style="max-width: 100%;">`
-            : sanitize(r.question) || 'N/A';
+            : formatText(sanitize(r.question)) || 'N/A';
 
         let userAnswerHTML = '';
         let correctAnswerHTML = '';
@@ -121,7 +121,7 @@ function viewResponseDetails(data, username, timestamp) {
         if (Array.isArray(r.options)) {
             optionsHTML = '<ul style="list-style-type:none; padding-left: 0;">';
             r.options.forEach((opt, i) => {
-                const text = sanitize(opt.text || '');
+                const text = formatText(sanitize(opt.text || ''));
                 const image = opt.image
                     ? `<br><img src="http://10.10.182.9:5000${opt.image}" alt="Option ${i + 1}" style="max-height: 80px;">`
                     : '';
@@ -153,7 +153,7 @@ function viewResponseDetails(data, username, timestamp) {
 
         html += `
         <div style="border: 1px solid #ccc; padding: 15px; margin-top: 20px; border-radius: 8px;">
-            ${r.comprehension ? `<p><b>Comprehension:</b> ${sanitize(r.comprehension)}</p>` : ''}
+            ${r.comprehension ? `<p><b>Comprehension:</b> ${formatText(sanitize(r.comprehension))}</p>` : ''}
             <p><b>Q${index + 1}:</b> ${questionHTML}</p>
             ${optionsHTML || ''}
             <p><b>Your Response:</b> ${userAnswerHTML} ${r.correct ? '✅' : '❌'}</p>
@@ -340,4 +340,20 @@ function handleScrollButtonsVisibility() {
   document.getElementById('goBottom').addEventListener('click', () => {
     window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
   });
+}
+
+function formatTextWithParagraphs(text) {
+  if (typeof text !== 'string') return '';
+  return text.split(/\r?\n/).map(line => `<p>${line}</p>`).join('');
+}
+
+function formatTextWithSuperSubscript(text) {
+  if (typeof text !== 'string') return text;
+  return text
+    .replace(/\^\((.*?)\)/g, '<sup>$1</sup>')
+    .replace(/\_\((.*?)\)/g, '<sub>$1</sub>');
+}
+
+function formatText(raw) {
+  return formatTextWithSuperSubscript(formatTextWithParagraphs(raw));
 }
