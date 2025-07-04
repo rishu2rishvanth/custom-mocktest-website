@@ -6,7 +6,6 @@ const nextQuestionButton = document.getElementById('nextQuestion');
 const skipQuestionButton = document.getElementById('skipQuestion');
 const restartQuizButton = document.getElementById('restartQuiz');
 const submitQuizButton = document.getElementById('submitQuiz');
-const sectionSelect = document.getElementById('sectionSelect');
 const numQuestionsInput = document.getElementById('numQuestions');
 const timerInput = document.getElementById('timer');
 const questionContainer = document.getElementById('questionContainer');
@@ -16,11 +15,15 @@ const scoreDisplay = document.getElementById('score');
 const quizSection = document.querySelector('.quiz');
 const setupSection = document.querySelector('.setup');
 const resultSection = document.querySelector('.result');
+const sectionSearchInput = document.getElementById('sectionSearchInput');
+const sectionDropdown = document.getElementById('sectionGroupedDropdown');
 
 // Quiz State
 let sections = {};
 let selectedQuestions = [];
 let userResponses = [];
+let groupedSections = {};
+let currentActiveItem = null;
 let currentQuestionIndex = 0;
 let examTimeRemaining = 0;
 let examTimer = null;
@@ -35,7 +38,7 @@ let quizEnded = false;
 // On page load
 document.addEventListener('DOMContentLoaded', () => {
   initResultsButton();
-  if (sectionSelect) populateSections();
+  if (sectionSearchInput) populateSections();
 });
 
 // Load section names and their questions
@@ -49,51 +52,107 @@ function populateSections() {
         acc[section.name] = section.questions;
         return acc;
       }, {});
-
-      renderSectionDropdown(Object.keys(sections));
+      groupedSections = groupByPrefix(Object.keys(sections));
+      renderGroupedDropdown(groupedSections);
     })
     .catch(err => console.error('Error fetching sections:', err));
 }
 
-function renderSectionDropdown(filteredKeys) {
-  sectionSelect.innerHTML = '<option value="">Select Section</option>';
-  const grouped = {};
-
-  filteredKeys.forEach(name => {
-    const [group, sub] = name.split(' - ');
-    const label = sub ? group : 'Other';
-    if (!grouped[label]) grouped[label] = [];
-    grouped[label].push(name);
+function groupByPrefix(names) {
+  const groups = {};
+  names.forEach(name => {
+    const [prefix, suffix] = name.split(' - ');
+    const group = suffix ? prefix.trim() : 'Other';
+    if (!groups[group]) groups[group] = [];
+    groups[group].push(name);
   });
-
-  Object.keys(grouped).sort().forEach(group => {
-    const optGroup = document.createElement('optgroup');
-    optGroup.label = group;
-    grouped[group].sort().forEach(sectionName => {
-      const option = document.createElement('option');
-      option.value = sectionName;
-      option.textContent = sectionName;
-      optGroup.appendChild(option);
-    });
-    sectionSelect.appendChild(optGroup);
-  });
+  return groups;
 }
 
-document.getElementById('searchSectionInput').addEventListener('input', function () {
-  const search = this.value.trim().toLowerCase();
-  const filtered = Object.keys(sections).filter(name =>
-    name.toLowerCase().includes(search)
-  );
-  renderSectionDropdown(filtered);
+function renderGroupedDropdown(groups, filter = '') {
+  sectionDropdown.innerHTML = '';
+  Object.keys(groups).sort().forEach(group => {
+    const matchedSections = groups[group].filter(name =>
+      name.toLowerCase().includes(filter)
+    );
+    if (!matchedSections.length) return;
+
+    const details = document.createElement('details');
+    details.classList.add('section-group');
+
+    const summary = document.createElement('summary');
+    summary.textContent = group;
+    details.appendChild(summary);
+
+    const ul = document.createElement('ul');
+    matchedSections.forEach(name => {
+      const li = document.createElement('li');
+      li.textContent = name;
+      li.tabIndex = 0;
+      li.addEventListener('click', () => {
+        sectionSearchInput.value = name;
+        numQuestionsInput.value = sections[name]?.length || '';
+        sectionDropdown.style.display = 'none';
+      });
+      ul.appendChild(li);
+    });
+
+    details.appendChild(ul);
+    sectionDropdown.appendChild(details);
+  });
+
+  sectionDropdown.style.display = 'block';
+}
+
+// 🔍 Filter on input
+sectionSearchInput.addEventListener('input', () => {
+  const query = sectionSearchInput.value.trim().toLowerCase();
+  renderGroupedDropdown(groupedSections, query);
 });
 
-document.getElementById('searchSectionInput').addEventListener('focus', () => {
-  sectionSelect.size = sectionSelect.options.length > 5 ? 5 : sectionSelect.options.length;
+// 👇 Show all groups when input is focused or clicked
+sectionSearchInput.addEventListener('click', () => {
+  renderGroupedDropdown(groupedSections);
 });
-sectionSelect.addEventListener('blur', () => sectionSelect.size = 1);
+
+// ⌨️ Keyboard navigation
+sectionSearchInput.addEventListener('keydown', e => {
+  const items = sectionDropdown.querySelectorAll('li');
+  if (!items.length) return;
+
+  if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    const next = currentActiveItem
+      ? currentActiveItem.nextElementSibling || items[0]
+      : items[0];
+    highlightItem(next, items);
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    const prev = currentActiveItem
+      ? currentActiveItem.previousElementSibling || items[items.length - 1]
+      : items[items.length - 1];
+    highlightItem(prev, items);
+  } else if (e.key === 'Enter' && currentActiveItem) {
+    currentActiveItem.click();
+  }
+});
+
+function highlightItem(item, items) {
+  items.forEach(i => i.classList.remove('active'));
+  item.classList.add('active');
+  currentActiveItem = item;
+}
+
+// 🖱️ Click outside to close
+document.addEventListener('click', e => {
+  if (!e.target.closest('.section-search-wrapper')) {
+    sectionDropdown.style.display = 'none';
+  }
+});
+
 
 // Auto-fill number of questions when a section is chosen
-sectionSelect.addEventListener('change', e => {
+sectionSearchInput.addEventListener('change', e => {
   const section = e.target.value;
   numQuestionsInput.value = sections[section]?.length || '';
 });
@@ -101,7 +160,7 @@ sectionSelect.addEventListener('change', e => {
 // Start quiz button
 startQuizButton.addEventListener('click', () => {
   quizEnded = false;
-  const section = sectionSelect.value;
+  const section = sectionSearchInput.value.trim();;
   if (!section) return alert('Please select a section.');
   startQuiz(section);
 });
@@ -372,7 +431,7 @@ function endQuiz() {
 // Submit responses to backend
 function submitResponses() {
   const username = 'Admin';
-  const section = sectionSelect.value;
+  const section = sectionSearchInput.value.trim();;
   const submitTime = new Date().toISOString();
 
   const responses = selectedQuestions.map((q, i) => {

@@ -18,17 +18,10 @@
       <label for="timer">Adjust Time Required for Section in (seconds):</label>
       <input type="number" id="timer" min="15" max="10800" value="3600" />
 
-      <div class="section-select-wrapper">
-        <label for="searchSectionInput">Select Test Section:</label>
-        <input
-          type="text"
-          id="searchSectionInput"
-          placeholder="Search or filter sections..."
-          autocomplete="on"
-        />
-        <select id="sectionSelect">
-          <option value="">Select Section</option>
-        </select>
+      <div class="section-search-wrapper">
+        <label for="sectionSearchInput">Select Test Section:</label>
+        <input type="text" id="sectionSearchInput" placeholder="Type or search..." autocomplete="off" />
+        <div id="sectionGroupedDropdown" class="section-grouped-dropdown"></div>
       </div>
 
       <button id="startQuiz">Start Test</button>

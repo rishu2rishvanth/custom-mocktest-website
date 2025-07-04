@@ -295,28 +295,56 @@ button:hover {
   background-color: #555;
 }
 
-.section-select-wrapper {
-  display: flex;
-  flex-direction: column;
-  margin-bottom: 16px;
+.section-search-wrapper {
+  position: relative;
+  max-width: 360px;
+  margin-bottom: 20px;
 }
 
-.section-select-wrapper label {
-  margin-bottom: 6px;
+#sectionSearchInput {
+  width: 100%;
+  padding: 10px;
+  font-size: 15px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  box-sizing: border-box;
+}
+
+.section-grouped-dropdown {
+  position: absolute;
+  width: 100%;
+  background: white;
+  border: 1px solid #ccc;
+  border-top: none;
+  max-height: 300px;
+  overflow-y: auto;
+  z-index: 100;
+  display: none;
+}
+
+.section-group {
+  border-top: 1px solid #eee;
+}
+
+.section-group summary {
+  cursor: pointer;
+  padding: 8px 12px;
+  background-color: #f2f2f2;
   font-weight: bold;
 }
 
-#searchSectionInput {
-  padding: 8px;
-  font-size: 14px;
-  margin-bottom: 8px;
-  border-radius: 4px;
-  border: 1px solid #ccc;
+.section-group ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
 }
 
-#sectionSelect {
-  padding: 8px;
-  font-size: 14px;
-  border-radius: 4px;
-  border: 1px solid #ccc;
+.section-group ul li {
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
+.section-group ul li:hover,
+.section-group ul li.active {
+  background-color: #e0f0ff;
 }
