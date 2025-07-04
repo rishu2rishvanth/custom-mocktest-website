@@ -173,12 +173,29 @@ document.addEventListener('click', e => {
   }
 });
 
-
 // Auto-fill number of questions when a section is chosen
 sectionSearchInput.addEventListener('change', e => {
   const section = e.target.value;
   numQuestionsInput.value = sections[section]?.length || '';
 });
+
+// Show custom confirm and start quiz only on Yes
+function showCustomConfirm(sectionName, questionCount, minutes, onConfirm) {
+  document.getElementById('section').textContent = sectionName;
+  document.getElementById('qCount').textContent = questionCount;
+  document.getElementById('qMinutes').textContent = minutes;
+  const modal = document.getElementById('customConfirm');
+  modal.style.display = 'flex';
+
+  document.getElementById('confirmYes').onclick = () => {
+    modal.style.display = 'none';
+    onConfirm();
+  };
+
+  document.getElementById('confirmNo').onclick = () => {
+    modal.style.display = 'none';
+  };
+}
 
 // Start quiz button
 startQuizButton.addEventListener('click', () => {
@@ -211,21 +228,20 @@ function startQuiz(section) {
   const duration = parseInt(timerInput.value);
   const minutes = Math.round(duration / 60);
 
-  const confirmStart = confirm(`Are you sure to attempt ${section} of ${numQuestions} questions in ${minutes} minutes?`);
-  if (!confirmStart) return;
+  showCustomConfirm(section, numQuestions, minutes, () => {
+    selectedQuestions = shuffleArray([...sections[section]]).slice(0, numQuestions);
+    userResponses = Array(selectedQuestions.length).fill(null);
+    currentQuestionIndex = 0;
+    score = 0;
+    wrong = 0;
+    examTimeRemaining = duration;
+    examStartTime = new Date().toISOString();
 
-  selectedQuestions = shuffleArray([...sections[section]]).slice(0, numQuestions);
-  userResponses = Array(selectedQuestions.length).fill(null);
-  currentQuestionIndex = 0;
-  score = 0;
-  wrong = 0;
-  examTimeRemaining = duration;
-  examStartTime = new Date().toISOString();
-
-  setupSection.style.display = 'none';
-  quizSection.style.display = 'block';
-  showNextQuestion();
-  startExamTimer();
+    setupSection.style.display = 'none';
+    quizSection.style.display = 'block';
+    showNextQuestion();
+    startExamTimer();
+  });
 }
 
 // Skip current question
