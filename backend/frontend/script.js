@@ -69,13 +69,18 @@ function groupByPrefix(names) {
   return groups;
 }
 
+function fuzzyMatch(query, target) {
+  const parts = query.toLowerCase().split(/\s+/);
+  return parts.every(part => target.toLowerCase().includes(part));
+}
+
 function renderGroupedDropdown(groups, filter = '') {
   sectionDropdown.innerHTML = '';
   const normalizedFilter = filter.trim().toLowerCase();
 
   Object.keys(groups).sort().forEach(group => {
     const matchedSections = groups[group].filter(name =>
-      name.toLowerCase().includes(normalizedFilter)
+      fuzzyMatch(normalizedFilter, name)
     );
 
     if (!matchedSections.length) return;
@@ -93,13 +98,14 @@ function renderGroupedDropdown(groups, filter = '') {
     ul.classList.add('section-list');
 
     matchedSections.forEach(name => {
+      const questionCount = sections[name]?.length || 0;
       const li = document.createElement('li');
-      li.textContent = name;
+      li.textContent = `${name} (${questionCount})`;
       li.tabIndex = 0;
 
       li.addEventListener('click', () => {
         sectionSearchInput.value = name;
-        numQuestionsInput.value = sections[name]?.length || '';
+        numQuestionsInput.value = questionCount;
         sectionDropdown.style.display = 'none';
         sectionSearchInput.focus();
       });
@@ -203,6 +209,10 @@ submitQuizButton.addEventListener('click', () => {
 function startQuiz(section) {
   const numQuestions = parseInt(numQuestionsInput.value);
   const duration = parseInt(timerInput.value);
+  const minutes = Math.round(duration / 60);
+
+  const confirmStart = confirm(`Are you sure to attempt ${section} of ${numQuestions} questions in ${minutes} minutes?`);
+  if (!confirmStart) return;
 
   selectedQuestions = shuffleArray([...sections[section]]).slice(0, numQuestions);
   userResponses = Array(selectedQuestions.length).fill(null);
