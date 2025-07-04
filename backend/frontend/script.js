@@ -197,6 +197,20 @@ function showCustomConfirm(sectionName, questionCount, minutes, onConfirm) {
   };
 }
 
+// ESC to close modal
+document.addEventListener('keydown', (event) => {
+  const modal = document.getElementById('customConfirm');
+  if (event.key === 'Escape' && modal.style.display === 'flex') {
+    modal.style.display = 'none';
+  }
+});
+
+document.getElementById('customConfirm').addEventListener('click', (e) => {
+  if (e.target.id === 'customConfirm') {
+    e.currentTarget.style.display = 'none';
+  }
+});
+
 // Start quiz button
 startQuizButton.addEventListener('click', () => {
   quizEnded = false;
