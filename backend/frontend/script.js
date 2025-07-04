@@ -71,29 +71,46 @@ function groupByPrefix(names) {
 
 function renderGroupedDropdown(groups, filter = '') {
   sectionDropdown.innerHTML = '';
+  const normalizedFilter = filter.trim().toLowerCase();
+
   Object.keys(groups).sort().forEach(group => {
     const matchedSections = groups[group].filter(name =>
-      name.toLowerCase().includes(filter)
+      name.toLowerCase().includes(normalizedFilter)
     );
+
     if (!matchedSections.length) return;
 
     const details = document.createElement('details');
     details.classList.add('section-group');
+
+    if (normalizedFilter) details.open = true;
 
     const summary = document.createElement('summary');
     summary.textContent = group;
     details.appendChild(summary);
 
     const ul = document.createElement('ul');
+    ul.classList.add('section-list');
+
     matchedSections.forEach(name => {
       const li = document.createElement('li');
       li.textContent = name;
       li.tabIndex = 0;
+
       li.addEventListener('click', () => {
         sectionSearchInput.value = name;
         numQuestionsInput.value = sections[name]?.length || '';
         sectionDropdown.style.display = 'none';
+        sectionSearchInput.focus();
       });
+
+      // Optional keyboard navigation
+      li.addEventListener('keydown', e => {
+        if (e.key === 'Enter') li.click();
+        if (e.key === 'ArrowDown') li.nextElementSibling?.focus();
+        if (e.key === 'ArrowUp') li.previousElementSibling?.focus();
+      });
+
       ul.appendChild(li);
     });
 
