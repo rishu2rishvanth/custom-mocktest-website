@@ -100,13 +100,13 @@ function viewResponseDetails(data, username, timestamp) {
         let correctAnswerHTML = '';
 
         if (r.response && /\.(png|jpe?g)$/i.test(r.response)) {
-            userAnswerHTML = `<img src="http://10.10.182.9:5000${r.response}" alt="Your Answer" style="max-height: 80px;">`;
+            userAnswerHTML = `<img src="http://10.10.182.8:5000${r.response}" alt="Your Answer" style="max-height: 200px;">`;
         } else {
             userAnswerHTML = sanitize(r.response);
         }
 
         if (r.correctAnswer && /\.(png|jpe?g)$/i.test(r.correctAnswer)) {
-            correctAnswerHTML = `<img src="http://10.10.182.9:5000${r.correctAnswer}" alt="Correct Answer" style="max-height: 80px;">`;
+            correctAnswerHTML = `<img src="http://10.10.182.8:5000${r.correctAnswer}" alt="Correct Answer" style="max-height: 200px;">`;
         } else {
             correctAnswerHTML = sanitize(r.correctAnswer);
         }
@@ -121,19 +121,22 @@ function viewResponseDetails(data, username, timestamp) {
         if (Array.isArray(r.options)) {
             optionsHTML = '<ul style="list-style-type:none; padding-left: 0;">';
             r.options.forEach((opt, i) => {
-                const text = formatText(sanitize(opt.text || ''));
-                const image = opt.image
-                    ? `<br><img src="http://10.10.182.9:5000${opt.image}" alt="Option ${i + 1}" style="max-height: 80px;">`
+                const rawText = opt.text || '';
+                const rawImage = opt.image || '';
+
+                const text = formatText(sanitize(rawText));
+                const image = rawImage
+                    ? `<br><img src="http://10.10.182.8:5000${rawImage}" alt="Option ${i + 1}" style="max-height: 200px;">`
                     : '';
 
                 const isCorrect = (
-                    r.correctAnswer === opt.text ||
-                    r.correctAnswer === `http://10.10.182.9:5000${opt.image}`
+                r.correctAnswer === rawText ||
+                r.correctAnswer === `http://10.10.182.8:5000${rawImage}`
                 );
 
                 const isUserResponse = (
-                    r.response === opt.text ||
-                    r.response === `http://10.10.182.9:5000${opt.image}`
+                r.response === rawText ||
+                r.response === `http://10.10.182.8:5000${rawImage}`
                 );
 
                 let style = '';
@@ -144,7 +147,7 @@ function viewResponseDetails(data, username, timestamp) {
                     style += 'background-color: #f8d7da; border: 1px solid red;';
                 }
 
-                optionsHTML += `<li style="margin-bottom: 8px; padding: 6px; border-radius: 6px; ${style}">
+                optionsHTML += `<li style="margin-bottom: 8px; padding-left: 6px; border-radius: 6px; ${style}">
                     ${text || ''}${image}
                 </li>`;
             });
