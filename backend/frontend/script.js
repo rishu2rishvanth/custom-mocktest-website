@@ -50,16 +50,47 @@ function populateSections() {
         return acc;
       }, {});
 
-      sectionSelect.innerHTML = '<option value="">Select Section</option>';
-      for (const sectionName in sections) {
-        const option = document.createElement('option');
-        option.value = sectionName;
-        option.textContent = sectionName;
-        sectionSelect.appendChild(option);
-      }
+      renderSectionDropdown(Object.keys(sections));
     })
     .catch(err => console.error('Error fetching sections:', err));
 }
+
+function renderSectionDropdown(filteredKeys) {
+  sectionSelect.innerHTML = '<option value="">Select Section</option>';
+  const grouped = {};
+
+  filteredKeys.forEach(name => {
+    const [group, sub] = name.split(' - ');
+    const label = sub ? group : 'Other';
+    if (!grouped[label]) grouped[label] = [];
+    grouped[label].push(name);
+  });
+
+  Object.keys(grouped).sort().forEach(group => {
+    const optGroup = document.createElement('optgroup');
+    optGroup.label = group;
+    grouped[group].sort().forEach(sectionName => {
+      const option = document.createElement('option');
+      option.value = sectionName;
+      option.textContent = sectionName;
+      optGroup.appendChild(option);
+    });
+    sectionSelect.appendChild(optGroup);
+  });
+}
+
+document.getElementById('searchSectionInput').addEventListener('input', function () {
+  const search = this.value.trim().toLowerCase();
+  const filtered = Object.keys(sections).filter(name =>
+    name.toLowerCase().includes(search)
+  );
+  renderSectionDropdown(filtered);
+});
+
+document.getElementById('searchSectionInput').addEventListener('focus', () => {
+  sectionSelect.size = sectionSelect.options.length > 5 ? 5 : sectionSelect.options.length;
+});
+sectionSelect.addEventListener('blur', () => sectionSelect.size = 1);
 
 // Auto-fill number of questions when a section is chosen
 sectionSelect.addEventListener('change', e => {
