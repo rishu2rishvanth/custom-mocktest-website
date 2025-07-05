@@ -91,10 +91,16 @@ function viewResponseDetails(data, username, timestamp) {
     html += `<button onclick="window.location.reload()">Home</button>`;
 
     responses.forEach((r, index) => {
-        const isImageQuestion = r.question && r.question.startsWith('/images/');
-        const questionHTML = isImageQuestion
-            ? `<img src="${sanitize(r.question)}" alt="Question Image" style="max-width: 100%;">`
-            : formatText(sanitize(r.question)) || 'N/A';
+        let questionHTML = '';
+        if (r.question) {
+        questionHTML += `<div>${formatText(sanitize(r.question))}</div>`;
+        }
+        if (r.questionImage) {
+        questionHTML += `<div><img src="http://10.10.182.8:5000${r.questionImage}" alt="Question Image" style="max-width: 100%; margin-top: 8px;"></div>`;
+        }
+        if (!questionHTML) {
+        questionHTML = 'N/A';
+        }
 
         let userAnswerHTML = '';
         let correctAnswerHTML = '';

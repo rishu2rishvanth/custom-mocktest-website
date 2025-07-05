@@ -443,7 +443,8 @@ function recordResponse(response, correct, timeSpent = null) {
   const commentInput = document.getElementById('userComment');
   const userComment = commentInput ? commentInput.value.trim() : '';
   userResponses[currentQuestionIndex] = {
-    question: current['Question'] || current['Question Image URL'] || 'N/A',
+    question: q['Question'] || '',
+    questionImage: q['Question Image URL'] || '',
     comprehension: current['Comprehension'] || '',
     response,
     correct,
@@ -510,7 +511,8 @@ function submitResponses() {
     const correctAnswer = q[`Answer ${correctIndex + 1} Text`] || q[`Answer ${correctIndex + 1} Image URL`] || '';
 
     return {
-      question: q['Question'] || q['Question Image URL'] || 'N/A',
+      question: q['Question'] || '',
+      questionImage: q['Question Image URL'] || '',
       comprehension: q['Comprehension'] || '',
       options,
       correctAnswerIndex: correctIndex,

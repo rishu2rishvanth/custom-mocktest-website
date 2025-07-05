@@ -79,6 +79,7 @@ app.post('/api/response', (req, res) => {
         username,
         section: section || 'unknown',
         question: r.question,
+        questionImage: r.questionImage || '',
         comprehension: r.comprehension || '',
         response: r.response,
         comment: r.comment || '',
