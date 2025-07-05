@@ -443,8 +443,8 @@ function recordResponse(response, correct, timeSpent = null) {
   const commentInput = document.getElementById('userComment');
   const userComment = commentInput ? commentInput.value.trim() : '';
   userResponses[currentQuestionIndex] = {
-    question: q['Question'] || '',
-    questionImage: q['Question Image URL'] || '',
+    question: current['Question'] || '',
+    questionImage: current['Question Image URL'] || '',
     comprehension: current['Comprehension'] || '',
     response,
     correct,
@@ -489,7 +489,7 @@ function endQuiz() {
 // Submit responses to backend
 function submitResponses() {
   const username = 'Admin';
-  const section = sectionSearchInput.value.trim();;
+  const section = sectionSearchInput.value.trim();
   const submitTime = new Date().toISOString();
 
   const responses = selectedQuestions.map((q, i) => {

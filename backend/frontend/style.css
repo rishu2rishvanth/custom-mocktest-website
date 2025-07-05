@@ -272,7 +272,7 @@ button:hover {
 #scrollButtons {
   position: fixed;
   bottom: 20px;
-  right: 250px;
+  right: 300px;
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -375,3 +375,66 @@ button:hover {
   cursor: pointer;
 }
 
+.question-navigator {
+  position: fixed;
+  top: 80px;
+  right: 20px;
+  width: 120px;
+  max-height: 80vh;
+  overflow-y: auto;
+  background-color: #f9f9f9;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 10px;
+  z-index: 999;
+  box-shadow: 0 0 6px rgba(0,0,0,0.1);
+  cursor: pointer;
+}
+
+.question-navigator h4 {
+  margin-top: 0;
+  font-size: 16px;
+  text-align: center;
+}
+
+.nav-btn {
+  display: inline-block;
+  width: 36px;
+  height: 36px;
+  margin: 5px;
+  padding: 0;
+  border: none;
+  border-radius: 4px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.nav-btn:hover {
+  color: aqua;
+}
+
+.nav-correct {
+  background-color: #d4edda;
+  color: green;
+}
+
+.nav-wrong {
+  background-color: #f8d7da;
+  color: red;
+}
+
+.nav-skipped {
+  background-color: #e2d5f7;
+  color: purple;
+}
+
+@media screen and (max-width: 768px) {
+  .question-navigator {
+    position: static;
+    width: 100%;
+    max-height: none;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+}

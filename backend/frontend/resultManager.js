@@ -161,7 +161,7 @@ function viewResponseDetails(data, username, timestamp) {
         }
 
         html += `
-        <div style="border: 1px solid #ccc; padding: 15px; margin-top: 20px; border-radius: 8px;">
+        <div id="q${index + 1}" class="question-block" style="border: 1px solid #ccc; padding: 15px; margin-top: 20px; border-radius: 8px;">
             ${r.comprehension ? `<p><b>Comprehension:</b> ${formatText(sanitize(r.comprehension))}</p>` : ''}
             <p><b>Q${index + 1}:</b> ${questionHTML}</p>
             ${optionsHTML || ''}
@@ -178,7 +178,32 @@ function viewResponseDetails(data, username, timestamp) {
             <canvas id="timeHistogram" height="200"></canvas>
         </div>
         <br><button onclick="window.location.reload()">Home</button>`;
+        let navHTML = `
+        <div id="questionNavigator" class="question-navigator" style="margin-top: 20px;">
+        <h4>Questions</h4>
+        `;
+
+        responses.forEach((r, index) => {
+        let colorClass = 'nav-skipped';
+        if (r.correct === true) colorClass = 'nav-correct';
+        else if (r.correct === false && r.response !== 'Skipped') colorClass = 'nav-wrong';
+
+        navHTML += `<button class="nav-btn ${colorClass}" data-target="q${index + 1}">${index + 1}</button>`;
+        });
+
+        navHTML += `</div>`;
+        html = html + navHTML; // Append navigator at end
     container.innerHTML = html;
+
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+        const targetId = btn.getAttribute('data-target');
+        const target = document.getElementById(targetId);
+        if (target) {
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    });
+    });
 
     // Collect valid numeric response times
     const timeBins = responses
