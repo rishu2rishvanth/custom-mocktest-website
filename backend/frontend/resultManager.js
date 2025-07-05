@@ -179,6 +179,10 @@ function viewResponseDetails(data, username, timestamp) {
         </div>
         <br><button onclick="window.location.reload()">Home</button>`;
         let navHTML = `
+        <!-- Toggle Button -->
+        <button id="toggleNavigatorBtn" class="toggle-navigator-btn">☰ Questions</button>
+
+        <!-- Navigator -->
         <div id="questionNavigator" class="question-navigator" style="margin-top: 20px;">
         <h4>Questions</h4>
         `;
@@ -203,6 +207,11 @@ function viewResponseDetails(data, username, timestamp) {
         target.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
     });
+    });
+
+    document.getElementById('toggleNavigatorBtn').addEventListener('click', () => {
+    const nav = document.getElementById('questionNavigator');
+    nav.classList.toggle('collapsed');
     });
 
     // Collect valid numeric response times
@@ -286,22 +295,24 @@ export async function fetchAndRenderResults() {
 
         container.innerHTML = `
             <input type="text" id="resultsSearch" placeholder="Search username, section, date..." style="margin-bottom: 10px; padding: 8px; width: 100%; font-size: 16px;" />
-            <table id="resultsTable" style="border-collapse: collapse; width: 100%;">
-                <thead>
-                    <tr>
-                        <th>Date</th>
-                        <th>Username</th>
-                        <th>Section</th>
-                        <th>Score</th>
-                        <th>Time Taken</th>
-                        <th>View</th>
-                        <th>Delete</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${generateTableRows(grouped)}
-                </tbody>
-            </table>
+            <div class="responsive-table-wrapper">
+                <table id="resultsTable" style="border-collapse: collapse; width: 100%;">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Username</th>
+                            <th>Section</th>
+                            <th>Score</th>
+                            <th>Time Taken</th>
+                            <th>View</th>
+                            <th>Delete</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${generateTableRows(grouped)}
+                    </tbody>
+                </table>
+            </div>
             <br><button onclick="window.location.reload()">Home</button>
         `;
 

@@ -231,6 +231,38 @@ button:hover {
   background-color: #f9f9f9;
 }
 
+/* 📱 Mobile-friendly scrollable table */
+.responsive-table-wrapper {
+  overflow-x: auto;
+  width: 100%;
+}
+
+/* Ensure table doesn’t shrink too much */
+.results-table {
+  min-width: 600px; /* Or adjust as needed */
+}
+
+/* Stack buttons vertically if screen is narrow */
+@media (max-width: 600px) {
+  .results-table td button {
+    display: block;
+    width: 100%;
+    margin: 4px 0;
+  }
+
+  .results-table th,
+  .results-table td {
+    font-size: 14px;
+    padding: 6px 10px;
+  }
+}
+
+.results-table td button {
+  padding: 6px 10px;
+  font-size: 15px;
+  border-radius: 6px;
+}
+
 /* ====== Modal ====== */
 .results-modal {
   position: fixed;
@@ -272,7 +304,7 @@ button:hover {
 #scrollButtons {
   position: fixed;
   bottom: 20px;
-  right: 300px;
+  right: 20px;
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -379,8 +411,8 @@ button:hover {
   position: fixed;
   top: 80px;
   right: 20px;
-  width: 120px;
-  max-height: 80vh;
+  width: 200px;
+  max-height: 60vh;
   overflow-y: auto;
   background-color: #f9f9f9;
   border: 1px solid #ccc;
@@ -428,13 +460,39 @@ button:hover {
   color: purple;
 }
 
-@media screen and (max-width: 768px) {
+
+/* Toggle button */
+.toggle-navigator-btn {
+  position: fixed;
+  top: 40px;
+  max-width: fit-content;
+  right: 20px;
+  z-index: 1001;
+  padding: 8px 12px;
+  font-size: 14px;
+  background-color: #004085;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+/* Collapsed navigator (hidden by default) */
+.question-navigator.collapsed {
+  display: none;
+}
+
+/* On mobile, make toggle fixed at top-right */
+@media (max-width: 768px) {
+  .toggle-navigator-btn {
+    top: 20px;
+    right: 10px;
+    font-size: 16px;
+  }
+
   .question-navigator {
-    position: static;
-    width: 100%;
-    max-height: none;
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
+    top: 60px;
+    right: 10px;
+    max-height: 60vh;
   }
 }
