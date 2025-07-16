@@ -86,8 +86,36 @@ function viewResponseDetails(data, username, timestamp) {
 
     const CurrentScore = responses[0]?.score || 'Unknown';
     const sectionName = responses[0]?.section || 'Unknown';
+    let total = responses.length;
+    let correct = 0;
+    let wrong = 0;
+    let skipped = 0;
+    let totalTime = 0;
+
+    responses.forEach(r => {
+    if (r.response === 'Skipped') skipped++;
+    else if (r.correct === true) correct++;
+    else if (r.correct === false) wrong++;
+
+    const time = typeof r.responseTime === 'number' ? r.responseTime : parseFloat(r.responseTime);
+    if (!isNaN(time)) totalTime += time;
+    });
+
+    const penalizedScore = (0.33 * wrong).toFixed(2);
+    const attempted = total-skipped;
+
+    function formatDuration(seconds) {
+    const mins = Math.floor(seconds / 60).toString().padStart(2, '0');
+    const secs = (seconds % 60).toString().padStart(2, '0');
+    return `${mins}:${secs}`;
+    }
+
     let html = `<h3>Response Details for ${sanitize(username)}</h3>`;
-    html += `<p>Section: <b>${sanitize(sectionName)}</b>  |   Attempted at: <b>${sanitize(timestamp)}</b>  |   Scored: <b>${sanitize(CurrentScore)}</b></p>`;
+        html += `<p>Section: <b>${sanitize(sectionName)}</b>  |   Attempted at: <b>${sanitize(timestamp)}</b>  |   Scored: <b>${sanitize(CurrentScore)}</b></p>`;
+    html += `
+    <div style="margin-top: 15px; font-size: 15px; line-height: 1.6;">
+        <p><b>🧮Total Questions:</b> ${total} | <b>📌Attempted:</b> ${attempted} | <b>🟣Skipped:</b> <span style="color: purple;">${skipped}</span> | <b>⏱️Total Time Taken:</b> ${formatDuration(totalTime)} (mm:ss) <br> <b>🎯Correct:</b> <span style="color: green;">${correct}</span> | <b>❌Wrong:</b> <span style="color: red;">${wrong}</span> | <b>🔻Penalized (0.33 per Q):</b> <span style="color: darkorange;">${penalizedScore}</span></p>
+    </div>`;
     html += `<button onclick="window.location.reload()">Home</button>`;
 
     responses.forEach((r, index) => {
@@ -224,10 +252,12 @@ function viewResponseDetails(data, username, timestamp) {
     const maxTime = Math.max(...timeBins, 60);
     const binCount = Math.ceil(maxTime / binSize);
     const bins = Array(binCount).fill(0);
+    const questionNumbersPerBin = Array(binCount).fill(null).map(() => []);
 
-    timeBins.forEach(time => {
-        const binIndex = Math.floor(time / binSize);
-        bins[binIndex]++;
+    timeBins.forEach((time, i) => {
+    const binIndex = Math.floor(time / binSize);
+    bins[binIndex]++;
+    questionNumbersPerBin[binIndex].push(i + 1); // Q1, Q2...
     });
 
     const labels = bins.map((_, i) => `${i * binSize}-${(i + 1) * binSize}s`);
@@ -238,39 +268,52 @@ function viewResponseDetails(data, username, timestamp) {
     // Render histogram
     const ctx = document.getElementById('timeHistogram').getContext('2d');
     window.histogramChart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels,
-            datasets: [{
-                label: 'Number of Questions',
-                data: bins,
-                backgroundColor: '#4e79a7'
-            }]
+    type: 'bar',
+    data: {
+        labels,
+        datasets: [{
+        label: 'Number of Questions',
+        data: bins,
+        backgroundColor: '#4e79a7'
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+        title: {
+            display: true,
+            text: 'Time Per Question Distribution'
         },
-        options: {
-            responsive: true,
-            plugins: {
-                title: {
-                    display: true,
-                    text: 'Time Per Question Distribution'
-                }
-            },
-            scales: {
-                x: {
-                    title: {
-                        display: true,
-                        text: 'Time Range (seconds)'
-                    }
-                },
-                y: {
-                    title: {
-                        display: true,
-                        text: 'Questions'
-                    },
-                    beginAtZero: true
-                }
+        tooltip: {
+            callbacks: {
+            label: function(context) {
+                const idx = context.dataIndex;
+                const count = context.dataset.data[idx];
+                const questions = questionNumbersPerBin[idx];
+                return [
+                `Questions: ${questions.join(', ')}`,
+                `Count: ${count}`
+                ];
+            }
             }
         }
+        },
+        scales: {
+        x: {
+            title: {
+            display: true,
+            text: 'Time Range (seconds)'
+            }
+        },
+        y: {
+            title: {
+            display: true,
+            text: 'Questions'
+            },
+            beginAtZero: true
+        }
+        }
+    }
     });
     handleScrollButtonsVisibility();
 }
