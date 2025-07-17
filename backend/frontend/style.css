@@ -509,3 +509,7 @@ button:hover {
   overflow: hidden;
   z-index: 1000;
 }
+
+* {
+  -webkit-user-drag: none;
+}
