@@ -32,12 +32,19 @@ label {
 }
 
 input, select {
-  width: 100%;
   padding: 8px;
   margin-bottom: 15px;
   font-size: 16px;
   border: 1px solid #ced4da;
   border-radius: 5px;
+}
+
+#numQuestions {
+  width: 100%;
+}
+
+#timer {
+  width: 100%;
 }
 
 /* ====== Buttons ====== */
@@ -495,4 +502,10 @@ button:hover {
     right: 10px;
     max-height: 60vh;
   }
+}
+
+#loadCalc {
+  position: absolute;
+  overflow: hidden;
+  z-index: 1000;
 }

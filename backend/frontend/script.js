@@ -565,12 +565,3 @@ function formatTextWithSuperSubscript(text) {
 function formatText(raw) {
   return formatTextWithSuperSubscript(formatTextWithParagraphs(raw));
 }
-
-let calculatorWindow = null;
-document.getElementById('openCalculator').addEventListener('click', () => {
-  if (!calculatorWindow || calculatorWindow.closed) {
-    calculatorWindow = window.open('calculator.html', '_blank', 'width=480,height=350');
-  } else {
-    calculatorWindow.focus();
-  }
-});
