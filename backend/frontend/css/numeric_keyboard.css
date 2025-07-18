@@ -1,0 +1,105 @@
+/* Wrapper for virtual keyboard */
+.vKeyboard {
+  border: 1px solid #DDD;
+  background-color: #F4F4F4;
+  padding: 5px;
+  text-align: center;
+  z-index: 999;
+  position: absolute;  /* Change from fixed to absolute */
+  width: 100%;
+  max-width: 150px; /* Limiting max width */
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  border-radius: 10px;
+  display: none;  /* Hidden initially */
+  margin-top: 0px;
+}
+
+/* Show keyboard when active */
+.vKeyboard.show {
+  display: block;
+}
+
+/* Special Keys */
+.vKeyboardSplKeys {
+  background-color: #DEDBE4;
+  border: 1px solid #666;
+  display: inline-block;
+  color: #000 !important;
+  font-family: Arial, sans-serif;
+  font-weight: bold;
+  padding: 3px 6px;
+  margin: 2px;
+  cursor: pointer;
+  border-radius: 6px;
+  user-select: none;
+}
+
+.vKeyboardSplKeysHover {
+  background-color: #8cb82b;
+}
+
+.vKeyboardSplKeys:active {
+  position: relative;
+  top: 1px;
+}
+
+/* Number Keys */
+.vKeyboardKeys {
+  width: 50px; /* Wider keys */
+  background-color: #EEE;
+  border: 1px solid #666;
+  display: inline-block;
+  color: #000 !important;
+  font-family: Arial, sans-serif;
+  font-weight: bold;
+  padding: 10px;
+  margin: 2px;
+  cursor: pointer;
+  border-radius: 6px;
+  user-select: none;
+}
+
+.vKeyboardKeysHover {
+  background-color: #CEE9FC;
+}
+
+.vKeyboardKeys:active {
+  position: relative;
+  top: 1px;
+}
+
+/* Row styling */
+.vk-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Button styling */
+.vk-btn {
+  padding: 5px 12px;
+  margin: 4px;
+  border-radius: 6px;
+  background-color: #f1f1f1;
+  border: 1px solid #bbb;
+  cursor: pointer;
+  font-family: Arial, sans-serif;
+  font-weight: bold;
+  user-select: none;
+}
+
+.vk-btn:hover {
+  background-color: #CEE9FC;
+}
+
+.vk-btn:active {
+  position: relative;
+  top: 1px;
+}
+
+/* Mobile responsiveness */
+@media screen and (max-width: 768px) {
+  .vKeyboard {
+    width: 100%;  /* Make keyboard full width on small screens */
+  }
+}

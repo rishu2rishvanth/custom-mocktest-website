@@ -377,24 +377,34 @@ function showNextQuestion() {
   const commentWrapper = document.createElement('div');
   commentWrapper.style.marginTop = '20px';
 
+  // Label
   const commentLabel = document.createElement('label');
   commentLabel.textContent = 'Your Comment (Optional):';
   commentLabel.setAttribute('for', 'userComment');
   commentLabel.style.display = 'block';
   commentLabel.style.marginBottom = '5px';
 
+  // Textarea
   const commentBox = document.createElement('textarea');
   commentBox.id = 'userComment';
+  commentBox.className = 'keyboardInput';
   commentBox.rows = 2;
-  commentBox.style.width = '200%';
-  commentBox.style.maxWidth = '200%';
-  commentBox.style.boxSizing = 'border-box';
   commentBox.placeholder = 'Write your approach, doubt, or notes...';
+  commentBox.style.cssText = `
+    width: 280px;
+    max-width: 100%;
+    box-sizing: border-box;
+  `;
 
+  // Append elements
   commentWrapper.appendChild(commentLabel);
   commentWrapper.appendChild(commentBox);
+  optionsContainer.appendChild(commentWrapper);
 
-  optionsContainer.appendChild(commentWrapper); // ✅ Appended after options
+// 🔄 Attach virtual keyboard (if available)
+if (typeof VKI_attach === 'function') {
+  VKI_attach(commentBox); // or whatever your plugin provides
+}
 
   if (selectedButton) selectedButton.classList.remove('selected');
   selectedButton = null;

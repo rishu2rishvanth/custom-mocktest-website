@@ -5,10 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Mock Test</title>
   <link rel="stylesheet" href="style.css" />
-  <link type="text/css" rel="stylesheet" href="css/calclayout.css"  />	 
+  <link type="text/css" rel="stylesheet" href="css/keyboard.css"  />
+  <link type="text/css" rel="stylesheet" href="css/numeric_keyboard.css"  />
+  <link type="text/css" rel="stylesheet" href="css/calclayout.css"  />		
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 	<script type="text/javascript" src="js/jquery-1.8.0.min.js"></script>
 	<script type="text/javascript" src="js/oscZenoedited.js" ></script>           
 	<script type="text/javascript" src="js/jquery-ui.min.js"></script>
+  <script type="text/javascript" src="js/numeric_keyboard.js"></script>	
+  <script type="text/javascript" src="js/keyboard.js"></script>	 
 	<meta http-equiv="X-UA-Compatible" content="IE=8" />
 	<script type="text/javascript">
 $(function() {
@@ -94,14 +99,16 @@ $(function() {
     <!-- Setup Section -->
     <div class="setup">
       <label for="numQuestions">Number of Questions per Section:</label>
-      <input type="number" id="numQuestions" min="1" max="50" value="10" />
+      <input type="number" id="numQuestions" readonly onclick="showNumericKeyboard(this)" min="1" max="50" value="10" />
 
       <label for="timer">Adjust Time Required for Section in (seconds):</label>
-      <input type="number" id="timer" min="15" max="10800" value="3600" />
+      <input type="number" id="timer" readonly onclick="showNumericKeyboard(this)" min="15" max="10800" value="3600" />
 
       <div class="section-search-wrapper">
         <label for="sectionSearchInput">Select Test Section:</label>
-        <input type="text" id="sectionSearchInput" placeholder="Type or search..." autocomplete="off" />
+        <div class="input-with-keyboard">
+          <input type="text" id="sectionSearchInput" class="keyboardInput" placeholder="Type or search..." autocomplete="on">
+        </div>
         <div id="sectionGroupedDropdown" class="section-grouped-dropdown"></div>
       </div>
 
@@ -276,7 +283,11 @@ $(function() {
       </div>
     </div>
       <div id="questionContainer"></div>
+
       <div id="optionsContainer"></div>
+
+      <input type="text" id="numericInput" readonly onclick="showNumericKeyboard(this)" />
+
       <button id="nextQuestion" style="display: none;">Next Question</button>
 
       <!-- Timer Display -->
@@ -317,28 +328,28 @@ $(function() {
   <script type="module" src="script.js"></script>
   <script src="js/chart.js"></script>
   <script>
-  function toggleCalculator() {
-    const wrapper = document.getElementById('loadCalc');
-    wrapper.style.display = wrapper.style.display === 'none' ? 'block' : 'none';
-  }
-  
-  let calculatorWindow = null;
-  function openCalculator() {
-    if (!calculatorWindow || calculatorWindow.closed) {
-      calculatorWindow = window.open('calculator.html', '_blank', 'width=480,height=350');
-    } else {
-      calculatorWindow.focus();
+    function toggleCalculator() {
+      const wrapper = document.getElementById('loadCalc');
+      wrapper.style.display = wrapper.style.display === 'none' ? 'block' : 'none';
     }
-  }
+    
+    let calculatorWindow = null;
+    function openCalculator() {
+      if (!calculatorWindow || calculatorWindow.closed) {
+        calculatorWindow = window.open('calculator.html', '_blank', 'width=480,height=350');
+      } else {
+        calculatorWindow.focus();
+      }
+    }
 
-  document.addEventListener('DOMContentLoaded', () => {
-    const closeBtn = document.getElementById('closeButton');
-    if (closeBtn) {
-      closeBtn.addEventListener('click', () => {
-        document.getElementById('loadCalc').style.display = 'none';
-      });
-    }
-  });
+    document.addEventListener('DOMContentLoaded', () => {
+      const closeBtn = document.getElementById('closeButton');
+      if (closeBtn) {
+        closeBtn.addEventListener('click', () => {
+          document.getElementById('loadCalc').style.display = 'none';
+        });
+      }
+    });
   </script>
   <script>
     function isMobileDevice() {
