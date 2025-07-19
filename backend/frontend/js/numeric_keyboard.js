@@ -23,15 +23,23 @@ function showNumericKeyboard(inputEl) {
   keyboardDiv.innerHTML = getNumericKeyboardHTML();
 
   // Insert after the input element
-  inputEl.parentNode.insertBefore(keyboardDiv, inputEl.nextSibling);
-
+  document.body.appendChild(keyboardDiv);
+  
+  // ⬇️ Position just under the input field
+  const inputRect = inputEl.getBoundingClientRect();
+  keyboardDiv.style.position = 'absolute';
+  keyboardDiv.style.top = `${inputRect.bottom + window.scrollY + 5}px`;
+  keyboardDiv.style.left = `${inputRect.left + window.scrollX}px`;
+  keyboardDiv.style.zIndex = 1000;
+  keyboardDiv.classList.add('show');
+  
   // Show the keyboard by adding 'show' class
   keyboardDiv.classList.add('show');
 
   bindNumericKeys();
 
   // Make draggable (jQuery UI required)
-  $("#numericKeyboardContainer").draggable({
+  $(keyboardDiv).draggable({
     containment: "body" // restrict drag area
   });
 }

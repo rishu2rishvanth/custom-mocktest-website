@@ -394,19 +394,17 @@ if (type === 'NAT') {
   const label = document.createElement('label');
   label.textContent = 'Enter your answer (NAT):';
   const input = document.createElement('input');
-  input.type = 'number';
+  input.type = 'text';  // Use text instead of number to allow selection
   input.id = 'natInput';
-  input.step = 'any';
   input.placeholder = 'e.g., 12.5';
   input.classList.add('nat-input');
-
-  input.addEventListener('input', () => {
-    nextQuestionButton.style.display = input.value ? 'block' : 'none';
-    hasAnswered = !!input.value;
-  });
+  input.setAttribute('readonly', true); // Prevent typing
+  input.onclick = function () {
+    showNumericKeyboard(this); // Your existing numeric keyboard function
+  };
 
   optionsContainer.appendChild(label);
-  optionsContainer.appendChild(input);
+  optionsContainer.appendChild(input);0
 } else {
   for (let i = 1; i <= 4; i++) {
     const text = formatTextWithSuperSubscript(current[`Answer ${i} Text`]);

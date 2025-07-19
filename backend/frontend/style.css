@@ -541,3 +541,12 @@ button:hover {
   display: block;
 }
 
+@media (max-width: 600px) {
+  .nat-input {
+    width: 100px;
+    padding: 6px;
+    font-size: 1em;
+    margin-top: 8px;
+    display: block;
+  }
+}
