@@ -302,6 +302,28 @@ document.getElementById('clearResponse').addEventListener('click', () => {
 
 // Next button (after answering)
 nextQuestionButton.addEventListener('click', () => {
+  const current = selectedQuestions[currentQuestionIndex];
+  const type = current['Question Type'] || 'MCQ';
+
+  if (type === 'MSQ') {
+    const selectedButtons = document.querySelectorAll('.answer-option.selected');
+    const selectedIndexes = Array.from(selectedButtons).map(btn => parseInt(btn.dataset.index));
+
+    const correctIndexes = (current['MSQ Answers'] || '').split(',').map(Number);
+    const isCorrect = selectedIndexes.sort().join(',') === correctIndexes.sort().join(',');
+
+    recordResponse(selectedIndexes.join(', '), isCorrect);
+  }
+
+  if (type === 'NAT') {
+    const input = document.getElementById('natInput');
+    const val = parseFloat(input.value);
+    const [low, high] = (current['NAT Answer Range'] || '').split('-').map(Number);
+    const isCorrect = val >= low && val <= high;
+
+    recordResponse(val.toString(), isCorrect);
+  }
+
   goToNextOrEnd();
 });
 
@@ -334,6 +356,17 @@ function showNextQuestion() {
 
   const qNum = currentQuestionIndex + 1;
   const questionText = document.createElement('div');
+  const questionType = current['Question Type'] || 'MCQ';
+
+  // Type tag
+  const typeTag = document.createElement('div');
+  typeTag.textContent = `[${questionType}]`;
+  typeTag.style.fontWeight = 'bold';
+  typeTag.style.fontSize = '15px';
+  typeTag.style.marginBottom = '8px';
+  typeTag.style.marginRight = '15px';
+  typeTag.style.textAlign = 'right';
+  questionContainer.appendChild(typeTag);
 
   if (current['Comprehension']) {
     const comp = document.createElement('div');
@@ -354,12 +387,34 @@ function showNextQuestion() {
   }
 
   // Render options
+ const type = current['Question Type'] || 'MCQ';
+optionsContainer.innerHTML = ''; // Clear previous
+
+if (type === 'NAT') {
+  const label = document.createElement('label');
+  label.textContent = 'Enter your answer (NAT):';
+  const input = document.createElement('input');
+  input.type = 'number';
+  input.id = 'natInput';
+  input.step = 'any';
+  input.placeholder = 'e.g., 12.5';
+  input.classList.add('nat-input');
+
+  input.addEventListener('input', () => {
+    nextQuestionButton.style.display = input.value ? 'block' : 'none';
+    hasAnswered = !!input.value;
+  });
+
+  optionsContainer.appendChild(label);
+  optionsContainer.appendChild(input);
+} else {
   for (let i = 1; i <= 4; i++) {
     const text = formatTextWithSuperSubscript(current[`Answer ${i} Text`]);
     const imgUrl = current[`Answer ${i} Image URL`];
 
     const btn = document.createElement('button');
     btn.classList.add('answer-option');
+    btn.dataset.index = i - 1;
 
     if (text) btn.innerHTML = text;
     if (imgUrl) {
@@ -369,9 +424,20 @@ function showNextQuestion() {
       btn.appendChild(img);
     }
 
-    btn.addEventListener('click', () => handleAnswer(i - 1, btn));
+    btn.addEventListener('click', () => {
+      if (type === 'MCQ') {
+        handleAnswer(i - 1, btn);
+      } else if (type === 'MSQ') {
+        btn.classList.toggle('selected');
+        const anySelected = document.querySelectorAll('.answer-option.selected').length > 0;
+        nextQuestionButton.style.display = anySelected ? 'block' : 'none';
+        hasAnswered = anySelected;
+      }
+    });
+
     optionsContainer.appendChild(btn);
   }
+}
 
   // --- Comment box AFTER options ---
   const commentWrapper = document.createElement('div');
@@ -416,9 +482,10 @@ if (typeof VKI_attach === 'function') {
 
 // Handle selected answer
 function handleAnswer(index, button) {
-  if (hasAnswered) return;
-
   const current = selectedQuestions[currentQuestionIndex];
+  const type = current['Question Type'] || 'MCQ';
+  if (hasAnswered || type !== 'MCQ') return;
+
   const isCorrect = index === current['Correct Answer Index'];
   const timeSpent = Math.round((Date.now() - questionStartTime) / 1000);
 

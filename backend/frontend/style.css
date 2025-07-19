@@ -532,3 +532,12 @@ button:hover {
     align-items: flex-start;
   }
 }
+
+.nat-input {
+  width: 200px;
+  padding: 6px;
+  font-size: 1em;
+  margin-top: 8px;
+  display: block;
+}
+
