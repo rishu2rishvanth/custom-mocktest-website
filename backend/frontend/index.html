@@ -92,17 +92,17 @@ $(function() {
 		}
 	</style>
 </head>
-<body class="unselectable" oncontextmenu="return false;" onselect="return false;" onmousewheel="return false;">
+<body class="unselectable" oncontextmenu="return false;" onselect="return false;" onmousewheel="return false;" onkeydown="return false;" onkeypress="return false;" onpaste="return false;">
   <div class="quiz-container">
     <h1>Mock Test</h1>
 
     <!-- Setup Section -->
     <div class="setup">
       <label for="numQuestions">Number of Questions per Section:</label>
-      <input type="number" id="numQuestions" readonly onclick="showNumericKeyboard(this)" min="1" max="50" value="10" />
+      <input type="text" id="numQuestions" class="numeric-input" min="1" max="50" value="10" />
 
       <label for="timer">Adjust Time Required for Section in (seconds):</label>
-      <input type="number" id="timer" readonly onclick="showNumericKeyboard(this)" min="15" max="10800" value="3600" />
+      <input type="text" id="timer" class="numeric-input" min="15" max="10800" value="3600" />
 
       <div class="section-search-wrapper">
         <label for="sectionSearchInput">Select Test Section:</label>
@@ -285,8 +285,6 @@ $(function() {
       <div id="questionContainer"></div>
 
       <div id="optionsContainer"></div>
-
-      <input type="text" id="numericInput" readonly onclick="showNumericKeyboard(this)" />
 
       <button id="nextQuestion" style="display: none;">Next Question</button>
 

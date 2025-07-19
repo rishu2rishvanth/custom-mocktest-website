@@ -29,6 +29,11 @@ function showNumericKeyboard(inputEl) {
   keyboardDiv.classList.add('show');
 
   bindNumericKeys();
+
+  // Make draggable (jQuery UI required)
+  $("#numericKeyboardContainer").draggable({
+    containment: "body" // restrict drag area
+  });
 }
 
 function getNumericKeyboardHTML() {
@@ -120,3 +125,10 @@ document.addEventListener('click', function(e) {
     keyboard.remove();
   }
 });
+
+document.addEventListener('focusin', function (e) {
+  if (e.target.classList.contains('numeric-input')) {
+    showNumericKeyboard(e.target);
+  }
+});
+

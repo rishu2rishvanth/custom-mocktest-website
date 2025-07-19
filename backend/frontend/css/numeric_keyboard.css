@@ -103,3 +103,12 @@
     width: 100%;  /* Make keyboard full width on small screens */
   }
 }
+
+#helptopDiv
+{
+	margin-bottom:5px;
+	padding: 10px;
+	background-color:#4286f3;
+	color:#ffffff;
+        cursor: move;
+}
