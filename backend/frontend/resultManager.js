@@ -337,6 +337,7 @@ export async function fetchAndRenderResults() {
             );
 
         container.innerHTML = `
+            <button onclick="window.location.reload()">Home</button><br>
             <input type="text" id="resultsSearch" placeholder="Search username, section, date..." style="margin-bottom: 10px; padding: 8px; width: 100%; font-size: 16px;" />
             <div class="responsive-table-wrapper">
                 <table id="resultsTable" style="border-collapse: collapse; width: 100%;">

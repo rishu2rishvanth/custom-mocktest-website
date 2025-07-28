@@ -318,10 +318,18 @@ nextQuestionButton.addEventListener('click', () => {
   if (type === 'NAT') {
     const input = document.getElementById('natInput');
     const val = parseFloat(input.value);
-    const [low, high] = (current['NAT Answer Range'] || '').split('-').map(Number);
-    const isCorrect = val >= low && val <= high;
 
-    recordResponse(val.toString(), isCorrect);
+    // Match two signed numbers in the range string
+    const matches = (current['NAT Answer Range'] || '').match(/(-?\d+(?:\.\d+)?)\s*-\s*(-?\d+(?:\.\d+)?)/);
+
+    if (matches) {
+      let low = parseFloat(matches[1]);
+      let high = parseFloat(matches[2]);
+      if (low > high) [low, high] = [high, low]; // Swap if needed
+
+      const isCorrect = val >= low && val <= high;
+      recordResponse(val.toString(), isCorrect);
+    }
   }
 
   goToNextOrEnd();
@@ -402,9 +410,25 @@ if (type === 'NAT') {
   input.onclick = function () {
     showNumericKeyboard(this); // Your existing numeric keyboard function
   };
+  input.dispatchEvent(new Event('input'));
 
   optionsContainer.appendChild(label);
-  optionsContainer.appendChild(input);0
+  optionsContainer.appendChild(input);
+  // After creating the input element
+  let previousValue = '';
+
+  const observer = setInterval(() => {
+    const currentValue = input.value.trim();
+    if (currentValue && currentValue !== previousValue) {
+      nextQuestionButton.style.display = 'block';
+      hasAnswered = true;
+      previousValue = currentValue;
+    }
+  }, 300);
+
+  // Clear on next question
+  nextQuestionButton.addEventListener('click', () => clearInterval(observer));
+  skipQuestionButton.addEventListener('click', () => clearInterval(observer));
 } else {
   for (let i = 1; i <= 4; i++) {
     const text = formatTextWithSuperSubscript(current[`Answer ${i} Text`]);
@@ -487,21 +511,11 @@ function handleAnswer(index, button) {
   const isCorrect = index === current['Correct Answer Index'];
   const timeSpent = Math.round((Date.now() - questionStartTime) / 1000);
 
-  // --- Undo previous score if any ---
-  const prev = userResponses[currentQuestionIndex];
-  if (prev) {
-    if (prev.correct === true) score--;
-    else if (prev.correct === false && prev.response !== 'Skipped') wrong--;
-  }
-  
-  if (isCorrect) score++;
-  else wrong++;
-
   const text = button.textContent?.trim() || '';
   const img = current[`Answer ${index + 1} Image URL`]
-    ? `http://10.10.182.8:5000${current[`Answer ${index + 1} Image URL`]}`
-    : '';
+    ? `http://10.10.182.8:5000${current[`Answer ${index + 1} Image URL`]}` : '';
 
+  // ✅ Just delegate score and response handling
   recordResponse(img || text || 'N/A', isCorrect, timeSpent);
 
   selectedButton = button;
@@ -515,18 +529,38 @@ function handleAnswer(index, button) {
 // Record user response
 function recordResponse(response, correct, timeSpent = null) {
   const current = selectedQuestions[currentQuestionIndex];
+  const questionType = current['Question Type'] || 'MCQ';
+
   const commentInput = document.getElementById('userComment');
   const userComment = commentInput ? commentInput.value.trim() : '';
+
+  // Undo previous scoring if already answered
+  const prev = userResponses[currentQuestionIndex];
+  if (prev) {
+    if (prev.correct === true) score--;
+    else if (prev.correct === false && prev.response !== 'Skipped') {
+      if (prev.questionType === 'MCQ') wrong--; // Remove MCQ penalty only
+    }
+  }
+
+  // Update score based on correctness and type
+  if (correct === true) {
+    score++;
+  } else if (questionType === 'MCQ') {
+    wrong++;
+  }
+
   userResponses[currentQuestionIndex] = {
     question: current['Question'] || '',
     questionImage: current['Question Image URL'] || '',
     comprehension: current['Comprehension'] || '',
     response,
     correct,
-    responseTime: timeSpent ?? Math.round((Date.now() - 
-    questionStartTime) / 1000),
-    comment: userComment
+    responseTime: timeSpent ?? Math.round((Date.now() - questionStartTime) / 1000),
+    comment: userComment,
+    questionType
   };
+
   hasAnswered = true;
 }
 
@@ -571,26 +605,44 @@ function submitResponses() {
     const u = userResponses[i] || {
       response: 'Skipped',
       correct: false,
-      responseTime: 'Skipped'
+      responseTime: 'Skipped',
+      comment: ''
     };
 
-    const options = [];
-    for (let j = 1; j <= 4; j++) {
-      options.push({
-        text: q[`Answer ${j} Text`] || '',
-        image: q[`Answer ${j} Image URL`] || ''
-      });
+    const type = q['Question Type'] || 'MCQ';
+    let correctAnswer = '';
+    let correctAnswerIndex = null;
+    let options = [];
+
+    // Build options only for MCQ/MSQ
+    if (type === 'MCQ' || type === 'MSQ') {
+      options = [];
+      for (let j = 1; j <= 4; j++) {
+        options.push({
+          text: q[`Answer ${j} Text`] || '',
+          image: q[`Answer ${j} Image URL`] || ''
+        });
+      }
     }
 
-    const correctIndex = q['Correct Answer Index'];
-    const correctAnswer = q[`Answer ${correctIndex + 1} Text`] || q[`Answer ${correctIndex + 1} Image URL`] || '';
+    // Determine correct answer
+    if (type === 'MCQ') {
+      const correctIdx = q['Correct Answer Index'];
+      correctAnswerIndex = correctIdx;
+      correctAnswer = q[`Answer ${correctIdx + 1} Text`] || q[`Answer ${correctIdx + 1} Image URL`] || '';
+    } else if (type === 'MSQ') {
+      correctAnswer = q['MSQ Answers'] || '';
+    } else if (type === 'NAT') {
+      correctAnswer = q['NAT Answer Range'] || '';
+    }
 
     return {
       question: q['Question'] || '',
       questionImage: q['Question Image URL'] || '',
       comprehension: q['Comprehension'] || '',
-      options,
-      correctAnswerIndex: correctIndex,
+      options: type === 'NAT' ? '' : options,
+      correctAnswerIndex,
+      type,
       correctAnswer,
       response: u.response,
       comment: u.comment || '',
@@ -598,11 +650,13 @@ function submitResponses() {
       responseTime: u.responseTime,
       timestamp: examStartTime,
       submitTime,
+      username,
       section,
       score
     };
   });
 
+  // Send responses
   fetch('http://10.10.182.8:5000/api/response', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -612,6 +666,7 @@ function submitResponses() {
     .then(data => alert(data.message))
     .catch(err => console.error('Error submitting responses:', err));
 
+  // Send score summary
   fetch('http://10.10.182.8:5000/api/score', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

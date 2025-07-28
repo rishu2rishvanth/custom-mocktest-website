@@ -240,6 +240,7 @@ button:hover {
 
 /* 📱 Mobile-friendly scrollable table */
 .responsive-table-wrapper {
+  margin-top: 10px;
   overflow-x: auto;
   width: 100%;
 }

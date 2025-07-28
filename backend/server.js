@@ -81,6 +81,7 @@ app.post('/api/response', (req, res) => {
         question: r.question,
         questionImage: r.questionImage || '',
         comprehension: r.comprehension || '',
+        type: r.type || 'MCQ', // ✅ <-- ADD THIS LINE
         response: r.response,
         comment: r.comment || '',
         correct: r.correct,
@@ -89,7 +90,7 @@ app.post('/api/response', (req, res) => {
         correctAnswer: r.correctAnswer || '',
         options: JSON.stringify(r.options || []), // Store options as JSON string
         submitTime: moment().format('YYYY-MM-DD HH:mm:ss')
-    }));
+        }));
 
     const updatedData = existingData.concat(newResponses);
     const updatedSheet = XLSX.utils.json_to_sheet(updatedData);
