@@ -286,6 +286,8 @@ $(function() {
       <div id="questionContainer"></div>
 
       <div id="optionsContainer"></div>
+      
+      <div id="commentContainer"></div>
 
       <button id="nextQuestion" style="display: none;">Next Question</button>
 
@@ -294,6 +296,12 @@ $(function() {
         <div id="timerDisplay">
           <b>All the Best! <span id="timeInMins"></span></b>
         </div>
+      </div>
+
+      <button id="toggleNavPanelBtn" class="toggle-nav-panel-btn quiz">☰ Questions</button>
+      <div id="questionNavPanel" class="question-nav-panel quiz" role="navigation" aria-label="Question Navigator">
+        <div class="nav-header">Choose a Question</div>
+        <div class="nav-content" id="questionNavContent"></div>
       </div>
 
       <!-- Calculator Button -->
@@ -361,6 +369,11 @@ $(function() {
       } else {
         toggleCalculator();
       }
+    });
+
+    document.getElementById('toggleNavPanelBtn').addEventListener('click', () => {
+      const nav = document.getElementById('questionNavPanel');
+      nav.classList.toggle('collapsed');
     });
   </script>
 

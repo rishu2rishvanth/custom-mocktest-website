@@ -124,7 +124,7 @@ function viewResponseDetails(data, username, timestamp) {
         questionHTML += `<div>${formatText(sanitize(r.question))}</div>`;
         }
         if (r.questionImage) {
-        questionHTML += `<div><img src="http://10.10.182.8:5000${r.questionImage}" alt="Question Image" style="max-width: 100%; margin-top: 8px;"></div>`;
+        questionHTML += `<div><img src="http://192.168.1.4:5000${r.questionImage}" alt="Question Image" style="max-width: 100%; margin-top: 8px;"></div>`;
         }
         if (!questionHTML) {
         questionHTML = 'N/A';
@@ -134,13 +134,13 @@ function viewResponseDetails(data, username, timestamp) {
         let correctAnswerHTML = '';
 
         if (r.response && /\.(png|jpe?g)$/i.test(r.response)) {
-            userAnswerHTML = `<img src="http://10.10.182.8:5000${r.response}" alt="Your Answer" style="max-height: 200px;">`;
+            userAnswerHTML = `<img src="http://192.168.1.4:5000${r.response}" alt="Your Answer" style="max-height: 200px;">`;
         } else {
             userAnswerHTML = sanitize(r.response);
         }
 
         if (r.correctAnswer && /\.(png|jpe?g)$/i.test(r.correctAnswer)) {
-            correctAnswerHTML = `<img src="http://10.10.182.8:5000${r.correctAnswer}" alt="Correct Answer" style="max-height: 200px;">`;
+            correctAnswerHTML = `<img src="http://192.168.1.4:5000${r.correctAnswer}" alt="Correct Answer" style="max-height: 200px;">`;
         } else {
             correctAnswerHTML = sanitize(r.correctAnswer);
         }
@@ -160,17 +160,17 @@ function viewResponseDetails(data, username, timestamp) {
 
                 const text = formatText(sanitize(rawText));
                 const image = rawImage
-                    ? `<br><img src="http://10.10.182.8:5000${rawImage}" alt="Option ${i + 1}" style="max-height: 200px;">`
+                    ? `<br><img src="http://192.168.1.4:5000${rawImage}" alt="Option ${i + 1}" style="max-height: 200px;">`
                     : '';
 
                 const isCorrect = (
                 r.correctAnswer === rawText ||
-                r.correctAnswer === `http://10.10.182.8:5000${rawImage}`
+                r.correctAnswer === `http://192.168.1.4:5000${rawImage}`
                 );
 
                 const isUserResponse = (
                 r.response === rawText ||
-                r.response === `http://10.10.182.8:5000${rawImage}`
+                r.response === `http://192.168.1.4:5000${rawImage}`
                 );
 
                 let style = '';

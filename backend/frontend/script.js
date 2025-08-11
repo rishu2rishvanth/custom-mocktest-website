@@ -10,6 +10,7 @@ const numQuestionsInput = document.getElementById('numQuestions');
 const timerInput = document.getElementById('timer');
 const questionContainer = document.getElementById('questionContainer');
 const optionsContainer = document.getElementById('optionsContainer');
+const commentContainer = document.getElementById('commentContainer');
 const timerDisplay = document.getElementById('timerDisplay');
 const scoreDisplay = document.getElementById('score');
 const quizSection = document.querySelector('.quiz');
@@ -43,7 +44,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Load section names and their questions
 function populateSections() {
-  fetch('http://10.10.182.8:5000/api/questions/sections')
+  fetch('http://192.168.1.4:5000/api/questions/sections')
     .then(res => res.json())
     .then(data => {
       if (!Array.isArray(data)) return;
@@ -254,8 +255,49 @@ function startQuiz(section) {
     setupSection.style.display = 'none';
     quizSection.style.display = 'block';
     showNextQuestion();
+    renderQuestionNavigator();
+    updateNavButtonStyle(currentQuestionIndex);
     startExamTimer();
   });
+}
+
+function renderQuestionNavigator() {
+  const container = document.getElementById('questionNavContent');
+  container.innerHTML = '';
+
+  selectedQuestions.forEach((_, i) => {
+    const btn = document.createElement('button');
+    btn.textContent = i + 1;
+    btn.className = 'nav-btn';
+    btn.id = `nav-q-${i}`;
+
+    updateNavButtonStyle(i);
+
+    btn.onclick = () => {
+      currentQuestionIndex = i;
+      showNextQuestion();
+    };
+
+    container.appendChild(btn);
+  });
+}
+
+function updateNavButtonStyle(index) {
+  const btn = document.getElementById(`nav-q-${index}`);
+  if (!btn) return;
+
+  btn.className = 'nav-btn'; // reset
+  if (index === currentQuestionIndex) btn.classList.add('active');
+
+  const user = userResponses[index];
+  if (!user) {
+    btn.classList.add('visited');
+  } else if (user.response === 'Skipped') {
+    btn.classList.add('skipped');
+  } else if (user.correct !== undefined) {
+    btn.classList.add('answered');
+  }
+  btn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
 }
 
 // Skip current question
@@ -340,6 +382,7 @@ function goToNextOrEnd() {
   if (currentQuestionIndex < selectedQuestions.length - 1) {
     currentQuestionIndex++;
     showNextQuestion();
+    updateNavButtonStyle(currentQuestionIndex);
   } else {
     endQuiz();
   }
@@ -361,6 +404,7 @@ function showNextQuestion() {
 
   questionContainer.innerHTML = '';
   optionsContainer.innerHTML = '';
+  commentContainer.innerHTML = '';
 
   const qNum = currentQuestionIndex + 1;
   const questionText = document.createElement('div');
@@ -389,7 +433,7 @@ function showNextQuestion() {
 
   if (current['Question Image URL']) {
     const img = document.createElement('img');
-    img.src = `http://10.10.182.8:5000${current['Question Image URL']}`;
+    img.src = `http://192.168.1.4:5000${current['Question Image URL']}`;
     img.alt = 'Question Image';
     questionContainer.appendChild(img);
   }
@@ -397,6 +441,7 @@ function showNextQuestion() {
   // Render options
  const type = current['Question Type'] || 'MCQ';
 optionsContainer.innerHTML = ''; // Clear previous
+commentContainer.innerHTML = '';
 
 if (type === 'NAT') {
   const label = document.createElement('label');
@@ -441,7 +486,7 @@ if (type === 'NAT') {
     if (text) btn.innerHTML = text;
     if (imgUrl) {
       const img = document.createElement('img');
-      img.src = `http://10.10.182.8:5000${imgUrl}`;
+      img.src = `http://192.168.1.4:5000${imgUrl}`;
       img.alt = text || `Option ${i}`;
       btn.appendChild(img);
     }
@@ -478,16 +523,24 @@ if (type === 'NAT') {
   commentBox.className = 'keyboardInput';
   commentBox.rows = 2;
   commentBox.placeholder = 'Write your approach, doubt, or notes...';
+  if (window.matchMedia("(max-width: 768px)").matches) {
+    commentBox.style.cssText = `
+      min-width: 70%;
+      max-width: 70%;
+      box-sizing: border-box;
+    `;
+  }else {
   commentBox.style.cssText = `
-    width: 280px;
-    max-width: 100%;
+    min-width: 90%;
+    max-width: 90%;
     box-sizing: border-box;
   `;
+  }
 
   // Append elements
   commentWrapper.appendChild(commentLabel);
   commentWrapper.appendChild(commentBox);
-  optionsContainer.appendChild(commentWrapper);
+  commentContainer.appendChild(commentWrapper);
 
 // 🔄 Attach virtual keyboard (if available)
 if (typeof VKI_attach === 'function') {
@@ -498,6 +551,7 @@ if (typeof VKI_attach === 'function') {
   selectedButton = null;
   hasAnswered = false;
   questionStartTime = Date.now();
+  updateNavButtonStyle(currentQuestionIndex);
   nextQuestionButton.style.display = 'none';
   skipQuestionButton.style.display = 'block';
 }
@@ -513,7 +567,7 @@ function handleAnswer(index, button) {
 
   const text = button.textContent?.trim() || '';
   const img = current[`Answer ${index + 1} Image URL`]
-    ? `http://10.10.182.8:5000${current[`Answer ${index + 1} Image URL`]}` : '';
+    ? `http://192.168.1.4:5000${current[`Answer ${index + 1} Image URL`]}` : '';
 
   // ✅ Just delegate score and response handling
   recordResponse(img || text || 'N/A', isCorrect, timeSpent);
@@ -562,6 +616,7 @@ function recordResponse(response, correct, timeSpent = null) {
   };
 
   hasAnswered = true;
+  updateNavButtonStyle(currentQuestionIndex);
 }
 
 // Start exam timer
@@ -657,7 +712,7 @@ function submitResponses() {
   });
 
   // Send responses
-  fetch('http://10.10.182.8:5000/api/response', {
+  fetch('http://192.168.1.4:5000/api/response', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ username, responses, score, section, examStartTime, submitTime })
@@ -667,7 +722,7 @@ function submitResponses() {
     .catch(err => console.error('Error submitting responses:', err));
 
   // Send score summary
-  fetch('http://10.10.182.8:5000/api/score', {
+  fetch('http://192.168.1.4:5000/api/score', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ username, score, wrong })

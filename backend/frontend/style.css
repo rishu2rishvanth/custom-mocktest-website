@@ -417,7 +417,7 @@ button:hover {
 
 .question-navigator {
   position: fixed;
-  top: 80px;
+  top: 120px;
   right: 20px;
   width: 200px;
   max-height: 60vh;
@@ -468,11 +468,10 @@ button:hover {
   color: purple;
 }
 
-
 /* Toggle button */
 .toggle-navigator-btn {
   position: fixed;
-  top: 40px;
+  top: 80px;
   max-width: fit-content;
   right: 20px;
   z-index: 1001;
@@ -493,13 +492,49 @@ button:hover {
 /* On mobile, make toggle fixed at top-right */
 @media (max-width: 768px) {
   .toggle-navigator-btn {
-    top: 20px;
+    top: 60px;
     right: 10px;
     font-size: 16px;
   }
 
   .question-navigator {
+    top: 120px;
+    right: 10px;
+    max-height: 60vh;
+  }
+}
+
+/* Toggle button */
+.toggle-nav-panel-btn {
+  position: fixed;
+  top: 80px;
+  max-width: fit-content;
+  right: 20px;
+  z-index: 1001;
+  padding: 8px 12px;
+  font-size: 14px;
+  background-color: #004085;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+/* Collapsed navigator (hidden by default) */
+.question-nav-panel.collapsed {
+  display: none;
+}
+
+/* On mobile, make toggle fixed at top-right */
+@media (max-width: 768px) {
+  .toggle-nav-panel-btn {
     top: 60px;
+    right: 10px;
+    font-size: 16px;
+  }
+
+  .question-navigator {
+    top: 120px;
     right: 10px;
     max-height: 60vh;
   }
@@ -550,4 +585,82 @@ button:hover {
     margin-top: 8px;
     display: block;
   }
+}
+
+.quiz .question-nav-panel {
+  position: fixed;
+  right: 20px;
+  top: 140px;
+  width: 150px;
+  background: #f5f5f5;
+  border: 1px solid #ccc;
+  font-family: Arial, sans-serif;
+  font-size: 13px;
+  padding: 10px;
+  z-index: 99;
+  border-radius: 8px;
+  max-height: 400px; /* or something suitable */
+  overflow-y: auto;
+}
+
+/* Collapsed navigator (hidden by default) */
+.quiz .question-nav-panel.collapsed {
+  display: none;
+}
+
+.quiz .question-nav-panel .nav-header {
+  font-weight: bold;
+  margin-bottom: 10px;
+  text-align: center;
+  color: #104a77;
+}
+
+.quiz .nav-content {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  justify-content: center;
+  max-height: 300px;        /* or whatever height fits your screen */
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+
+.quiz .nav-btn {
+  width: 30px;
+  height: 30px;
+  border: 1px solid #999;
+  background-color: #fff;
+  cursor: pointer;
+  border-radius: 4px;
+  font-weight: bold;
+  color: #333;
+}
+
+.quiz .nav-btn:hover {
+  background-color: rgb(111, 82, 150);
+}
+
+.quiz .nav-btn.visited {
+  background-color: #d0eaff;
+}
+
+.quiz .nav-btn.answered {
+  background-color: #b6fcb6;
+}
+
+.quiz .nav-btn.skipped {
+  background-color: #ffd6d6;
+}
+
+.quiz .nav-btn.active {
+  outline: 2px solid #0000ff;
+}
+
+.quiz .nav-content::-webkit-scrollbar {
+  width: 6px;
+}
+.quiz .nav-content::-webkit-scrollbar-thumb {
+  background-color: #aaa;
+  border-radius: 4px;
 }
