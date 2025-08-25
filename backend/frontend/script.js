@@ -4,6 +4,7 @@ import { initResultsButton } from './resultManager.js';
 const startQuizButton = document.getElementById('startQuiz');
 const nextQuestionButton = document.getElementById('nextQuestion');
 const skipQuestionButton = document.getElementById('skipQuestion');
+const MarkQuestionButton = document.getElementById('MarkQuestion');
 const restartQuizButton = document.getElementById('restartQuiz');
 const submitQuizButton = document.getElementById('submitQuiz');
 const numQuestionsInput = document.getElementById('numQuestions');
@@ -44,7 +45,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Load section names and their questions
 function populateSections() {
-  fetch('http://192.168.1.4:5000/api/questions/sections')
+  fetch('http://192.168.1.10:5000/api/questions/sections')
     .then(res => res.json())
     .then(data => {
       if (!Array.isArray(data)) return;
@@ -282,21 +283,26 @@ function renderQuestionNavigator() {
   });
 }
 
-function updateNavButtonStyle(index) {
+function updateNavButtonStyle(index, state) {
   const btn = document.getElementById(`nav-q-${index}`);
   if (!btn) return;
 
   btn.className = 'nav-btn'; // reset
   if (index === currentQuestionIndex) btn.classList.add('active');
 
-  const user = userResponses[index];
-  if (!user) {
-    btn.classList.add('visited');
-  } else if (user.response === 'Skipped') {
-    btn.classList.add('skipped');
-  } else if (user.correct !== undefined) {
-    btn.classList.add('answered');
+  if (state === 'marked') {
+    btn.classList.add('marked');
+  } else {
+    const user = userResponses[index];
+    if (!user) {
+      btn.classList.add('visited');
+    } else if (user.response === 'Skipped') {
+      btn.classList.add('skipped');
+    } else if (user.correct !== undefined) {
+      btn.classList.add('answered');
+    }
   }
+
   btn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
 }
 
@@ -304,6 +310,12 @@ function updateNavButtonStyle(index) {
 skipQuestionButton.addEventListener('click', () => {
   if (hasAnswered) return;
   recordResponse('Skipped', false);
+  goToNextOrEnd();
+});
+
+// Skip current question
+MarkQuestionButton.addEventListener('click', () => {
+  updateNavButtonStyle(currentQuestionIndex, 'marked');
   goToNextOrEnd();
 });
 
@@ -339,6 +351,7 @@ document.getElementById('clearResponse').addEventListener('click', () => {
   // Reset state
   selectedButton = null;
   hasAnswered = false;
+  updateNavButtonStyle(currentQuestionIndex);
   nextQuestionButton.style.display = 'none';
 });
 
@@ -381,11 +394,12 @@ nextQuestionButton.addEventListener('click', () => {
 function goToNextOrEnd() {
   if (currentQuestionIndex < selectedQuestions.length - 1) {
     currentQuestionIndex++;
-    showNextQuestion();
-    updateNavButtonStyle(currentQuestionIndex);
   } else {
-    endQuiz();
+    // loop back to first question
+    currentQuestionIndex = 0;
   }
+  showNextQuestion();
+  updateNavButtonStyle(currentQuestionIndex);
 }
 
 // Helper: Fisher-Yates shuffle
@@ -408,11 +422,12 @@ function showNextQuestion() {
 
   const qNum = currentQuestionIndex + 1;
   const questionText = document.createElement('div');
+  const weightage = current['Marks'] || 1; 
   const questionType = current['Question Type'] || 'MCQ';
 
   // Type tag
   const typeTag = document.createElement('div');
-  typeTag.textContent = `[${questionType}]`;
+  typeTag.textContent = `[${questionType} | ${weightage} Mark(s)]`;
   typeTag.style.fontWeight = 'bold';
   typeTag.style.fontSize = '15px';
   typeTag.style.marginBottom = '8px';
@@ -433,7 +448,7 @@ function showNextQuestion() {
 
   if (current['Question Image URL']) {
     const img = document.createElement('img');
-    img.src = `http://192.168.1.4:5000${current['Question Image URL']}`;
+    img.src = `http://192.168.1.10:5000${current['Question Image URL']}`;
     img.alt = 'Question Image';
     questionContainer.appendChild(img);
   }
@@ -486,7 +501,7 @@ if (type === 'NAT') {
     if (text) btn.innerHTML = text;
     if (imgUrl) {
       const img = document.createElement('img');
-      img.src = `http://192.168.1.4:5000${imgUrl}`;
+      img.src = `http://192.168.1.10:5000${imgUrl}`;
       img.alt = text || `Option ${i}`;
       btn.appendChild(img);
     }
@@ -567,7 +582,7 @@ function handleAnswer(index, button) {
 
   const text = button.textContent?.trim() || '';
   const img = current[`Answer ${index + 1} Image URL`]
-    ? `http://192.168.1.4:5000${current[`Answer ${index + 1} Image URL`]}` : '';
+    ? `http://192.168.1.10:5000${current[`Answer ${index + 1} Image URL`]}` : '';
 
   // ✅ Just delegate score and response handling
   recordResponse(img || text || 'N/A', isCorrect, timeSpent);
@@ -591,16 +606,17 @@ function recordResponse(response, correct, timeSpent = null) {
   // Undo previous scoring if already answered
   const prev = userResponses[currentQuestionIndex];
   if (prev) {
-    if (prev.correct === true) score--;
-    else if (prev.correct === false && prev.response !== 'Skipped') {
-      if (prev.questionType === 'MCQ') wrong--; // Remove MCQ penalty only
+    if (prev.correct === true) {
+      score--;
+    } else if (prev.correct === false && prev.response !== 'Skipped') {
+      wrong--;
     }
   }
 
-  // Update score based on correctness and type
+  // Update score based on correctness
   if (correct === true) {
     score++;
-  } else if (questionType === 'MCQ') {
+  } else if (response !== 'Skipped') {
     wrong++;
   }
 
@@ -608,6 +624,7 @@ function recordResponse(response, correct, timeSpent = null) {
     question: current['Question'] || '',
     questionImage: current['Question Image URL'] || '',
     comprehension: current['Comprehension'] || '',
+    weightage: current['Marks'] || '1',
     response,
     correct,
     responseTime: timeSpent ?? Math.round((Date.now() - questionStartTime) / 1000),
@@ -702,6 +719,7 @@ function submitResponses() {
       response: u.response,
       comment: u.comment || '',
       correct: u.correct,
+      weightage: q['Marks'] || '1',
       responseTime: u.responseTime,
       timestamp: examStartTime,
       submitTime,
@@ -712,7 +730,7 @@ function submitResponses() {
   });
 
   // Send responses
-  fetch('http://192.168.1.4:5000/api/response', {
+  fetch('http://192.168.1.10:5000/api/response', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ username, responses, score, section, examStartTime, submitTime })
@@ -722,7 +740,7 @@ function submitResponses() {
     .catch(err => console.error('Error submitting responses:', err));
 
   // Send score summary
-  fetch('http://192.168.1.4:5000/api/score', {
+  fetch('http://192.168.1.10:5000/api/score', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ username, score, wrong })

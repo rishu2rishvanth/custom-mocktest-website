@@ -29,7 +29,13 @@ function showNumericKeyboard(inputEl) {
   const inputRect = inputEl.getBoundingClientRect();
   keyboardDiv.style.position = 'absolute';
   keyboardDiv.style.top = `${inputRect.bottom + window.scrollY + 5}px`;
-  keyboardDiv.style.left = `${inputRect.left + window.scrollX}px`;
+  if (window.matchMedia("(max-width: 768px)").matches) {
+    // On small screens, apply responsive width
+    keyboardDiv.style.left = `${inputRect.left + window.scrollX}px`;
+  } else {
+    // On large screens, fix it to 900px from the left
+    keyboardDiv.style.left = '900px';
+  }
   keyboardDiv.style.zIndex = 1000;
   keyboardDiv.classList.add('show');
   

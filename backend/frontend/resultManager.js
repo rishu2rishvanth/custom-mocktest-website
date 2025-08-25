@@ -114,17 +114,20 @@ function viewResponseDetails(data, username, timestamp) {
         html += `<p>Section: <b>${sanitize(sectionName)}</b>  |   Attempted at: <b>${sanitize(timestamp)}</b>  |   Scored: <b>${sanitize(CurrentScore)}</b></p>`;
     html += `
     <div style="margin-top: 15px; font-size: 15px; line-height: 1.6;">
-        <p><b>🧮Total Questions:</b> ${total} | <b>📌Attempted:</b> ${attempted} | <b>🟣Skipped:</b> <span style="color: purple;">${skipped}</span> | <b>⏱️Total Time Taken:</b> ${formatDuration(totalTime)} (mm:ss) <br> <b>🎯Correct:</b> <span style="color: green;">${correct}</span> | <b>❌Wrong:</b> <span style="color: red;">${wrong}</span> | <b>🔻Penalized (0.33 per Q):</b> <span style="color: darkorange;">${penalizedScore}</span></p>
+        <p><b>🧮Total Questions:</b> ${total} | <b>📌Attempted:</b> ${attempted} | <b>🟣Skipped:</b> <span style="color: purple;">${skipped}</span> <br> <b>🎯Correct:</b> <span style="color: green;">${correct}</span> | <b>❌Wrong:</b> <span style="color: red;">${wrong}</span> | <b>🔻Penalized (0.33 per Q):</b> <span style="color: darkorange;">${penalizedScore}</span></p>
     </div>`;
     html += `<button onclick="window.location.reload()">Home</button>`;
 
     responses.forEach((r, index) => {
         let questionHTML = '';
+        if(r.type || r.weightage) {
+        questionHTML += `<div style="margin-top: 15px; font-size: 15px; line-height: 1.6; text-align: right">${sanitize(r.type)} | ${sanitize(r.weightage)} Mark(s)</div>`;
+        }
         if (r.question) {
         questionHTML += `<div>${formatText(sanitize(r.question))}</div>`;
         }
         if (r.questionImage) {
-        questionHTML += `<div><img src="http://192.168.1.4:5000${r.questionImage}" alt="Question Image" style="max-width: 100%; margin-top: 8px;"></div>`;
+        questionHTML += `<div><img src="http://192.168.1.10:5000${r.questionImage}" alt="Question Image" style="max-width: 100%; margin-top: 8px;"></div>`;
         }
         if (!questionHTML) {
         questionHTML = 'N/A';
@@ -134,13 +137,13 @@ function viewResponseDetails(data, username, timestamp) {
         let correctAnswerHTML = '';
 
         if (r.response && /\.(png|jpe?g)$/i.test(r.response)) {
-            userAnswerHTML = `<img src="http://192.168.1.4:5000${r.response}" alt="Your Answer" style="max-height: 200px;">`;
+            userAnswerHTML = `<img src="${r.response}" alt="Your Answer" style="max-height: 200px;">`;
         } else {
             userAnswerHTML = sanitize(r.response);
         }
 
         if (r.correctAnswer && /\.(png|jpe?g)$/i.test(r.correctAnswer)) {
-            correctAnswerHTML = `<img src="http://192.168.1.4:5000${r.correctAnswer}" alt="Correct Answer" style="max-height: 200px;">`;
+            correctAnswerHTML = `<img src="http://192.168.1.10:5000${r.correctAnswer}" alt="Correct Answer" style="max-height: 200px;">`;
         } else {
             correctAnswerHTML = sanitize(r.correctAnswer);
         }
@@ -160,17 +163,17 @@ function viewResponseDetails(data, username, timestamp) {
 
                 const text = formatText(sanitize(rawText));
                 const image = rawImage
-                    ? `<br><img src="http://192.168.1.4:5000${rawImage}" alt="Option ${i + 1}" style="max-height: 200px;">`
+                    ? `<br><img src="http://192.168.1.10:5000${rawImage}" alt="Option ${i + 1}" style="max-height: 200px;">`
                     : '';
 
                 const isCorrect = (
                 r.correctAnswer === rawText ||
-                r.correctAnswer === `http://192.168.1.4:5000${rawImage}`
+                r.correctAnswer === `http://192.168.1.10:5000${rawImage}`
                 );
 
                 const isUserResponse = (
                 r.response === rawText ||
-                r.response === `http://192.168.1.4:5000${rawImage}`
+                r.response === `http://192.168.1.10:5000${rawImage}`
                 );
 
                 let style = '';
@@ -248,16 +251,22 @@ function viewResponseDetails(data, username, timestamp) {
     .filter(time => !isNaN(time));
 
     // Create histogram data
-    const binSize = 10; // seconds per bin
+    const binSize = 10; // seconds
     const maxTime = Math.max(...timeBins, 60);
-    const binCount = Math.ceil(maxTime / binSize);
-    const bins = Array(binCount).fill(0);
-    const questionNumbersPerBin = Array(binCount).fill(null).map(() => []);
+    const binCount = Math.ceil(maxTime / binSize) + 1; // ✅ +1 for upper bound
+
+    const bins = Array.from({ length: binCount }, () => 0);
+    const questionNumbersPerBin = Array.from({ length: binCount }, () => []);
 
     timeBins.forEach((time, i) => {
-    const binIndex = Math.floor(time / binSize);
-    bins[binIndex]++;
-    questionNumbersPerBin[binIndex].push(i + 1); // Q1, Q2...
+        const binIndex = Math.floor(time / binSize);
+        if (binIndex >= bins.length || binIndex < 0) {
+            console.warn(`Invalid bin index ${binIndex} for time:`, time);
+            return;
+        }
+
+        bins[binIndex]++;
+        questionNumbersPerBin[binIndex].push(i + 1);
     });
 
     const labels = bins.map((_, i) => `${i * binSize}-${(i + 1) * binSize}s`);

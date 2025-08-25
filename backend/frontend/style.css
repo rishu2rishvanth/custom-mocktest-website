@@ -3,18 +3,28 @@ body {
   font-family: Arial, sans-serif;
   background-color: #f4f4f4;
   color: #333;
-  display: flex;
-  justify-content: center;
-  margin: 25px;
+  margin: 0;
+  padding: 25px;
 }
 
+/* Main quiz box */
 .quiz-container {
   background-color: #fff;
   padding: 30px;
   border-radius: 10px;
   width: 100%;
   max-width: 750px;
+  margin-left: 120px; /* ✅ Positions it 200px from the left */
+  margin-top: 25px;
+  margin-bottom: 25px;
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+}
+
+@media (max-width: 768px) {
+  .quiz-container {
+    margin-left: auto;
+    margin-right: auto;
+  }
 }
 
 /* ====== Headings ====== */
@@ -99,6 +109,23 @@ button:hover {
 
 #skipQuestion:hover {
   background-color: #d32f2f;
+}
+
+.mark-button {
+  position: fixed;
+  bottom: 10px;
+  left: 150px;
+  z-index: 1000;
+}
+
+#MarkQuestion {
+  width: auto;
+  padding: 5px 15px;
+  background-color: rgb(255, 0, 217);
+}
+
+#MarkQuestion:hover {
+  background-color: #501758;
 }
 
 /* ====== Clear Button ====== */
@@ -543,7 +570,8 @@ button:hover {
 #loadCalc {
   position: absolute;
   overflow: hidden;
-  z-index: 1000;
+  left: 725px;
+  z-index: 100;
 }
 
 * {
@@ -643,6 +671,10 @@ button:hover {
 
 .quiz .nav-btn.visited {
   background-color: #d0eaff;
+}
+
+.quiz .nav-btn.marked {
+  background-color: rgb(255, 0, 217);
 }
 
 .quiz .nav-btn.answered {

@@ -85,6 +85,7 @@ app.post('/api/response', (req, res) => {
         response: r.response,
         comment: r.comment || '',
         correct: r.correct,
+        weightage: r.weightage,
         score,
         responseTime: r.responseTime ?? '',
         correctAnswer: r.correctAnswer || '',
