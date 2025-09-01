@@ -118,13 +118,13 @@ button:hover {
   z-index: 1000;
 }
 
-#MarkQuestion {
+#markQuestion {
   width: auto;
   padding: 5px 15px;
   background-color: rgb(255, 0, 217);
 }
 
-#MarkQuestion:hover {
+#markQuestion:hover {
   background-color: #501758;
 }
 
@@ -493,6 +493,10 @@ button:hover {
 .nav-skipped {
   background-color: #e2d5f7;
   color: purple;
+}
+
+.nav-btn.active {
+  outline: 2px solid #0000ff;
 }
 
 /* Toggle button */

@@ -4,7 +4,7 @@ import { initResultsButton } from './resultManager.js';
 const startQuizButton = document.getElementById('startQuiz');
 const nextQuestionButton = document.getElementById('nextQuestion');
 const skipQuestionButton = document.getElementById('skipQuestion');
-const MarkQuestionButton = document.getElementById('MarkQuestion');
+const markQuestionButton = document.getElementById('markQuestion');
 const restartQuizButton = document.getElementById('restartQuiz');
 const submitQuizButton = document.getElementById('submitQuiz');
 const numQuestionsInput = document.getElementById('numQuestions');
@@ -45,7 +45,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Load section names and their questions
 function populateSections() {
-  fetch('http://192.168.1.10:5000/api/questions/sections')
+  fetch('http://10.168.88.170:5000/api/questions/sections')
     .then(res => res.json())
     .then(data => {
       if (!Array.isArray(data)) return;
@@ -284,11 +284,17 @@ function renderQuestionNavigator() {
 }
 
 function updateNavButtonStyle(index, state) {
+  // Remove active class from the previously active button
+  const prevActiveBtn = document.querySelector('.nav-btn.active');
+  if (prevActiveBtn && prevActiveBtn.id !== `nav-q-${index}`) {
+    prevActiveBtn.classList.remove('active');
+  }
+
   const btn = document.getElementById(`nav-q-${index}`);
   if (!btn) return;
 
-  btn.className = 'nav-btn'; // reset
-  if (index === currentQuestionIndex) btn.classList.add('active');
+  btn.className = 'nav-btn'; // reset classes (removes active if any)
+  btn.classList.add('active'); // add active to current
 
   if (state === 'marked') {
     btn.classList.add('marked');
@@ -303,7 +309,7 @@ function updateNavButtonStyle(index, state) {
     }
   }
 
-  btn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+  btn.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
 }
 
 // Skip current question
@@ -314,7 +320,7 @@ skipQuestionButton.addEventListener('click', () => {
 });
 
 // Skip current question
-MarkQuestionButton.addEventListener('click', () => {
+markQuestionButton.addEventListener('click', () => {
   updateNavButtonStyle(currentQuestionIndex, 'marked');
   goToNextOrEnd();
 });
@@ -448,7 +454,7 @@ function showNextQuestion() {
 
   if (current['Question Image URL']) {
     const img = document.createElement('img');
-    img.src = `http://192.168.1.10:5000${current['Question Image URL']}`;
+    img.src = `http://10.168.88.170:5000${current['Question Image URL']}`;
     img.alt = 'Question Image';
     questionContainer.appendChild(img);
   }
@@ -501,7 +507,7 @@ if (type === 'NAT') {
     if (text) btn.innerHTML = text;
     if (imgUrl) {
       const img = document.createElement('img');
-      img.src = `http://192.168.1.10:5000${imgUrl}`;
+      img.src = `http://10.168.88.170:5000${imgUrl}`;
       img.alt = text || `Option ${i}`;
       btn.appendChild(img);
     }
@@ -581,8 +587,7 @@ function handleAnswer(index, button) {
   const timeSpent = Math.round((Date.now() - questionStartTime) / 1000);
 
   const text = button.textContent?.trim() || '';
-  const img = current[`Answer ${index + 1} Image URL`]
-    ? `http://192.168.1.10:5000${current[`Answer ${index + 1} Image URL`]}` : '';
+  const img = current[`Answer ${index + 1} Image URL`] || '';
 
   // ✅ Just delegate score and response handling
   recordResponse(img || text || 'N/A', isCorrect, timeSpent);
@@ -730,7 +735,7 @@ function submitResponses() {
   });
 
   // Send responses
-  fetch('http://192.168.1.10:5000/api/response', {
+  fetch('http://10.168.88.170:5000/api/response', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ username, responses, score, section, examStartTime, submitTime })
@@ -740,7 +745,7 @@ function submitResponses() {
     .catch(err => console.error('Error submitting responses:', err));
 
   // Send score summary
-  fetch('http://192.168.1.10:5000/api/score', {
+  fetch('http://10.168.88.170:5000/api/score', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ username, score, wrong })
