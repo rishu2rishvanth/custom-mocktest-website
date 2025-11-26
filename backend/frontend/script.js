@@ -45,7 +45,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Load section names and their questions
 function populateSections() {
-  fetch('http://10.168.88.170:5000/api/questions/sections')
+  fetch('http://192.168.1.2:5000/api/questions/sections')
     .then(res => res.json())
     .then(data => {
       if (!Array.isArray(data)) return;
@@ -454,7 +454,7 @@ function showNextQuestion() {
 
   if (current['Question Image URL']) {
     const img = document.createElement('img');
-    img.src = `http://10.168.88.170:5000${current['Question Image URL']}`;
+    img.src = `http://192.168.1.2:5000${current['Question Image URL']}`;
     img.alt = 'Question Image';
     questionContainer.appendChild(img);
   }
@@ -507,7 +507,7 @@ if (type === 'NAT') {
     if (text) btn.innerHTML = text;
     if (imgUrl) {
       const img = document.createElement('img');
-      img.src = `http://10.168.88.170:5000${imgUrl}`;
+      img.src = `http://192.168.1.2:5000${imgUrl}`;
       img.alt = text || `Option ${i}`;
       btn.appendChild(img);
     }
@@ -735,7 +735,7 @@ function submitResponses() {
   });
 
   // Send responses
-  fetch('http://10.168.88.170:5000/api/response', {
+  fetch('http://192.168.1.2:5000/api/response', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ username, responses, score, section, examStartTime, submitTime })
@@ -745,7 +745,7 @@ function submitResponses() {
     .catch(err => console.error('Error submitting responses:', err));
 
   // Send score summary
-  fetch('http://10.168.88.170:5000/api/score', {
+  fetch('http://192.168.1.2:5000/api/score', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ username, score, wrong })
