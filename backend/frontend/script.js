@@ -571,6 +571,91 @@ if (typeof VKI_attach === 'function') {
   if (selectedButton) selectedButton.classList.remove('selected');
   selectedButton = null;
   hasAnswered = false;
+
+// ---------------------- Restore previously recorded response (robust) ----------------------
+(function restorePrevious() {
+  const saved = userResponses[currentQuestionIndex];
+  if (!saved) return;
+
+  // debug: uncomment if needed
+  // console.log('Restoring for index', currentQuestionIndex, 'saved=', saved);
+
+  hasAnswered = true;
+
+  // MCQ / MSQ option buttons
+  const btns = Array.from(document.querySelectorAll('.answer-option'));
+  const q = selectedQuestions[currentQuestionIndex] || {};
+
+  // Helper to normalize image URL variants
+  const normalize = v => (typeof v === 'string' ? v.trim() : '');
+
+  // --- MCQ ---
+  if (type === 'MCQ') {
+    btns.forEach(btn => {
+      const idx = parseInt(btn.dataset.index, 10);
+      const optText = normalize(q[`Answer ${idx + 1} Text`]);
+      const optImg = normalize(q[`Answer ${idx + 1} Image URL`]); // likely relative path
+      const fullImg = optImg ? `http://192.168.1.2:5000${optImg}` : '';
+
+      // saved.response could be text OR image path (relative) OR full url
+      const savedResp = normalize(saved.response);
+
+      if (
+        savedResp &&
+        (savedResp === optText ||
+         savedResp === optImg ||
+         savedResp === fullImg)
+      ) {
+        btn.classList.add('selected');
+        selectedButton = btn;
+      }
+
+      // disable options because it was already answered
+      btn.disabled = true;
+    });
+
+    nextQuestionButton.style.display = 'block';
+    skipQuestionButton.style.display = 'none';
+  }
+
+  // --- MSQ (multiple selected indices stored as "0, 2" etc) ---
+  if (type === 'MSQ') {
+    const savedResp = normalize(saved.response || '');
+    const chosen = (savedResp.match(/\d+/g) || []).map(n => parseInt(n, 10));
+
+    if (chosen.length) {
+      btns.forEach(btn => {
+        const idx = parseInt(btn.dataset.index, 10);
+        if (chosen.includes(idx)) btn.classList.add('selected');
+        // keep disabled to prevent change
+        btn.disabled = true;
+      });
+      nextQuestionButton.style.display = 'block';
+      skipQuestionButton.style.display = 'none';
+    }
+  }
+
+  // --- NAT ---
+  if (type === 'NAT') {
+    const input = document.getElementById('natInput');
+    if (input && saved.response && saved.response !== 'Skipped') {
+      input.value = saved.response;
+      // If you use a virtual numeric keyboard, ensure keyboard's internal value syncs with input if needed
+      nextQuestionButton.style.display = 'block';
+      skipQuestionButton.style.display = 'none';
+    }
+  }
+
+  // --- Comment ---
+  const commentBox = document.getElementById('userComment');
+  if (commentBox && saved.comment) {
+    commentBox.value = saved.comment;
+  }
+
+  // Keep nav button state in sync
+  updateNavButtonStyle(currentQuestionIndex);
+})();
+
   questionStartTime = Date.now();
   updateNavButtonStyle(currentQuestionIndex);
   nextQuestionButton.style.display = 'none';

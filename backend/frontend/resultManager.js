@@ -121,7 +121,7 @@ function viewResponseDetails(data, username, timestamp) {
     responses.forEach((r, index) => {
         let questionHTML = '';
         if(r.type || r.weightage) {
-        questionHTML += `<div style="margin-top: 15px; font-size: 15px; line-height: 1.6; text-align: right">${sanitize(r.type)} | ${sanitize(r.weightage)} Mark(s)</div>`;
+        questionHTML += `<div style="font-size: 15px; line-height: 1.6; text-align: right">${sanitize(r.type)} | ${sanitize(r.weightage)} Mark(s)</div>`;
         }
         if (r.question) {
         questionHTML += `<div>${formatText(sanitize(r.question))}</div>`;
@@ -136,17 +136,15 @@ function viewResponseDetails(data, username, timestamp) {
         let userAnswerHTML = '';
         let correctAnswerHTML = '';
 
-        if (r.response && /\.(png|jpe?g)$/i.test(r.response)) {
-            userAnswerHTML = `<img src="http://192.168.1.2:5000${r.response}" alt="Your Answer" style="max-height: 200px;">`;
-        } else {
-            userAnswerHTML = sanitize(r.response);
-        }
 
-        if (r.correctAnswer && /\.(png|jpe?g)$/i.test(r.correctAnswer)) {
-            correctAnswerHTML = `<img src="http://192.168.1.2:5000${r.correctAnswer}" alt="Correct Answer" style="max-height: 200px;">`;
-        } else {
-            correctAnswerHTML = sanitize(r.correctAnswer);
-        }
+userAnswerHTML = /\.(png|jpe?g)$/i.test(r.response)
+    ? `<img src="${r.response}" style="max-height:200px;">`
+    : sanitize(r.response);
+
+
+correctAnswerHTML = /\.(png|jpe?g)$/i.test(r.correctAnswer)
+    ? `<img src="${r.correctAnswer}" style="max-height:200px;">`
+    : sanitize(r.correctAnswer);
 
         const timeTaken = r.responseTime || 'Skipped';
 
@@ -154,47 +152,57 @@ function viewResponseDetails(data, username, timestamp) {
             ? parseInt(r.correctAnswerIndex)
             : r.correctAnswerIndex;
 
-        let optionsHTML = '';
-        if (Array.isArray(r.options)) {
-            optionsHTML = '<ul style="list-style-type:none; padding-left: 0;">';
-            r.options.forEach((opt, i) => {
-                const rawText = opt.text || '';
-                const rawImage = opt.image || '';
 
-                const text = formatText(sanitize(rawText));
-                const image = rawImage
-                    ? `<br><img src="http://192.168.1.2:5000${rawImage}" alt="Option ${i + 1}" style="max-height: 200px;">`
-                    : '';
+let optionsHTML = '';
+if (Array.isArray(r.options)) {
+    optionsHTML = '<ul style="list-style-type:none; padding-left: 0;">';
 
-                const isCorrect = (
-                r.correctAnswer === rawText ||
-                r.correctAnswer === `http://192.168.1.2:5000${rawImage}`
-                );
+    r.options.forEach((opt, i) => {
+        const rawText = opt.text || '';
+        const rawImage = opt.image || '';   // keep EXACT path from backend
 
-                const isUserResponse = (
-                r.response === rawText ||
-                r.response === `http://192.168.1.2:5000${rawImage}`
-                );
+        const displayText = formatInlineText(sanitize(rawText));
+        const displayImg = rawImage
+            ? `<img src="${rawImage}" alt="Option ${i + 1}" style="max-height: 200px;">`
+            : '';
 
-                let style = '';
-                if (isCorrect) {
-                    style += 'background-color: #d4edda; border: 2px solid green;';
-                }
-                else {
-                    style += 'background-color: #f8d7da; border: 1px solid red;';
-                }
+        // Compare EXACT VALUES (text or image path)
+        const isCorrect =
+            r.correctAnswer === rawText ||
+            r.correctAnswer === rawImage;
 
-                optionsHTML += `<li style="margin-bottom: 8px; padding-left: 6px; border-radius: 6px; ${style}">
-                    ${text || ''}${image}
-                </li>`;
-            });
-            optionsHTML += '</ul>';
+        const isUser =
+            r.response === rawText ||
+            r.response === rawImage;
+
+        let style = "";
+
+        // Highlighting logic — minimal change
+        if (isCorrect) {
+            style = "background:#d4edda; border:2px solid green;";
+        } else if (isUser) {
+            style = "background:#f8d7da; border:2px solid red;";
+        } else {
+            style = "background:#e9ecef; border:1px solid #bfc5ca;";
         }
+
+
+        optionsHTML += `
+        <li style="margin:6px 0; padding:6px; border-radius:6px; ${style}">
+            ${displayText}${displayImg}
+        </li>
+
+        `;
+    });
+
+    optionsHTML += '</ul>';
+}
+
 
         html += `
         <div id="q${index + 1}" class="question-block" style="border: 1px solid #ccc; padding: 15px; margin-top: 20px; border-radius: 8px;">
             ${r.comprehension ? `<p><b>Comprehension:</b> ${formatText(sanitize(r.comprehension))}</p>` : ''}
-            <p><b>Q${index + 1}:</b> ${questionHTML}</p>
+            <b>Q${index + 1}:</b> ${questionHTML}
             ${optionsHTML || ''}
             <p><b>Your Response:</b> ${userAnswerHTML} ${r.correct ? '✅' : '❌'}</p>
             ${r.comment ? `<p><b>Comment:</b> ${sanitize(r.comment)}</p>` : ''}
@@ -463,4 +471,13 @@ function formatTextWithSuperSubscript(text) {
 
 function formatText(raw) {
   return formatTextWithSuperSubscript(formatTextWithParagraphs(raw));
+}
+
+function formatInlineText(raw) {
+    if (typeof raw !== 'string') return raw;
+    
+    // Only superscript/subscript — NO paragraph wrapping
+    return raw
+        .replace(/\^\((.*?)\)/g, '<sup>$1</sup>')
+        .replace(/\_\((.*?)\)/g, '<sub>$1</sub>');
 }
