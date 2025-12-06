@@ -1,3 +1,4 @@
+
 import { initResultsButton } from './resultManager.js';
 
 // DOM Elements
@@ -36,6 +37,35 @@ let wrong = 0;
 let hasAnswered = false;
 let selectedButton = null;
 let quizEnded = false;
+
+// -------------------- Helper additions / fixes --------------------
+
+// Clean raw text for storage (remove any HTML tags that may have been inserted when rendering)
+function cleanTextForStorage(str) {
+  if (!str) return '';
+  return String(str).replace(/<[^>]*>/g, '').trim();
+}
+
+// storeTimeBeforeLeaving: ONLY updates/creates responseTime, doesn't change other fields
+function storeTimeBeforeLeaving() {
+    const prev = userResponses[currentQuestionIndex];
+    const elapsed = Math.round((Date.now() - questionStartTime) / 1000);
+
+    if (!prev) {
+        // Store minimal entry but mark as no-answer placeholder
+        userResponses[currentQuestionIndex] = {
+            responseTime: elapsed,
+            _noAnswer: true
+        };
+    } else {
+        prev.responseTime = (prev.responseTime || 0) + elapsed;
+    }
+
+    // reset questionStartTime so repeated calls without navigation don't double-count
+    questionStartTime = Date.now();
+}
+
+// -------------------- End helpers --------------------
 
 // On page load
 document.addEventListener('DOMContentLoaded', () => {
@@ -232,6 +262,9 @@ submitQuizButton.addEventListener('click', () => {
     const confirmSubmit = confirm("Are you sure you want to submit the quiz?");
     if (!confirmSubmit) return;
 
+    // Save current question time before finalizing (do not force-save answer)
+    storeTimeBeforeLeaving();
+
     // If not already ended, trigger quiz end
     if (!quizEnded) {
         endQuiz(); // This should handle final scoring and call submitResponses()
@@ -314,13 +347,17 @@ function updateNavButtonStyle(index, state) {
 
 // Skip current question
 skipQuestionButton.addEventListener('click', () => {
+  // save time, then record skip
+  storeTimeBeforeLeaving();
   if (hasAnswered) return;
   recordResponse('Skipped', false);
   goToNextOrEnd();
 });
 
-// Skip current question
+// Mark question
 markQuestionButton.addEventListener('click', () => {
+  // save time when marking and move on (do not force save answer)
+  storeTimeBeforeLeaving();
   updateNavButtonStyle(currentQuestionIndex, 'marked');
   goToNextOrEnd();
 });
@@ -363,6 +400,7 @@ document.getElementById('clearResponse').addEventListener('click', () => {
 
 // Next button (after answering)
 nextQuestionButton.addEventListener('click', () => {
+  // DO NOT call storeTimeBeforeLeaving here — recordResponse will account for time
   const current = selectedQuestions[currentQuestionIndex];
   const type = current['Question Type'] || 'MCQ';
 
@@ -370,8 +408,8 @@ nextQuestionButton.addEventListener('click', () => {
     const selectedButtons = document.querySelectorAll('.answer-option.selected');
     const selectedIndexes = Array.from(selectedButtons).map(btn => parseInt(btn.dataset.index));
 
-    const correctIndexes = (current['MSQ Answers'] || '').split(',').map(Number);
-    const isCorrect = selectedIndexes.sort().join(',') === correctIndexes.sort().join(',');
+    const correctIndexes = (current['MSQ Answers'] || '').split(',').map(x => parseInt(x.trim(), 10)).filter(n => !isNaN(n));
+    const isCorrect = selectedIndexes.slice().sort().join(',') === correctIndexes.slice().sort().join(',');
 
     recordResponse(selectedIndexes.join(', '), isCorrect);
   }
@@ -388,8 +426,11 @@ nextQuestionButton.addEventListener('click', () => {
       let high = parseFloat(matches[2]);
       if (low > high) [low, high] = [high, low]; // Swap if needed
 
-      const isCorrect = val >= low && val <= high;
+      const isCorrect = !isNaN(val) && val >= low && val <= high;
       recordResponse(val.toString(), isCorrect);
+    } else {
+      // If no range present, just store the value
+      recordResponse(input.value || 'Skipped', false);
     }
   }
 
@@ -428,7 +469,7 @@ function showNextQuestion() {
 
   const qNum = currentQuestionIndex + 1;
   const questionText = document.createElement('div');
-  const weightage = current['Marks'] || 1; 
+  const weightage = current['Marks'] || 1;
   const questionType = current['Question Type'] || 'MCQ';
 
   // Type tag
@@ -447,10 +488,8 @@ function showNextQuestion() {
     questionContainer.appendChild(comp);
   }
 
-  questionText.innerHTML = `<b>Question ${qNum}</b><br>${formatTextWithSuperSubscript(formatTextWithParagraphs(current['Question']))}`;  
   questionText.innerHTML = `<b>Question ${qNum}</b><br>${formatText(current['Question'])}`;
   questionContainer.appendChild(questionText);
-
 
   if (current['Question Image URL']) {
     const img = document.createElement('img');
@@ -460,72 +499,72 @@ function showNextQuestion() {
   }
 
   // Render options
- const type = current['Question Type'] || 'MCQ';
-optionsContainer.innerHTML = ''; // Clear previous
-commentContainer.innerHTML = '';
+  const type = current['Question Type'] || 'MCQ';
+  optionsContainer.innerHTML = ''; // Clear previous
+  commentContainer.innerHTML = '';
 
-if (type === 'NAT') {
-  const label = document.createElement('label');
-  label.textContent = 'Enter your answer (NAT):';
-  const input = document.createElement('input');
-  input.type = 'text';  // Use text instead of number to allow selection
-  input.id = 'natInput';
-  input.placeholder = 'e.g., 12.5';
-  input.classList.add('nat-input');
-  input.setAttribute('readonly', true); // Prevent typing
-  input.onclick = function () {
-    showNumericKeyboard(this); // Your existing numeric keyboard function
-  };
-  input.dispatchEvent(new Event('input'));
+  if (type === 'NAT') {
+    const label = document.createElement('label');
+    label.textContent = 'Enter your answer (NAT):';
+    const input = document.createElement('input');
+    input.type = 'text';  // Use text instead of number to allow selection
+    input.id = 'natInput';
+    input.placeholder = 'e.g., 12.5';
+    input.classList.add('nat-input');
+    input.setAttribute('readonly', true); // Prevent typing
+    input.onclick = function () {
+      showNumericKeyboard(this); // Your existing numeric keyboard function
+    };
+    input.dispatchEvent(new Event('input'));
 
-  optionsContainer.appendChild(label);
-  optionsContainer.appendChild(input);
-  // After creating the input element
-  let previousValue = '';
+    optionsContainer.appendChild(label);
+    optionsContainer.appendChild(input);
+    // After creating the input element
+    let previousValue = '';
 
-  const observer = setInterval(() => {
-    const currentValue = input.value.trim();
-    if (currentValue && currentValue !== previousValue) {
-      nextQuestionButton.style.display = 'block';
-      hasAnswered = true;
-      previousValue = currentValue;
-    }
-  }, 300);
-
-  // Clear on next question
-  nextQuestionButton.addEventListener('click', () => clearInterval(observer));
-  skipQuestionButton.addEventListener('click', () => clearInterval(observer));
-} else {
-  for (let i = 1; i <= 4; i++) {
-    const text = formatTextWithSuperSubscript(current[`Answer ${i} Text`]);
-    const imgUrl = current[`Answer ${i} Image URL`];
-
-    const btn = document.createElement('button');
-    btn.classList.add('answer-option');
-    btn.dataset.index = i - 1;
-
-    if (text) btn.innerHTML = text;
-    if (imgUrl) {
-      const img = document.createElement('img');
-      img.src = `http://192.168.1.2:5000${imgUrl}`;
-      img.alt = text || `Option ${i}`;
-      btn.appendChild(img);
-    }
-
-    btn.addEventListener('click', () => {
-      if (type === 'MCQ') {
-        handleAnswer(i - 1, btn);
-      } else if (type === 'MSQ') {
-        btn.classList.toggle('selected');
-        const anySelected = document.querySelectorAll('.answer-option.selected').length > 0;
-        nextQuestionButton.style.display = anySelected ? 'block' : 'none';
-        hasAnswered = anySelected;
+    const observer = setInterval(() => {
+      const currentValue = input.value.trim();
+      if (currentValue && currentValue !== previousValue) {
+        nextQuestionButton.style.display = 'block';
+        hasAnswered = true;
+        previousValue = currentValue;
       }
-    });
+    }, 300);
 
-    optionsContainer.appendChild(btn);
+    // Clear on next question
+    nextQuestionButton.addEventListener('click', () => clearInterval(observer));
+    skipQuestionButton.addEventListener('click', () => clearInterval(observer));
+  } else {
+    for (let i = 1; i <= 4; i++) {
+      const text = formatTextWithSuperSubscript(current[`Answer ${i} Text`]);
+      const imgUrl = current[`Answer ${i} Image URL`];
+
+      const btn = document.createElement('button');
+      btn.classList.add('answer-option');
+      btn.dataset.index = i - 1;
+
+      if (text) btn.innerHTML = text;
+      if (imgUrl) {
+        const img = document.createElement('img');
+        img.src = `http://192.168.1.2:5000${imgUrl}`;
+        img.alt = text || `Option ${i}`;
+        btn.appendChild(img);
+      }
+
+      btn.addEventListener('click', () => {
+        if (type === 'MCQ') {
+          handleAnswer(i - 1, btn);
+        } else if (type === 'MSQ') {
+          btn.classList.toggle('selected');
+          const anySelected = document.querySelectorAll('.answer-option.selected').length > 0;
+          nextQuestionButton.style.display = anySelected ? 'block' : 'none';
+          hasAnswered = anySelected;
+        }
+      });
+
+      optionsContainer.appendChild(btn);
+    }
   }
-}
 
   // --- Comment box AFTER options ---
   const commentWrapper = document.createElement('div');
@@ -550,12 +589,12 @@ if (type === 'NAT') {
       max-width: 70%;
       box-sizing: border-box;
     `;
-  }else {
-  commentBox.style.cssText = `
-    min-width: 90%;
-    max-width: 90%;
-    box-sizing: border-box;
-  `;
+  } else {
+    commentBox.style.cssText = `
+      min-width: 90%;
+      max-width: 90%;
+      box-sizing: border-box;
+    `;
   }
 
   // Append elements
@@ -563,100 +602,107 @@ if (type === 'NAT') {
   commentWrapper.appendChild(commentBox);
   commentContainer.appendChild(commentWrapper);
 
-// 🔄 Attach virtual keyboard (if available)
-if (typeof VKI_attach === 'function') {
-  VKI_attach(commentBox); // or whatever your plugin provides
-}
+  // 🔄 Attach virtual keyboard (if available)
+  if (typeof VKI_attach === 'function') {
+    VKI_attach(commentBox); // or whatever your plugin provides
+  }
 
   if (selectedButton) selectedButton.classList.remove('selected');
   selectedButton = null;
   hasAnswered = false;
+  questionStartTime = Date.now(); // start timer BEFORE restore
 
-// ---------------------- Restore previously recorded response (robust) ----------------------
-(function restorePrevious() {
-  const saved = userResponses[currentQuestionIndex];
-  if (!saved) return;
+  // ---------------------- Restore previously recorded response (robust) ----------------------
+  (function restorePrevious() {
+    const saved = userResponses[currentQuestionIndex];
+    if (!saved) return;
 
-  // debug: uncomment if needed
-  // console.log('Restoring for index', currentQuestionIndex, 'saved=', saved);
+    const q = selectedQuestions[currentQuestionIndex] || {};
+    const type = q['Question Type'] || 'MCQ';
 
-  hasAnswered = true;
+    // If this was only a time placeholder, do not mark as answered — just leave time
+    if (saved._noAnswer && saved.responseTime && !saved.response) {
+      // show nothing selected, but keep nav state in sync (visited)
+      updateNavButtonStyle(currentQuestionIndex);
+      return;
+    }
 
-  // MCQ / MSQ option buttons
-  const btns = Array.from(document.querySelectorAll('.answer-option'));
-  const q = selectedQuestions[currentQuestionIndex] || {};
+    // Otherwise, full saved response exists — restore UI
+    hasAnswered = true;
 
-  // Helper to normalize image URL variants
-  const normalize = v => (typeof v === 'string' ? v.trim() : '');
+    // MCQ / MSQ option buttons
+    const btns = Array.from(document.querySelectorAll('.answer-option'));
 
-  // --- MCQ ---
-  if (type === 'MCQ') {
-    btns.forEach(btn => {
-      const idx = parseInt(btn.dataset.index, 10);
-      const optText = normalize(q[`Answer ${idx + 1} Text`]);
-      const optImg = normalize(q[`Answer ${idx + 1} Image URL`]); // likely relative path
-      const fullImg = optImg ? `http://192.168.1.2:5000${optImg}` : '';
+    // Helper to normalize image URL variants
+    const normalize = v => (typeof v === 'string' ? v.trim() : '');
 
-      // saved.response could be text OR image path (relative) OR full url
-      const savedResp = normalize(saved.response);
-
-      if (
-        savedResp &&
-        (savedResp === optText ||
-         savedResp === optImg ||
-         savedResp === fullImg)
-      ) {
-        btn.classList.add('selected');
-        selectedButton = btn;
-      }
-
-      // disable options because it was already answered
-      btn.disabled = true;
-    });
-
-    nextQuestionButton.style.display = 'block';
-    skipQuestionButton.style.display = 'none';
-  }
-
-  // --- MSQ (multiple selected indices stored as "0, 2" etc) ---
-  if (type === 'MSQ') {
-    const savedResp = normalize(saved.response || '');
-    const chosen = (savedResp.match(/\d+/g) || []).map(n => parseInt(n, 10));
-
-    if (chosen.length) {
+    // --- MCQ ---
+    if (type === 'MCQ') {
       btns.forEach(btn => {
         const idx = parseInt(btn.dataset.index, 10);
-        if (chosen.includes(idx)) btn.classList.add('selected');
-        // keep disabled to prevent change
+        const optTextRaw = cleanTextForStorage(q[`Answer ${idx + 1} Text`] || '');
+        const optImgRel = normalize(q[`Answer ${idx + 1} Image URL`]); // likely relative path
+        const fullImg = optImgRel ? `http://192.168.1.2:5000${optImgRel}` : '';
+
+        // saved.response could be an image path or raw text
+        const savedResp = normalize(saved.response || '');
+
+        if (
+          savedResp &&
+          (savedResp === optTextRaw ||
+           savedResp === optImgRel ||
+           savedResp === fullImg)
+        ) {
+          btn.classList.add('selected');
+          selectedButton = btn;
+        }
+
+        // disable options because it was already answered
         btn.disabled = true;
       });
+
       nextQuestionButton.style.display = 'block';
       skipQuestionButton.style.display = 'none';
     }
-  }
 
-  // --- NAT ---
-  if (type === 'NAT') {
-    const input = document.getElementById('natInput');
-    if (input && saved.response && saved.response !== 'Skipped') {
-      input.value = saved.response;
-      // If you use a virtual numeric keyboard, ensure keyboard's internal value syncs with input if needed
-      nextQuestionButton.style.display = 'block';
-      skipQuestionButton.style.display = 'none';
+    // --- MSQ (multiple selected indices stored as "0, 2" etc) ---
+    if (type === 'MSQ') {
+      const savedResp = normalize(saved.response || '');
+      const chosen = (savedResp.match(/\d+/g) || []).map(n => parseInt(n, 10));
+
+      if (chosen.length) {
+        btns.forEach(btn => {
+          const idx = parseInt(btn.dataset.index, 10);
+          if (chosen.includes(idx)) btn.classList.add('selected');
+          // keep disabled to prevent change
+          btn.disabled = true;
+        });
+        nextQuestionButton.style.display = 'block';
+        skipQuestionButton.style.display = 'none';
+      }
     }
-  }
 
-  // --- Comment ---
-  const commentBox = document.getElementById('userComment');
-  if (commentBox && saved.comment) {
-    commentBox.value = saved.comment;
-  }
+    // --- NAT ---
+    if (type === 'NAT') {
+      const input = document.getElementById('natInput');
+      if (input && saved.response && saved.response !== 'Skipped') {
+        input.value = saved.response;
+        // If you use a virtual numeric keyboard, ensure keyboard's internal value syncs with input if needed
+        nextQuestionButton.style.display = 'block';
+        skipQuestionButton.style.display = 'none';
+      }
+    }
 
-  // Keep nav button state in sync
-  updateNavButtonStyle(currentQuestionIndex);
-})();
+    // --- Comment ---
+    const commentBox = document.getElementById('userComment');
+    if (commentBox && saved.comment) {
+      commentBox.value = saved.comment;
+    }
 
-  questionStartTime = Date.now();
+    // Keep nav button state in sync
+    updateNavButtonStyle(currentQuestionIndex);
+  })();
+
   updateNavButtonStyle(currentQuestionIndex);
   nextQuestionButton.style.display = 'none';
   skipQuestionButton.style.display = 'block';
@@ -671,11 +717,12 @@ function handleAnswer(index, button) {
   const isCorrect = index === current['Correct Answer Index'];
   const timeSpent = Math.round((Date.now() - questionStartTime) / 1000);
 
-  const text = button.textContent?.trim() || '';
-  const img = current[`Answer ${index + 1} Image URL`] || '';
+  // STORE the raw source text / image path — not the rendered button text
+  const optTextRaw = cleanTextForStorage(current[`Answer ${index + 1} Text`] || '');
+  const optImgRel = current[`Answer ${index + 1} Image URL`] || '';
+  const storageValue = optImgRel || optTextRaw || 'N/A';
 
-  // ✅ Just delegate score and response handling
-  recordResponse(img || text || 'N/A', isCorrect, timeSpent);
+  recordResponse(storageValue, isCorrect, timeSpent);
 
   selectedButton = button;
   selectedButton.classList.add('selected');
@@ -685,7 +732,7 @@ function handleAnswer(index, button) {
   nextQuestionButton.style.display = 'block';
 }
 
-// Record user response
+// Record user response (merge with prev, don't clobber)
 function recordResponse(response, correct, timeSpent = null) {
   const current = selectedQuestions[currentQuestionIndex];
   const questionType = current['Question Type'] || 'MCQ';
@@ -693,9 +740,11 @@ function recordResponse(response, correct, timeSpent = null) {
   const commentInput = document.getElementById('userComment');
   const userComment = commentInput ? commentInput.value.trim() : '';
 
-  // Undo previous scoring if already answered
+  // Prev may be a minimal placeholder
   const prev = userResponses[currentQuestionIndex];
-  if (prev) {
+
+  // Undo previous scoring if already answered fully (only if prev.correct is explicitly boolean)
+  if (prev && typeof prev.correct === 'boolean') {
     if (prev.correct === true) {
       score--;
     } else if (prev.correct === false && prev.response !== 'Skipped') {
@@ -710,17 +759,26 @@ function recordResponse(response, correct, timeSpent = null) {
     wrong++;
   }
 
-  userResponses[currentQuestionIndex] = {
+  const timeSpentCalc = (timeSpent ?? Math.round((Date.now() - questionStartTime) / 1000));
+
+  // Merge existing fields to avoid losing anything (e.g., previously stored time-only placeholder)
+  const merged = {
+    ...(prev || {}),
     question: current['Question'] || '',
     questionImage: current['Question Image URL'] || '',
     comprehension: current['Comprehension'] || '',
     weightage: current['Marks'] || '1',
     response,
     correct,
-    responseTime: timeSpent ?? Math.round((Date.now() - questionStartTime) / 1000),
+    responseTime: (prev?.responseTime || 0) + timeSpentCalc,
     comment: userComment,
     questionType
   };
+
+  // Remove _noAnswer flag if we now have a real response
+  if (merged._noAnswer) delete merged._noAnswer;
+
+  userResponses[currentQuestionIndex] = merged;
 
   hasAnswered = true;
   updateNavButtonStyle(currentQuestionIndex);
@@ -748,6 +806,9 @@ function startExamTimer() {
 
 // End quiz
 function endQuiz() {
+  // ensure last question's time is stored (do not force-save answer)
+  storeTimeBeforeLeaving();
+
   if (quizEnded) return;
   quizEnded = true;
   clearInterval(examTimer);
