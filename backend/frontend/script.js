@@ -258,18 +258,75 @@ restartQuizButton.addEventListener('click', () => {
 });
 
 // Submit quiz button
+
 submitQuizButton.addEventListener('click', () => {
     const confirmSubmit = confirm("Are you sure you want to submit the quiz?");
     if (!confirmSubmit) return;
 
-    // Save current question time before finalizing (do not force-save answer)
+    // 1️⃣ Always save time first
     storeTimeBeforeLeaving();
 
-    // If not already ended, trigger quiz end
+    // 2️⃣ Force-save last answer IF user has answered something
+    const q = selectedQuestions[currentQuestionIndex];
+    const type = q['Question Type'] || 'MCQ';
+
     if (!quizEnded) {
-        endQuiz(); // This should handle final scoring and call submitResponses()
+
+        // --- MCQ ---
+        if (type === 'MCQ') {
+            const selectedBtn = document.querySelector('.answer-option.selected');
+            if (selectedBtn) {
+                const index = parseInt(selectedBtn.dataset.index, 10);
+                const isCorrect = index === q['Correct Answer Index'];
+
+                const rawText = q[`Answer ${index + 1} Text`] || '';
+                const rawImg = q[`Answer ${index + 1} Image URL`] || '';
+
+                recordResponse(rawImg || rawText, isCorrect);
+            }
+        }
+
+        // --- MSQ ---
+        else if (type === 'MSQ') {
+            const selected = [...document.querySelectorAll('.answer-option.selected')]
+                .map(btn => parseInt(btn.dataset.index));
+
+            const correctList = (q['MSQ Answers'] || '')
+                .split(',')
+                .map(n => parseInt(n.trim(), 10));
+
+            const isCorrect =
+                selected.slice().sort().join(',') ===
+                correctList.slice().sort().join(',');
+
+            recordResponse(selected.join(', '), isCorrect);
+        }
+
+        // --- NAT ---
+        else if (type === 'NAT') {
+            const input = document.getElementById('natInput');
+            if (input && input.value.trim() !== '') {
+                const val = parseFloat(input.value);
+                const range = q['NAT Answer Range'] || '';
+                const match = range.match(/(-?\d+(?:\.\d+)?)\s*-\s*(-?\d+(?:\.\d+)?)/);
+
+                let isCorrect = false;
+                if (match) {
+                    let low = parseFloat(match[1]);
+                    let high = parseFloat(match[2]);
+                    if (low > high) [low, high] = [high, low];
+                    isCorrect = val >= low && val <= high;
+                }
+
+                recordResponse(input.value, isCorrect);
+            }
+        }
     }
+
+    // 3️⃣ Finally end quiz
+    endQuiz();
 });
+
 
 // Start quiz setup
 function startQuiz(section) {
