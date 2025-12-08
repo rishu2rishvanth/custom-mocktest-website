@@ -259,9 +259,14 @@ restartQuizButton.addEventListener('click', () => {
 
 // Submit quiz button
 
-submitQuizButton.addEventListener('click', () => {
-    const confirmSubmit = confirm("Are you sure you want to submit the quiz?");
-    if (!confirmSubmit) return;
+submitQuizButton.addEventListener('click', (e) => {
+    // If triggered by timer, a flag is passed → skip confirmation
+    const autoSubmit = e.detail === 'AUTO';
+
+    if (!autoSubmit) {
+        const confirmSubmit = confirm("Are you sure you want to submit the quiz?");
+        if (!confirmSubmit) return;
+    }
 
     // 1️⃣ Always save time first
     storeTimeBeforeLeaving();
@@ -854,12 +859,16 @@ function startExamTimer() {
 
     if (examTimeRemaining <= 0) {
       clearInterval(examTimer);
-      endQuiz();
+
+      // AUTO submit → no popup
+      submitQuizButton.dispatchEvent(new CustomEvent('click', { detail: 'AUTO' }));
+      return;
     }
 
     examTimeRemaining--;
   }, 1000);
 }
+
 
 // End quiz
 function endQuiz() {

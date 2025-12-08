@@ -320,9 +320,9 @@ function viewResponseDetails(data, username, timestamp) {
             ${r.comprehension ? `<p><b>Comprehension:</b> ${formatText(sanitize(r.comprehension))}</p>` : ''}
             <b>Q${index + 1}:</b> ${questionHTML}
             ${optionsHTML || ''}
-            <p><b>Your Response:</b> ${userAnswerHTML} ${r.correct ? '✅' : '❌'}</p>
+            <p><b>Your Response:<br></b> ${userAnswerHTML} ${r.correct ? '✅' : '❌'}</p>
             ${r.comment ? `<p><b>Comment:</b> ${sanitize(r.comment)}</p>` : ''}
-            <p><b>Correct Answer:</b> ${correctAnswerHTML || r.correctAnswer}</p>
+            <p><b>Correct Answer:<br></b> ${correctAnswerHTML || r.correctAnswer}</p>
             <p><b>Time Taken:</b> ${timeTaken} seconds</p>
         </div>`;
     });
