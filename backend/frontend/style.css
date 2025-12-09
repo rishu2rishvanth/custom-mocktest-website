@@ -4,20 +4,55 @@ body {
   background-color: #f4f4f4;
   color: #333;
   margin: 0;
-  padding: 25px;
+  padding: 0px;
+}
+
+/* Watermark background */
+body::before {
+  content: 
+    "5479095978302   5479095978302   5479095978302   5479095978302   5479095978302   5479095978302\A
+             5479095978302   5479095978302   5479095978302   5479095978302   5479095978302   5479095978302\A
+     5479095978302   5479095978302   5479095978302   5479095978302   5479095978302   5479095978302\A
+             5479095978302   5479095978302   5479095978302   5479095978302   5479095978302   5479095978302\A
+     5479095978302   5479095978302   5479095978302   5479095978302   5479095978302   5479095978302\A
+             5479095978302   5479095978302   5479095978302   5479095978302   5479095978302   5479095978302\A
+     5479095978302   5479095978302   5479095978302   5479095978302   5479095978302   5479095978302\A
+             5479095978302   5479095978302   5479095978302   5479095978302   5479095978302   5479095978302\A
+     5479095978302   5479095978302   5479095978302   5479095978302   5479095978302   5479095978302";
+
+  position: fixed;
+  top: -1000px;
+  left: -500px;
+  width: 300%;
+  height: 300%;
+  font-size: 2rem;
+  font-weight: 600;
+  color: rgba(0,0,0,0.05);
+  transform: rotate(-45deg);
+  white-space: pre;     /* <-- allows the \A line breaks */
+  line-height: 8rem;
+  letter-spacing: 1.5rem;
+  z-index: 99;
+  pointer-events: none;
 }
 
 /* Main quiz box */
 .quiz-container {
+  position: relative;
   background-color: #fff;
   padding: 30px;
   border-radius: 10px;
   width: 100%;
   max-width: 750px;
-  margin-left: 120px; /* ✅ Positions it 200px from the left */
-  margin-top: 25px;
+  margin-left: 20px; /* ✅ Positions it 200px from the left */
+  margin-top: 100px;
   margin-bottom: 25px;
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+  min-height: 700px;
+}
+
+#questionContainer {
+  font-size: medium;   /* Or any size you prefer */
 }
 
 @media (max-width: 768px) {
@@ -78,8 +113,8 @@ button:hover {
 /* ====== Submit Button ====== */
 .submit-button {
   position: fixed;
-  bottom: 10px;
-  right: 10px;
+  bottom: 30px;
+  right: 85px;
   z-index: 1000;
 }
 
@@ -96,8 +131,8 @@ button:hover {
 /* ====== Skip Button ====== */
 .skip-button {
   position: fixed;
-  bottom: 10px;
-  left: 10px;
+  bottom: 30px;
+  left: 20px;
   z-index: 1000;
 }
 
@@ -111,10 +146,19 @@ button:hover {
   background-color: #d32f2f;
 }
 
+.next-button {
+  position: fixed;
+  padding: 5px 15px;
+  bottom: 30px;
+  right: 260px;
+  width: auto;
+  z-index: 1000;
+}
+
 .mark-button {
   position: fixed;
-  bottom: 10px;
-  left: 150px;
+  bottom: 30px;
+  left: 160px;
   z-index: 1000;
 }
 
@@ -130,13 +174,15 @@ button:hover {
 
 /* ====== Clear Button ====== */
 .clear-response-button {
+  position: fixed;
+  bottom: 30px;
+  left: 290px;
   background-color: orange;
+  width: auto;
   color: white;
-  padding: 8px 12px;
-  border: none;
-  border-radius: 4px;
+  padding: 5px 15px;
   cursor: pointer;
-  font-weight: bold;
+  z-index: 1000;
 }
 
 .clear-response-button:hover {
@@ -146,9 +192,16 @@ button:hover {
 /* ====== Calculator Button ====== */
 .calculator-container {
   position: fixed;
-  top: 10px;
-  left: 10px;
-  z-index: 1000;
+  top: 85px;
+  right: 248px;
+  width: auto;
+  padding: 5px 10px;
+  cursor: pointer;
+  z-index: 99;
+}
+
+.calculator-container:hover {
+  background-color: lightgray;
 }
 
 #openCalculator {
@@ -175,8 +228,8 @@ button:hover {
 
 #timerDisplay {
   position: fixed;
-  top: 10px;
-  right: 10px;
+  top: 105px;
+  right: 240px;
   margin-right: 10px;
   margin-top: 20px;
   padding: 7px 12px;
@@ -186,7 +239,7 @@ button:hover {
   font-weight: bold;
   backdrop-filter: blur(10px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  z-index: 1000;
+  z-index: 99;
 }
 
 /* ====== Answer Options ====== */
@@ -444,10 +497,11 @@ button:hover {
 
 .question-navigator {
   position: fixed;
-  top: 120px;
+  top: 380px;
+  bottom: 20px;
   right: 20px;
-  width: 200px;
-  max-height: 60vh;
+  width: 225px;
+  max-height: 400px;
   overflow-y: auto;
   background-color: #f9f9f9;
   border: 1px solid #ccc;
@@ -502,7 +556,7 @@ button:hover {
 /* Toggle button */
 .toggle-navigator-btn {
   position: fixed;
-  top: 80px;
+  top: 320px;
   max-width: fit-content;
   right: 20px;
   z-index: 1001;
@@ -538,10 +592,10 @@ button:hover {
 /* Toggle button */
 .toggle-nav-panel-btn {
   position: fixed;
-  top: 80px;
+  top: 320px;
   max-width: fit-content;
   right: 20px;
-  z-index: 1001;
+  z-index: 99;
   padding: 8px 12px;
   font-size: 14px;
   background-color: #004085;
@@ -622,8 +676,9 @@ button:hover {
 .quiz .question-nav-panel {
   position: fixed;
   right: 20px;
-  top: 140px;
-  width: 150px;
+  top: 400px;
+  bottom: 80px;
+  width: 220px;
   background: #f5f5f5;
   border: 1px solid #ccc;
   font-family: Arial, sans-serif;
@@ -632,7 +687,10 @@ button:hover {
   z-index: 99;
   border-radius: 8px;
   max-height: 400px; /* or something suitable */
-  overflow-y: auto;
+  overflow: hidden;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
 }
 
 /* Collapsed navigator (hidden by default) */
@@ -650,17 +708,19 @@ button:hover {
 .quiz .nav-content {
   display: flex;
   flex-wrap: wrap;
-  gap: 5px;
+  gap: 0px;
   justify-content: center;
-  max-height: 300px;        /* or whatever height fits your screen */
+  max-height: none;        /* or whatever height fits your screen */
   overflow-y: auto;
   overflow-x: hidden;
+  padding-right: 4px; /* prevent overlay of last column with scrollbar */
+  -webkit-overflow-scrolling: touch;
 }
 
 
 .quiz .nav-btn {
-  width: 30px;
-  height: 30px;
+  width: 35px;
+  height: 35px;
   border: 1px solid #999;
   background-color: #fff;
   cursor: pointer;
@@ -699,4 +759,25 @@ button:hover {
 .quiz .nav-content::-webkit-scrollbar-thumb {
   background-color: #aaa;
   border-radius: 4px;
+}
+
+.banner-top {
+  position: fixed;
+  top: 0px;
+  width: 100%;
+  z-index: 99;
+}
+
+.banner-bottom {
+  position: fixed;
+  bottom: 0px;
+  width: 100%;
+  z-index: 99;
+}
+
+.icon-0 {
+    background: url(../images/Icon-sprite.png) no-repeat -148px -62px;
+    width: 17px;
+    height: 23px;
+    display: inline-block;
 }

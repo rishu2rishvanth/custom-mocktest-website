@@ -350,6 +350,8 @@ function startQuiz(section) {
 
     setupSection.style.display = 'none';
     quizSection.style.display = 'block';
+    document.getElementById('banner-top').style.display = 'block';
+    document.getElementById('banner-bottom').style.display = 'block';
     showNextQuestion();
     renderQuestionNavigator();
     updateNavButtonStyle(currentQuestionIndex);
@@ -853,9 +855,9 @@ function startExamTimer() {
     const min = Math.floor(examTimeRemaining / 60).toString().padStart(2, '0');
     const sec = (examTimeRemaining % 60).toString().padStart(2, '0');
 
-    timerDisplay.textContent = `t- ${min}:${sec}`;
+    timerDisplay.textContent = `Time Left : ${min}:${sec}`;
     timerDisplay.style.color = examTimeRemaining <= 300 ? 'red' : 'black';
-    timerDisplay.style.fontWeight = examTimeRemaining <= 300 ? 'bold' : 'normal';
+    timerDisplay.style.fontWeight = 'bold';
 
     if (examTimeRemaining <= 0) {
       clearInterval(examTimer);
@@ -879,6 +881,8 @@ function endQuiz() {
   quizEnded = true;
   clearInterval(examTimer);
   quizSection.style.display = 'none';
+  document.getElementById('banner-top').style.display = 'none';
+  document.getElementById('banner-bottom').style.display = 'none';
   resultSection.style.display = 'block';
   scoreDisplay.textContent = `You scored ${score} & lost ${wrong} out of ${selectedQuestions.length}! Your Final Score is ${(score-0.3*wrong).toFixed(2)}`;
   submitResponses();
