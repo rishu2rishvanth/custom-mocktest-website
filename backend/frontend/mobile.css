@@ -1,0 +1,719 @@
+/* ====== Layout & Body ====== */
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f4f4f4;
+  color: #333;
+  margin: 0;
+  padding: 25px;
+}
+
+/* Main quiz box */
+.quiz-container {
+  background-color: #fff;
+  padding: 30px;
+  border-radius: 10px;
+  width: 100%;
+  max-width: 750px;
+  margin-left: 120px; /* ✅ Positions it 200px from the left */
+  margin-top: 25px;
+  margin-bottom: 25px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+}
+
+@media (max-width: 768px) {
+  .quiz-container {
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+
+/* ====== Headings ====== */
+h1, h2 {
+  color: #004085;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+/* ====== Form Elements ====== */
+label {
+  font-weight: bold;
+  display: block;
+  margin: 10px 0 5px;
+}
+
+input, select {
+  padding: 8px;
+  margin-bottom: 15px;
+  font-size: 16px;
+  border: 1px solid #ced4da;
+  border-radius: 5px;
+}
+
+#numQuestions {
+  width: 100%;
+}
+
+#timer {
+  width: 100%;
+}
+
+/* ====== Buttons ====== */
+button {
+  width: 100%;
+  padding: 10px 15px;
+  font-size: 16px;
+  margin-top: 20px;
+  background-color: #004085;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+button:hover {
+  background-color: #003060;
+}
+
+/* ====== Submit Button ====== */
+.submit-button {
+  position: fixed;
+  bottom: 10px;
+  right: 10px;
+  z-index: 1000;
+}
+
+#submitQuiz {
+  width: auto;
+  padding: 5px 15px;
+  background-color: rgb(5, 154, 0);
+}
+
+#submitQuiz:hover {
+  background-color: #47ce5d;
+}
+
+/* ====== Skip Button ====== */
+.skip-button {
+  position: fixed;
+  bottom: 10px;
+  left: 10px;
+  z-index: 1000;
+}
+
+#skipQuestion {
+  width: auto;
+  padding: 5px 15px;
+  background-color: red;
+}
+
+#skipQuestion:hover {
+  background-color: #d32f2f;
+}
+
+.mark-button {
+  position: fixed;
+  bottom: 10px;
+  left: 150px;
+  z-index: 1000;
+}
+
+#markQuestion {
+  width: auto;
+  padding: 5px 15px;
+  background-color: rgb(255, 0, 217);
+}
+
+#markQuestion:hover {
+  background-color: #501758;
+}
+
+/* ====== Clear Button ====== */
+.clear-response-button {
+  background-color: orange;
+  color: white;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.clear-response-button:hover {
+  background-color: darkorange;
+}
+
+/* ====== Calculator Button ====== */
+.calculator-container {
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  z-index: 1000;
+}
+
+#openCalculator {
+  width: auto;
+  padding: 5px 15px;
+  font-size: 16px;
+  background-color: black;
+  color: #fff;
+  border-radius: 4px;
+}
+
+#openCalculator:hover {
+  background-color: #0056b3;
+}
+
+/* ====== Timer ====== */
+.timer-container {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  width: 0;
+  height: 0;
+}
+
+#timerDisplay {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  margin-right: 10px;
+  margin-top: 20px;
+  padding: 7px 12px;
+  background: rgba(255, 255, 255, 0.25);
+  color: #000;
+  border-radius: 10px;
+  font-weight: bold;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+}
+
+/* ====== Answer Options ====== */
+#optionsContainer {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(45%, 1fr));
+  gap: 10px;
+}
+
+.answer-option {
+  padding: 10px;
+  background-color: #e9ecef;
+  border: 1px solid #ced4da;
+  border-radius: 5px;
+  text-align: center;
+  font-size: 16px;
+  cursor: pointer;
+  overflow: hidden;
+  color: #000;
+  transition: background-color 0.2s ease;
+}
+
+.answer-option:hover {
+  background-color: #dee2e6;
+}
+
+.answer-option img {
+  display: block;
+  margin: 0 auto;
+  height: auto;
+  max-width: 100%;
+}
+
+/* ====== Selected Option ====== */
+.selected {
+  background-color: #d3d3d3;
+  border: 2px solid #000;
+}
+
+/* ====== Results Section ====== */
+.result {
+  text-align: center;
+  color: #004085;
+}
+
+/* ====== Results Table ====== */
+#resultsTableContainer {
+  max-width: 800px;
+  margin: 30px auto 0;
+}
+
+.results-table,
+.details-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+  font-size: 15px;
+}
+
+.results-table th,
+.results-table td,
+.details-table th,
+.details-table td {
+  border: 1px solid #ccc;
+  padding: 8px 12px;
+  text-align: left;
+}
+
+.results-table th {
+  background-color: #004085;
+  color: white;
+}
+
+.results-table tr:nth-child(even),
+.details-table tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+/* 📱 Mobile-friendly scrollable table */
+.responsive-table-wrapper {
+  margin-top: 10px;
+  overflow-x: auto;
+  width: 100%;
+}
+
+/* Ensure table doesn’t shrink too much */
+.results-table {
+  min-width: 600px; /* Or adjust as needed */
+}
+
+/* Stack buttons vertically if screen is narrow */
+@media (max-width: 600px) {
+  .results-table td button {
+    display: block;
+    width: 100%;
+    margin: 4px 0;
+  }
+
+  .results-table th,
+  .results-table td {
+    font-size: 14px;
+    padding: 6px 10px;
+  }
+}
+
+.results-table td button {
+  padding: 6px 10px;
+  font-size: 15px;
+  border-radius: 6px;
+}
+
+/* ====== Modal ====== */
+.results-modal {
+  position: fixed;
+  top: 5%;
+  left: 10%;
+  right: 10%;
+  bottom: 5%;
+  background-color: #fff;
+  border: 2px solid #333;
+  padding: 20px;
+  overflow-y: auto;
+  z-index: 9999;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+  border-radius: 8px;
+}
+
+.close-modal {
+  float: right;
+  background-color: crimson;
+  color: white;
+  border: none;
+  padding: 6px 10px;
+  font-size: 14px;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-bottom: 10px;
+}
+
+.close-modal:hover {
+  background-color: darkred;
+}
+
+/* ====== Image Styling ====== */
+.quiz-container img {
+  max-width: 100%;
+  height: auto;
+}
+
+#scrollButtons {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 999;
+}
+
+#scrollButtons button {
+  padding: 8px 12px;
+  font-size: 18px;
+  border-radius: 6px;
+  border: none;
+  background-color: #333;
+  color: #fff;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  transition: background-color 0.3s;
+}
+
+#scrollButtons button:hover {
+  background-color: #555;
+}
+
+.section-search-wrapper {
+  position: relative;
+  max-width: 360px;
+  margin-bottom: 20px;
+}
+
+#sectionSearchInput {
+  width: 100%;
+  padding: 10px;
+  font-size: 15px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  box-sizing: border-box;
+}
+
+.section-grouped-dropdown {
+  position: absolute;
+  width: 100%;
+  background: white;
+  border: 1px solid #ccc;
+  border-top: none;
+  max-height: 300px;
+  overflow-y: auto;
+  z-index: 100;
+  display: none;
+}
+
+.section-group {
+  border-top: 1px solid #eee;
+}
+
+.section-group summary {
+  cursor: pointer;
+  padding: 8px 12px;
+  background-color: #f2f2f2;
+  font-weight: bold;
+}
+
+.section-group ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.section-group ul li {
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
+.section-group ul li:hover,
+.section-group ul li.active {
+  background-color: #e0f0ff;
+}
+
+/* Basic styling */
+.modal {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.modal-content {
+  background: #fff;
+  padding: 20px 30px;
+  border-radius: 8px;
+  text-align: center;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+}
+
+.modal-content button {
+  margin: 8px 10px;
+  padding: 8px 16px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.question-navigator {
+  position: fixed;
+  top: 120px;
+  right: 20px;
+  width: 200px;
+  max-height: 60vh;
+  overflow-y: auto;
+  background-color: #f9f9f9;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 10px;
+  z-index: 999;
+  box-shadow: 0 0 6px rgba(0,0,0,0.1);
+  cursor: pointer;
+}
+
+.question-navigator h4 {
+  margin-top: 0;
+  font-size: 16px;
+  text-align: center;
+}
+
+.nav-btn {
+  display: inline-block;
+  width: 36px;
+  height: 36px;
+  margin: 5px;
+  padding: 0;
+  border: none;
+  border-radius: 4px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.nav-btn:hover {
+  color: aqua;
+}
+
+.nav-correct {
+  background-color: #d4edda;
+  color: green;
+}
+
+.nav-wrong {
+  background-color: #f8d7da;
+  color: red;
+}
+
+.nav-skipped {
+  background-color: #e2d5f7;
+  color: purple;
+}
+
+.nav-btn.active {
+  outline: 2px solid #0000ff;
+}
+
+/* Toggle button */
+.toggle-navigator-btn {
+  position: fixed;
+  top: 80px;
+  max-width: fit-content;
+  right: 20px;
+  z-index: 1001;
+  padding: 8px 12px;
+  font-size: 14px;
+  background-color: #004085;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+/* Collapsed navigator (hidden by default) */
+.question-navigator.collapsed {
+  display: none;
+}
+
+/* On mobile, make toggle fixed at top-right */
+@media (max-width: 768px) {
+  .toggle-navigator-btn {
+    top: 60px;
+    right: 10px;
+    font-size: 16px;
+  }
+
+  .question-navigator {
+    top: 120px;
+    right: 10px;
+    max-height: 60vh;
+  }
+}
+
+/* Toggle button */
+.toggle-nav-panel-btn {
+  position: fixed;
+  top: 80px;
+  max-width: fit-content;
+  right: 20px;
+  z-index: 1001;
+  padding: 8px 12px;
+  font-size: 14px;
+  background-color: #004085;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+/* Collapsed navigator (hidden by default) */
+.question-nav-panel.collapsed {
+  display: none;
+}
+
+/* On mobile, make toggle fixed at top-right */
+@media (max-width: 768px) {
+  .toggle-nav-panel-btn {
+    top: 60px;
+    right: 10px;
+    font-size: 16px;
+  }
+
+  .question-navigator {
+    top: 120px;
+    right: 10px;
+    max-height: 60vh;
+  }
+}
+
+#loadCalc {
+  position: absolute;
+  overflow: hidden;
+  left: 725px;
+  z-index: 100;
+}
+
+* {
+  -webkit-user-drag: none;
+}
+
+.input-with-keyboard {
+  display: flex;
+  align-items: center;
+  gap: 8px; /* space between input and icon */
+  position: relative;
+}
+
+.keyboardInputInitiator {
+  position: static !important; /* reset absolute from script */
+  margin-bottom: 15px;
+}
+
+@media (max-width: 600px) {
+  .input-with-keyboard {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+.nat-input {
+  width: 200px;
+  padding: 6px;
+  font-size: 1em;
+  margin-top: 8px;
+  display: block;
+}
+
+@media (max-width: 600px) {
+  .nat-input {
+    width: 100px;
+    padding: 6px;
+    font-size: 1em;
+    margin-top: 8px;
+    display: block;
+  }
+}
+
+.quiz .question-nav-panel {
+  position: fixed;
+  right: 20px;
+  top: 140px;
+  width: 150px;
+  background: #f5f5f5;
+  border: 1px solid #ccc;
+  font-family: Arial, sans-serif;
+  font-size: 13px;
+  padding: 10px;
+  z-index: 99;
+  border-radius: 8px;
+  max-height: 400px; /* or something suitable */
+  overflow-y: auto;
+}
+
+/* Collapsed navigator (hidden by default) */
+.quiz .question-nav-panel.collapsed {
+  display: none;
+}
+
+.quiz .question-nav-panel .nav-header {
+  font-weight: bold;
+  margin-bottom: 10px;
+  text-align: center;
+  color: #104a77;
+}
+
+.quiz .nav-content {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  justify-content: center;
+  max-height: 300px;        /* or whatever height fits your screen */
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+
+.quiz .nav-btn {
+  width: 30px;
+  height: 30px;
+  border: 1px solid #999;
+  background-color: #fff;
+  cursor: pointer;
+  border-radius: 4px;
+  font-weight: bold;
+  color: #333;
+}
+
+.quiz .nav-btn:hover {
+  background-color: rgb(111, 82, 150);
+}
+
+.quiz .nav-btn.visited {
+  background-color: #d0eaff;
+}
+
+.quiz .nav-btn.marked {
+  background-color: rgb(255, 0, 217);
+}
+
+.quiz .nav-btn.answered {
+  background-color: #b6fcb6;
+}
+
+.quiz .nav-btn.skipped {
+  background-color: #ffd6d6;
+}
+
+.quiz .nav-btn.active {
+  outline: 2px solid #0000ff;
+}
+
+.quiz .nav-content::-webkit-scrollbar {
+  width: 6px;
+}
+.quiz .nav-content::-webkit-scrollbar-thumb {
+  background-color: #aaa;
+  border-radius: 4px;
+}
+
+@media (max-width: 768px) {
+    #banner-top {
+        display: none !important;
+    }
+    #banner-bottom {
+        display: none !important;
+    }
+}
+
+.icon-0 {
+    margin: 25px;	
+    background: url(../images/Icon-sprite.png) no-repeat -148px -62px;
+    width: 17px;
+    height: 23px;
+    display: inline-block;
+}

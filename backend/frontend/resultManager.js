@@ -316,7 +316,7 @@ function viewResponseDetails(data, username, timestamp) {
         }
 
         html += `
-        <div id="q${index + 1}" class="question-block" style="border: 1px solid #ccc; padding: 15px; margin-top: 20px; border-radius: 8px;">
+        <div id="q${index + 1}" class="question-block" style="border: 1px solid #ccc; padding: 15px; margin-top: 20px; border-radius: 8px; font-size: medium;">
             ${r.comprehension ? `<p><b>Comprehension:</b> ${formatText(sanitize(r.comprehension))}</p>` : ''}
             <b>Q${index + 1}:</b> ${questionHTML}
             ${optionsHTML || ''}

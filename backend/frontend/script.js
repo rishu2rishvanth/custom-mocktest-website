@@ -779,14 +779,14 @@ function handleAnswer(index, button) {
   if (hasAnswered || type !== 'MCQ') return;
 
   const isCorrect = index === current['Correct Answer Index'];
-  const timeSpent = Math.round((Date.now() - questionStartTime) / 1000);
+
 
   // STORE the raw source text / image path — not the rendered button text
   const optTextRaw = cleanTextForStorage(current[`Answer ${index + 1} Text`] || '');
   const optImgRel = current[`Answer ${index + 1} Image URL`] || '';
   const storageValue = optImgRel || optTextRaw || 'N/A';
 
-  recordResponse(storageValue, isCorrect, timeSpent);
+  recordResponse(storageValue, isCorrect);
 
   selectedButton = button;
   selectedButton.classList.add('selected');
