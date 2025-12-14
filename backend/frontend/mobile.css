@@ -188,6 +188,7 @@ button:hover {
   color: #000;
   border-radius: 10px;
   font-weight: bold;
+  FONT-SIZE: 13px;	
   backdrop-filter: blur(10px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   z-index: 1000;
@@ -576,9 +577,10 @@ button:hover {
 }
 
 #loadCalc {
-  position: absolute;
+  position: fixed;
   overflow: hidden;
-  left: 725px;
+  top: 160px;
+  right: 0px;
   z-index: 100;
 }
 
@@ -705,7 +707,7 @@ button:hover {
   border-radius: 4px;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1440px) {
     #banner-top {
         display: none !important;
     }

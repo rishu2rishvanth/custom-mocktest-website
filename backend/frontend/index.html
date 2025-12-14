@@ -11,10 +11,10 @@
   <link type="text/css" rel="stylesheet" href="css/keyboard.css"  />
   <link type="text/css" rel="stylesheet" href="css/numeric_keyboard.css"  />
   <link type="text/css" rel="stylesheet" href="css/calclayout.css"  />		
-  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-	<script type="text/javascript" src="js/jquery-1.8.0.min.js"></script>
-	<script type="text/javascript" src="js/oscZenoedited.js" ></script>           
-	<script type="text/javascript" src="js/jquery-ui.min.js"></script>
+  <!--<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>-->
+  <script type="text/javascript" src="js/jquery-1.8.0.min.js"></script>
+  <script type="text/javascript" src="js/oscZenoedited.js" ></script>           
+  <script type="text/javascript" src="js/jquery-ui.min.js"></script>
   <script type="text/javascript" src="js/numeric_keyboard.js"></script>	
   <script type="text/javascript" src="js/keyboard.js"></script>	 
 	<meta http-equiv="X-UA-Compatible" content="IE=8" />
@@ -132,6 +132,43 @@ $(function() {
 
     <!-- Quiz Section -->
     <div class="quiz" style="display: none; position: relative;">
+
+      <div id="questionContainer"></div>
+
+      <div id="optionsContainer"></div>
+      
+      <div id="commentContainer"></div>
+
+      <button id="nextQuestion" class="next-button" style="display: none;">Next Question</button>
+
+      <!-- Timer Display -->
+      <div class="timer-container">
+        <div id="timerDisplay">
+          <b>All the Best! <span id="timeInMins"></span></b>
+        </div>
+      </div>
+
+      <button id="toggleNavPanelBtn" class="toggle-nav-panel-btn quiz">☰ Questions</button>
+      <div id="questionNavPanel" class="question-nav-panel quiz" role="navigation" aria-label="Question Navigator">
+        <div class="nav-header">Navigation</div>
+        <div class="nav-content" id="questionNavContent"></div>
+      </div>
+
+      <!-- Calculator Button -->
+      <div class="calculator-container">
+        <span id="calcToggleBtn" class="icon-0"></span>
+      </div>
+
+      <!-- Skip Question Button -->
+      <button id="skipQuestion" class="skip-button">Skip Question</button>
+
+      <!-- Mark & Next Question Button -->
+      <button id="markQuestion" class="mark-button">Mark & Next</button>
+      
+      <!-- Submit Quiz Button -->
+      <button id="submitQuiz" class="submit-button">Submit</button>
+    </div>
+
     <!-- Calculator Container -->
     <div id="loadCalc" style="display:none;">
       <div id="keyPad" class="ui-widget-content calc_container">
@@ -287,41 +324,6 @@ $(function() {
       </div>
       </div>
     </div>
-      <div id="questionContainer"></div>
-
-      <div id="optionsContainer"></div>
-      
-      <div id="commentContainer"></div>
-
-      <button id="nextQuestion" class="next-button" style="display: none;">Next Question</button>
-
-      <!-- Timer Display -->
-      <div class="timer-container">
-        <div id="timerDisplay">
-          <b>All the Best! <span id="timeInMins"></span></b>
-        </div>
-      </div>
-
-      <button id="toggleNavPanelBtn" class="toggle-nav-panel-btn quiz">☰ Questions</button>
-      <div id="questionNavPanel" class="question-nav-panel quiz" role="navigation" aria-label="Question Navigator">
-        <div class="nav-header">Navigation</div>
-        <div class="nav-content" id="questionNavContent"></div>
-      </div>
-
-      <!-- Calculator Button -->
-      <div class="calculator-container">
-        <span id="calcToggleBtn" class="icon-0"></span>
-      </div>
-
-      <!-- Skip Question Button -->
-      <button id="skipQuestion" class="skip-button">Skip Question</button>
-
-      <!-- Mark & Next Question Button -->
-      <button id="markQuestion" class="mark-button">Mark & Next</button>
-      
-      <!-- Submit Quiz Button -->
-      <button id="submitQuiz" class="submit-button">Submit</button>
-    </div>
 
     <!-- Result Section -->
     <div class="result" style="display: none;">
@@ -344,7 +346,8 @@ $(function() {
   <script>
     function toggleCalculator() {
       const wrapper = document.getElementById('loadCalc');
-      wrapper.style.display = wrapper.style.display === 'none' ? 'block' : 'none';
+      const isHidden = getComputedStyle(wrapper).display === 'none';
+      wrapper.style.display = isHidden ? 'block' : 'none';
     }
     
     let calculatorWindow = null;

@@ -237,6 +237,7 @@ button:hover {
   color: #000;
   border-radius: 10px;
   font-weight: bold;
+  FONT-SIZE: 13px;	
   backdrop-filter: blur(10px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   z-index: 99;
@@ -507,7 +508,7 @@ button:hover {
   border: 1px solid #ccc;
   border-radius: 8px;
   padding: 10px;
-  z-index: 999;
+  z-index: 99;
   box-shadow: 0 0 6px rgba(0,0,0,0.1);
   cursor: pointer;
 }
@@ -559,7 +560,7 @@ button:hover {
   top: 320px;
   max-width: fit-content;
   right: 20px;
-  z-index: 1001;
+  z-index: 99;
   padding: 8px 12px;
   font-size: 14px;
   background-color: #004085;

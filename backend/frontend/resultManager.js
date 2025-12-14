@@ -365,6 +365,12 @@ function viewResponseDetails(data, username, timestamp) {
     navHTML += `</div>`;
     html = html + navHTML; // Append navigator at end
     container.innerHTML = html;
+    if (!window.matchMedia('(max-width: 768px)').matches) {
+    container.insertAdjacentHTML(
+        'afterbegin',
+        '<div class="calculator-container"><span class="calc-toggle-btn icon-0"></span></div>'
+    );
+    }
 
     document.querySelectorAll('.nav-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
@@ -470,6 +476,10 @@ function viewResponseDetails(data, username, timestamp) {
     });
     handleScrollButtonsVisibility();
 }
+
+document.addEventListener('click', e => {
+  if (e.target.classList.contains('calc-toggle-btn')) toggleCalculator();
+});
 
 // Fetch and display all results
 export async function fetchAndRenderResults() {

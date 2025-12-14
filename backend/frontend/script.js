@@ -427,6 +427,7 @@ function renderQuestionNavigator() {
       // save time, then record skip
       storeTimeBeforeLeaving();
    $('#keyPad_btnAllClr').trigger('click');
+   $('#keyPad_MC').trigger('click');   
    $('#loadCalc').hide();
       currentQuestionIndex = i;
       showNextQuestion();
@@ -499,6 +500,7 @@ skipQuestionButton.parentNode.insertBefore(clearButton, skipQuestionButton.nextS
 
 document.getElementById('clearResponse').addEventListener('click', () => {
   $('#keyPad_btnAllClr').trigger('click');
+  $('#keyPad_MC').trigger('click');   
   $('#loadCalc').hide();
 
   if (!quizSection.style.display || quizSection.style.display === 'none') return;
@@ -583,6 +585,7 @@ nextQuestionButton.addEventListener('click', () => {
 // Helper: Go to next question or end quiz
 function goToNextOrEnd() {
   $('#keyPad_btnAllClr').trigger('click');
+  $('#keyPad_MC').trigger('click');   
   $('#loadCalc').hide();
 
   if (currentQuestionIndex < selectedQuestions.length - 1) {
