@@ -274,16 +274,21 @@ function viewResponseDetails(data, username, timestamp) {
             // userAnswerHTML: replace "1,2" with actual options (image/text)
             const userIdx = parseIndexList(r.response);
             if (userIdx.length > 0) {
+                // Case 1: proper index list found → render options
                 userAnswerHTML = userIdx
                     .map(idx => {
                         const opt = r.options[idx - 1];
                         if (!opt) return '';
                         if (opt.image) return `<img src="${opt.image}" style="max-height:80px;">`;
-                        return sanitize(opt.text || '');
+        		return `➡️ ${sanitize(opt.text || '')}`;
                     })
                     .filter(Boolean)
                     .join('<br>');
+            } else if (r.response && r.response !== 'Skipped') {
+                // Case 2: NOT index-based → print full text response
+                userAnswerHTML = sanitize(r.response);
             } else {
+                // Case 3: truly skipped
                 userAnswerHTML = 'Skipped';
             }
 
@@ -295,7 +300,7 @@ function viewResponseDetails(data, username, timestamp) {
                         const opt = r.options[idx - 1];
                         if (!opt) return '';
                         if (opt.image) return `<img src="${opt.image}" style="max-height:80px;">`;
-                        return sanitize(opt.text || '');
+        		return `➡️ ${sanitize(opt.text || '')}`;
                     })
                     .filter(Boolean)
                     .join('<br>');
@@ -320,7 +325,13 @@ function viewResponseDetails(data, username, timestamp) {
             ${r.comprehension ? `<p><b>Comprehension:</b> ${formatText(sanitize(r.comprehension))}</p>` : ''}
             <b>Q${index + 1}:</b> ${questionHTML}
             ${optionsHTML || ''}
-            <p><b>Your Response:<br></b> ${userAnswerHTML} ${r.correct ? '✅' : '❌'}</p>
+		<p><b>Your Response:<br></b>
+  		${
+  		  userAnswerHTML === 'Skipped'
+		      ? `${userAnswerHTML} 🟣`
+		      : `${userAnswerHTML} ${r.correct ? '✅' : '❌'}`
+		  }
+		</p>
             ${r.comment ? `<p><b>Comment:</b> ${sanitize(r.comment)}</p>` : ''}
             <p><b>Correct Answer:<br></b> ${correctAnswerHTML || r.correctAnswer}</p>
             <p><b>Time Taken:</b> ${timeTaken} seconds</p>
@@ -480,7 +491,18 @@ export async function fetchAndRenderResults() {
 
         container.innerHTML = `
             <button onclick="window.location.reload()">Home</button><br>
-            <input type="text" id="resultsSearch" placeholder="Search username, section, date..." style="margin-bottom: 10px; padding: 8px; width: 100%; font-size: 16px;" />
+
+            <div id="searchContainer" style="position: relative; max-width: 360px; margin-bottom: 20px;">
+                <input type="text" id="resultsSearch"
+                    placeholder="Search user, section, date..."
+                    style="padding: 8px; font-size:16px; margin-right: 5px" />
+
+                <button id="searchBtn"
+                        style="padding: 8px 15px; margin-top: 0px; margin-bottom:15px; background-color: darkgreen; font-size:16px; cursor:pointer; width:auto;">
+                    Search
+                </button>
+            </div>
+
             <div class="responsive-table-wrapper">
                 <table id="resultsTable" style="border-collapse: collapse; width: 100%;">
                     <thead>
@@ -502,13 +524,20 @@ export async function fetchAndRenderResults() {
             <br><button onclick="window.location.reload()">Home</button>
         `;
 
-        document.getElementById('resultsSearch').addEventListener('input', function () {
-            const filter = this.value.toLowerCase();
-            const rows = document.querySelectorAll('#resultsTable tbody tr');
-            rows.forEach(row => {
-                row.style.display = row.textContent.toLowerCase().includes(filter) ? '' : 'none';
-            });
-        });
+        // --- Search UI Logic ---
+        const searchBox = document.getElementById('resultsSearch');
+        const searchBtn = document.getElementById('searchBtn');
+
+        // Attach VKI
+        if (searchBox && typeof VKI_attach === 'function') {
+            VKI_attach(searchBox);
+        }
+
+        // Live filter while typing (optional)
+        searchBox.addEventListener('input', triggerSearch);
+
+        // Click Search Button
+        searchBtn.addEventListener('click', triggerSearch);
 
         document.querySelectorAll('.view-button').forEach(btn => {
             btn.addEventListener('click', () => {
@@ -532,6 +561,15 @@ export async function fetchAndRenderResults() {
         console.error('Failed to load results:', err);
         container.innerHTML = '<p>Error loading results.</p>';
     }
+}
+
+function triggerSearch() {
+    const filter = document.getElementById("resultsSearch").value.toLowerCase();
+    const rows = document.querySelectorAll("#resultsTable tbody tr");
+
+    rows.forEach(row => {
+        row.style.display = row.textContent.toLowerCase().includes(filter) ? "" : "none";
+    });
 }
 
 // Hook the results page button

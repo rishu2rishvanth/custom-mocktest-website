@@ -71,7 +71,61 @@ function storeTimeBeforeLeaving() {
 document.addEventListener('DOMContentLoaded', () => {
   initResultsButton();
   if (sectionSearchInput) populateSections();
+  addSectionSearchButton();   // ← added here
 });
+
+function triggerSectionSearch() {
+    const input = document.getElementById('sectionSearchInput');
+    const filter = input.value.toLowerCase();
+    const dropdown = document.getElementById('sectionGroupedDropdown');
+
+    dropdown.style.display = 'block'; // ← NEW
+
+    const items = dropdown.querySelectorAll('summary, li'); // ← FIXED
+    items.forEach(item => {
+        const txt = item.textContent.toLowerCase();
+        item.style.display = txt.includes(filter) ? '' : 'none';
+    });
+}
+
+function addSectionSearchButton() {
+    const wrapper = document.querySelector('.section-search-wrapper .input-with-keyboard');
+    if (!wrapper) return;
+
+    // Prevent duplicates
+    if (document.getElementById('sectionSearchBtn')) return;
+
+    const btn = document.createElement('button');
+    btn.id = 'sectionSearchBtn';
+    btn.textContent = 'Search';
+
+    if (window.matchMedia("(max-width: 768px)").matches) {
+      btn.style.cssText = `
+        display: none;
+      `;
+    } else {
+      btn.style.cssText = `
+          width: auto;
+          margin-left: 8px;
+	  margin-top: 0px;
+	  margin-bottom: 15px;
+          cursor: pointer;
+      `;
+    }
+
+    wrapper.appendChild(btn);
+
+    // Trigger search
+    btn.addEventListener('click', triggerSectionSearch);
+
+    const input = document.getElementById('sectionSearchInput');
+    input.addEventListener('input', triggerSectionSearch);
+
+    // Attach virtual keyboard if available
+    if (typeof VKI_attach === 'function') {
+        VKI_attach(input);
+    }
+}
 
 // Load section names and their questions
 function populateSections() {
@@ -258,7 +312,6 @@ restartQuizButton.addEventListener('click', () => {
 });
 
 // Submit quiz button
-
 submitQuizButton.addEventListener('click', (e) => {
     // If triggered by timer, a flag is passed → skip confirmation
     const autoSubmit = e.detail === 'AUTO';
@@ -332,7 +385,6 @@ submitQuizButton.addEventListener('click', (e) => {
     endQuiz();
 });
 
-
 // Start quiz setup
 function startQuiz(section) {
   const numQuestions = parseInt(numQuestionsInput.value);
@@ -372,6 +424,10 @@ function renderQuestionNavigator() {
     updateNavButtonStyle(i);
 
     btn.onclick = () => {
+      // save time, then record skip
+      storeTimeBeforeLeaving();
+   $('#keyPad_btnAllClr').trigger('click');
+   $('#loadCalc').hide();
       currentQuestionIndex = i;
       showNextQuestion();
     };
@@ -381,7 +437,7 @@ function renderQuestionNavigator() {
 }
 
 function updateNavButtonStyle(index, state) {
-  // Remove active class from the previously active button
+  // Remove active class from previously active button
   const prevActiveBtn = document.querySelector('.nav-btn.active');
   if (prevActiveBtn && prevActiveBtn.id !== `nav-q-${index}`) {
     prevActiveBtn.classList.remove('active');
@@ -390,18 +446,26 @@ function updateNavButtonStyle(index, state) {
   const btn = document.getElementById(`nav-q-${index}`);
   if (!btn) return;
 
-  btn.className = 'nav-btn'; // reset classes (removes active if any)
-  btn.classList.add('active'); // add active to current
+  // Reset and mark active
+  btn.className = 'nav-btn';
+  btn.classList.add('active');
 
   if (state === 'marked') {
     btn.classList.add('marked');
   } else {
     const user = userResponses[index];
     if (!user) {
+      // Visited but no record yet
       btn.classList.add('visited');
-    } else if (user.response === 'Skipped') {
+    }
+    else if (user._noAnswer) {
+      // Time recorded but no answer
+      btn.classList.add('visited');
+    }
+    else if (user.response === 'Skipped') {
       btn.classList.add('skipped');
-    } else if (user.correct !== undefined) {
+    }
+    else if (typeof user.correct === 'boolean') {
       btn.classList.add('answered');
     }
   }
@@ -434,6 +498,9 @@ clearButton.classList.add('clear-response-button');
 skipQuestionButton.parentNode.insertBefore(clearButton, skipQuestionButton.nextSibling);
 
 document.getElementById('clearResponse').addEventListener('click', () => {
+  $('#keyPad_btnAllClr').trigger('click');
+  $('#loadCalc').hide();
+
   if (!quizSection.style.display || quizSection.style.display === 'none') return;
 
   const prev = userResponses[currentQuestionIndex];
@@ -452,8 +519,15 @@ document.getElementById('clearResponse').addEventListener('click', () => {
   const commentBox = document.getElementById('userComment');
   if (commentBox) commentBox.value = '';
 
+  // 🔹 Clear NAT input as well
+  const natInput = document.getElementById('natInput');
+  if (natInput) natInput.value = '';
+
   // Clear recorded response
-  userResponses[currentQuestionIndex] = null;
+  userResponses[currentQuestionIndex] = {
+    responseTime: userResponses[currentQuestionIndex]?.responseTime || 0,
+    _noAnswer: true
+  };
 
   // Reset state
   selectedButton = null;
@@ -467,6 +541,11 @@ nextQuestionButton.addEventListener('click', () => {
   // DO NOT call storeTimeBeforeLeaving here — recordResponse will account for time
   const current = selectedQuestions[currentQuestionIndex];
   const type = current['Question Type'] || 'MCQ';
+
+  if (type === 'MCQ') {
+      // save time when marking and move on (do not force save answer)
+  storeTimeBeforeLeaving();
+  }
 
   if (type === 'MSQ') {
     const selectedButtons = document.querySelectorAll('.answer-option.selected');
@@ -503,6 +582,9 @@ nextQuestionButton.addEventListener('click', () => {
 
 // Helper: Go to next question or end quiz
 function goToNextOrEnd() {
+  $('#keyPad_btnAllClr').trigger('click');
+  $('#loadCalc').hide();
+
   if (currentQuestionIndex < selectedQuestions.length - 1) {
     currentQuestionIndex++;
   } else {
@@ -791,6 +873,7 @@ function handleAnswer(index, button) {
   selectedButton = button;
   selectedButton.classList.add('selected');
   hasAnswered = true;
+  questionStartTime = Date.now();
 
   document.querySelectorAll('.answer-option').forEach(btn => btn.disabled = true);
   nextQuestionButton.style.display = 'block';
@@ -874,8 +957,6 @@ function startExamTimer() {
 
 // End quiz
 function endQuiz() {
-  // ensure last question's time is stored (do not force-save answer)
-  storeTimeBeforeLeaving();
 
   if (quizEnded) return;
   quizEnded = true;
@@ -937,7 +1018,7 @@ function submitResponses() {
       correctAnswerIndex,
       type,
       correctAnswer,
-      response: u.response,
+      response: u.response || 'Skipped',
       comment: u.comment || '',
       correct: u.correct,
       weightage: q['Marks'] || '1',

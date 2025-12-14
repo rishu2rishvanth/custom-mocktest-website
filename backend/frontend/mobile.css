@@ -20,6 +20,10 @@ body {
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
 }
 
+#questionContainer {
+  font-size: medium;   /* Or any size you prefer */
+}
+
 @media (max-width: 768px) {
   .quiz-container {
     margin-left: auto;
@@ -192,8 +196,8 @@ button:hover {
 /* ====== Answer Options ====== */
 #optionsContainer {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(45%, 1fr));
-  gap: 10px;
+  /* grid-template-columns: repeat(auto-fit, minmax(45%, 1fr));
+  gap: 10px; */
 }
 
 .answer-option {

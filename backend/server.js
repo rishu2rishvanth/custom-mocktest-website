@@ -18,6 +18,13 @@ try {
     console.error('Failed to update IP address:', error);
 }
 
+app.use((req, res, next) => {
+    if (req.url.match(/\.(png|jpg|jpeg|gif|svg)$/i)) {
+        res.setHeader('Cache-Control', 'no-store');
+    }
+    next();
+});
+
 // Load questions from Excel file
 const excelFilePath = path.join(__dirname, 'quiz-database/Exam/questions.xlsx');
 let jsonData = {};
@@ -33,7 +40,17 @@ try {
 }
 
 // Static file serving
-app.use('/images', express.static(path.join(__dirname, 'quiz-database/Exam/images')));
+app.use('/images', express.static(
+    path.join(__dirname, 'quiz-database/Exam/images'),
+    {
+        etag: false,
+        lastModified: false,
+        setHeaders: (res) => {
+            res.setHeader('Cache-Control', 'no-store');
+        }
+    }
+));
+
 app.use(express.static(path.join(__dirname, 'frontend')));
 
 // Serve main HTML file
@@ -155,14 +172,14 @@ app.get('/api/attempts', (req, res) => {
 
     const summary = {};
     data.forEach(entry => {
-        const key = `${entry.Timestamp}|${entry.Username}|${entry.Score}`;
+        const key = `${entry.timestamp}|${entry.username}|${entry.score}`;
         if (!summary[key]) {
             summary[key] = {
-                timestamp: entry.Timestamp,
-                username: entry.Username,
+                timestamp: entry.timestamp,
+                username: entry.username,
                 section: entry.section || 'Unknown',
-                score: entry.Score
-            };
+                score: entry.score
+           };
         }
     });
 

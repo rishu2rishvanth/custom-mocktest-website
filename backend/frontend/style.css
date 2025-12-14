@@ -391,7 +391,7 @@ button:hover {
 
 #scrollButtons {
   position: fixed;
-  bottom: 20px;
+  top: 20px;
   right: 20px;
   display: flex;
   flex-direction: column;
@@ -417,7 +417,7 @@ button:hover {
 
 .section-search-wrapper {
   position: relative;
-  max-width: 360px;
+  max-width: 400px;
   margin-bottom: 20px;
 }
 
@@ -626,9 +626,10 @@ button:hover {
 }
 
 #loadCalc {
-  position: absolute;
+  position: fixed;
   overflow: hidden;
-  left: 725px;
+  top: 160px;
+  right: 0px;
   z-index: 100;
 }
 
