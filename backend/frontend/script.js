@@ -406,6 +406,7 @@ function startQuiz(section) {
     document.getElementById('banner-bottom').style.display = 'block';
     showNextQuestion();
     renderQuestionNavigator();
+    updateQuestionStatusCounts();
     updateNavButtonStyle(currentQuestionIndex);
     startExamTimer();
   });
@@ -472,6 +473,42 @@ function updateNavButtonStyle(index, state) {
   }
 
   btn.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
+  updateQuestionStatusCounts();
+}
+
+function updateQuestionStatusCounts() {
+  let notVisited = 0;
+  let unanswered = 0;
+  let skipped = 0;
+  let answered = 0;
+  let marked = 0;
+
+  for (let i = 0; i < selectedQuestions.length; i++) {
+    const resp = userResponses[i];
+    const navBtn = document.getElementById(`nav-q-${i}`);
+    const isMarked = navBtn?.classList.contains('marked');
+
+    if (!resp) {
+      notVisited++;
+      continue;
+    }
+
+    if (isMarked) marked++;
+
+    if (resp._noAnswer) {
+      unanswered++;
+    } else if (resp.response === 'Skipped') {
+      skipped++;
+    } else if (typeof resp.correct === 'boolean') {
+      answered++;
+    }
+  }
+
+  document.getElementById('count-notVisited').textContent = notVisited;
+  document.getElementById('count-unanswered').textContent = unanswered;
+  document.getElementById('count-skipped').textContent = skipped;
+  document.getElementById('count-answered').textContent = answered;
+  document.getElementById('count-marked').textContent = marked;
 }
 
 // Skip current question
@@ -480,6 +517,7 @@ skipQuestionButton.addEventListener('click', () => {
   storeTimeBeforeLeaving();
   if (hasAnswered) return;
   recordResponse('Skipped', false);
+  updateQuestionStatusCounts();
   goToNextOrEnd();
 });
 
@@ -488,6 +526,7 @@ markQuestionButton.addEventListener('click', () => {
   // save time when marking and move on (do not force save answer)
   storeTimeBeforeLeaving();
   updateNavButtonStyle(currentQuestionIndex, 'marked');
+  updateQuestionStatusCounts();
   goToNextOrEnd();
 });
 
@@ -535,6 +574,7 @@ document.getElementById('clearResponse').addEventListener('click', () => {
   selectedButton = null;
   hasAnswered = false;
   updateNavButtonStyle(currentQuestionIndex);
+  updateQuestionStatusCounts();
   nextQuestionButton.style.display = 'none';
 });
 
@@ -932,6 +972,7 @@ function recordResponse(response, correct, timeSpent = null) {
 
   hasAnswered = true;
   updateNavButtonStyle(currentQuestionIndex);
+  updateQuestionStatusCounts();
 }
 
 // Start exam timer

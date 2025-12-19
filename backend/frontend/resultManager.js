@@ -502,7 +502,7 @@ export async function fetchAndRenderResults() {
         container.innerHTML = `
             <button onclick="window.location.reload()">Home</button><br>
 
-            <div id="searchContainer" style="position: relative; max-width: 360px; margin-bottom: 20px;">
+            <div id="searchContainer" style="position: relative; max-width: 360px; margin-bottom: 10px; margin-top: 10px">
                 <input type="text" id="resultsSearch"
                     placeholder="Search user, section, date..."
                     style="padding: 8px; font-size:16px; margin-right: 5px" />

@@ -419,7 +419,8 @@ button:hover {
 .section-search-wrapper {
   position: relative;
   max-width: 400px;
-  margin-bottom: 20px;
+  margin-bottom: 10px;
+  margin-top: 10px;
 }
 
 #sectionSearchInput {
@@ -593,7 +594,7 @@ button:hover {
 /* Toggle button */
 .toggle-nav-panel-btn {
   position: fixed;
-  top: 320px;
+  top: 340px;
   max-width: fit-content;
   right: 20px;
   z-index: 99;
@@ -732,15 +733,18 @@ button:hover {
 }
 
 .quiz .nav-btn:hover {
-  background-color: rgb(111, 82, 150);
-}
-
-.quiz .nav-btn.visited {
+  /* background-color: rgb(111, 82, 150); */
   background-color: #d0eaff;
 }
 
+.quiz .nav-btn.visited {
+  /* background-color: #d0eaff; */
+  background-color: red;
+}
+
 .quiz .nav-btn.marked {
-  background-color: rgb(255, 0, 217);
+  background-color: #e2d5f7;
+ /* background-color: rgb(255, 0, 217); */
 }
 
 .quiz .nav-btn.answered {
@@ -782,4 +786,124 @@ button:hover {
     width: 17px;
     height: 23px;
     display: inline-block;
+}
+
+/* ===== Setup two-column layout ===== */
+/* Hidden by default (on refresh) */
+.sysInstPanel {
+  display: none;
+}
+
+/* Visible when toggled */
+.sysInstPanel.active {
+  display: block;
+}
+
+.setup-layout {
+  display: flex;
+  align-items: flex-start;
+  margin-top: 12px;
+  position: fixed;
+  top: 100px;
+  right: 50px;
+}
+
+/* Left = existing setup form */
+.setup-left {
+  flex: 1;
+}
+
+/* Right = instructions */
+.sysInstPanel {
+  width: 75%;
+  margin-left: 12px;
+  border-left: 1px solid #ccc;
+  background: #f9f9f9;
+
+  /* 🔹 Rounded corners */
+  border-radius: 10px;
+
+  /* Optional polish */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.sysInstText1 {
+  height: calc(100vh - 180px);
+  overflow-y: auto;
+  padding: 10px;
+  font-size: 14px;
+}
+
+.sysInstText1 img {
+  max-width: 100%;
+  height: auto;
+  margin-bottom: 10px;
+}
+
+/* ===== Question Status Panel ===== */
+.question-status-panel {
+  position: fixed;
+  right: 20px;
+  top: 200px;            /* ABOVE nav panel */
+  width: 220px;
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  z-index: 1000;
+  font-size: 13px;
+}
+
+.question-status-panel .nav-header {
+  padding: 6px 8px;
+  font-weight: bold;
+  border-bottom: 1px solid #ccc;
+  background: #f5f5f5;
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+}
+
+.nav-status-content {
+  padding: 8px;
+}
+
+.nav-status-content div {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 6px 0;
+  margin-bottom: 5.8px;
+}
+
+/* ===== Number boxes ===== */
+.nav-status-content span {
+  display: inline-block;
+  min-width: 28px;
+  padding: 4px 8px;
+  text-align: center;
+  border-radius: 6px;
+  font-weight: bold;
+  font-size: 13px;
+  color: #333;
+  border: 1px solid #999;
+}
+
+/* ===== Individual colors ===== */
+#count-notVisited {
+  background-color: #fff;
+}
+
+#count-unanswered {
+  background-color: red;
+}
+
+#count-skipped {
+  background-color: #ffd6d6;
+}
+
+#count-answered {
+  background-color: #b6fcb6;
+}
+
+#count-marked {
+  background-color: #e2d5f7;
 }

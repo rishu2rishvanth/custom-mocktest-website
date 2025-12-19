@@ -119,6 +119,34 @@ $(function() {
 
       <button id="startQuiz">Start Test</button>
       <button id="resultsPageButton">View Past Results</button>
+      <button id="toggleInstructions" style="background-color: green; width: auto; color: white; ">Show Instructions Of GATE Exam</button>
+
+        <!-- 🔹 RIGHT SIDE INSTRUCTIONS (SETUP ONLY) -->
+        <div class="setup-layout">
+
+          <div class="setup-left"></div>
+
+          <div class="sysInstPanel">
+
+            <div class="sysInstText1">
+              <h2 style="text-align:center;">Pattern</h2>
+              
+              <div style="text-align:center;">
+                <img src="images/Pattern.png"><br>
+              </div>
+
+              <h2 style="text-align:center;">System Instructions</h2>
+
+              <div style="text-align:center;">
+                <img src="images/inst1.png"><br>
+                <img src="images/inst2.png"><br>
+                <img src="images/inst3.png"><br>
+                <img src="images/inst4.png">
+              </div>
+            </div>
+          </div>
+
+        </div>
     </div>
 
     <!-- Add to HTML -->
@@ -145,6 +173,23 @@ $(function() {
       <div class="timer-container">
         <div id="timerDisplay">
           <b>All the Best! <span id="timeInMins"></span></b>
+        </div>
+      </div>
+
+      <!-- ✅ Question Status Panel -->
+      <div id="questionStatusPanel"
+          class="question-status-panel quiz"
+          role="complementary"
+          aria-label="Question Status">
+
+        <div class="nav-header">Question Status</div>
+
+        <div class="nav-status-content">
+          <div>Not Visited <span id="count-notVisited">0</span></div>
+          <div>Unanswered <span id="count-unanswered">0</span></div>
+          <div>Skipped <span id="count-skipped">0</span></div>
+          <div>Answered <span id="count-answered">0</span></div>
+          <div>Marked <span id="count-marked">0</span></div>
         </div>
       </div>
 
@@ -367,6 +412,17 @@ $(function() {
         });
       }
     });
+
+    const btn = document.getElementById('toggleInstructions');
+    const panel = document.querySelector('.sysInstPanel');
+
+    btn.onclick = () => {
+      panel.classList.toggle('active');
+      btn.textContent = panel.classList.contains('active')
+        ? 'Hide Instructions Of GATE Exam'
+        : 'Show Instructions Of GATE Exam';
+    };
+
   </script>
   <script>
     function isMobileDevice() {

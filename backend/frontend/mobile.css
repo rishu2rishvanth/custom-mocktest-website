@@ -118,7 +118,7 @@ button:hover {
 .mark-button {
   position: fixed;
   bottom: 10px;
-  left: 150px;
+  left: 145px;
   z-index: 1000;
 }
 
@@ -676,15 +676,18 @@ button:hover {
 }
 
 .quiz .nav-btn:hover {
-  background-color: rgb(111, 82, 150);
-}
-
-.quiz .nav-btn.visited {
+  /* background-color: rgb(111, 82, 150); */
   background-color: #d0eaff;
 }
 
+.quiz .nav-btn.visited {
+  /* background-color: #d0eaff; */
+  background-color: red;
+}
+
 .quiz .nav-btn.marked {
-  background-color: rgb(255, 0, 217);
+  background-color: #e2d5f7;
+  /* background-color: rgb(255, 0, 217); */
 }
 
 .quiz .nav-btn.answered {
@@ -722,4 +725,24 @@ button:hover {
     width: 17px;
     height: 23px;
     display: inline-block;
+}
+
+.sysInstPanel {
+  display: none;
+}
+
+.sysInstPanel.active {
+  display: block;
+}
+
+.questionStatusPanel {
+  display: none;
+}
+
+.nav-header {
+  display: none;
+}
+
+.nav-status-content {
+  display: none;
 }
