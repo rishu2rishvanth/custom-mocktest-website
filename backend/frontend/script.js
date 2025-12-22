@@ -74,6 +74,112 @@ document.addEventListener('DOMContentLoaded', () => {
   addSectionSearchButton();   // ← added here
 });
 
+// -------------------- Question Paper Button --------------------
+const questionPaperBtn = document.createElement('button');
+questionPaperBtn.id = 'questionPaperBtn';
+questionPaperBtn.className = 'questionPaperBtn';
+questionPaperBtn.textContent = 'Question Paper';
+questionPaperBtn.style.display = 'none'; // 🔒 hidden by default
+
+document.addEventListener('DOMContentLoaded', () => {
+  const quizHeader = timerDisplay.parentNode; // QUIZ area
+  quizHeader.appendChild(questionPaperBtn);
+  questionPaperBtn.style.display = 'none'; // hidden initially
+});
+
+function createQuestionPaperPanel() {
+  if (document.getElementById('questionPaperPanel')) return;
+
+  const panel = document.createElement('div');
+  panel.id = 'questionPaperPanel';
+  panel.style.cssText = `
+    position: fixed;
+    width: 80%;
+    top: 10%;
+    right: 10%;
+    height: 80%;
+    background: #fff;
+    border: 1px solid #ccc;
+    box-shadow: 0 0 10px rgba(0,0,0,0.2);
+    padding: 15px;
+    z-index: 999;
+    display: none;
+    overflow: hidden;
+  `;
+
+  panel.innerHTML = `
+    <div class="qp-content">
+      <div style="display:flex; flex-direction: column; position: sticky; top: 0; background: #fff; z-index: 1;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <h3 style="margin-bottom: 10px;">Question Paper</h3>
+          <button id="closeQuestionPaper" style="width:auto; margin-top:0px; margin-bottom: 10px; margin-right: 10px; padding:5px 15px;">✖</button>
+        </div>
+        <hr style="margin:0;">
+      </div>
+      <div id="questionPaperContent"></div>
+    </div>
+  `;
+
+  document.body.appendChild(panel);
+
+  document.getElementById('closeQuestionPaper').onclick = () => {
+    panel.style.display = 'none';
+  };
+}
+
+document.addEventListener('DOMContentLoaded', createQuestionPaperPanel);
+
+function renderQuestionPaper() {
+  const container = document.getElementById('questionPaperContent');
+  container.innerHTML = '';
+
+  selectedQuestions.forEach((q, i) => {
+    const qDiv = document.createElement('div');
+    qDiv.style.cssText = `
+      margin-bottom: 15px;
+      padding: 10px;
+      border-bottom: 1px solid #ddd;
+    `;
+
+    const type = q['Question Type'] || 'MCQ';
+    const marks = q['Marks'] || 1;
+    const negative = q['Negative Marks'] || 0;
+
+
+    const questionText = formatText(q['Question'] || '');
+    const questionImage = q['Question Image URL']
+      ? `<img 
+            src="http://10.81.180.170:5000${q['Question Image URL']}" 
+            style="max-width:50%; margin-top:8px; display:block;"
+            alt="Question Image"
+        >`
+      : '';
+
+    qDiv.innerHTML = `
+      <b>Q${i + 1}.</b>
+      <div style="margin-top:6px;">${questionText}</div>
+      ${questionImage}
+      <div style="font-size:15px; margin-top:8px; color:#555;">
+        <b>Type:</b> ${type} |
+        <b>Marks:</b> ${marks} |
+        <b>Negative:</b> ${negative}
+      </div>
+    `;
+
+        container.appendChild(qDiv);
+      });
+    }
+
+    questionPaperBtn.addEventListener('click', () => {
+      if (!selectedQuestions.length) {
+        alert('Start the quiz first.');
+        return;
+      }
+
+  renderQuestionPaper();
+  document.getElementById('questionPaperPanel').style.display = 'block';
+});
+
 function triggerSectionSearch() {
     const input = document.getElementById('sectionSearchInput');
     const filter = input.value.toLowerCase();
@@ -129,7 +235,7 @@ function addSectionSearchButton() {
 
 // Load section names and their questions
 function populateSections() {
-  fetch('http://192.168.1.2:5000/api/questions/sections')
+  fetch('http://10.81.180.170:5000/api/questions/sections')
     .then(res => res.json())
     .then(data => {
       if (!Array.isArray(data)) return;
@@ -307,6 +413,7 @@ startQuizButton.addEventListener('click', () => {
 
 // Restart quiz button
 restartQuizButton.addEventListener('click', () => {
+  questionPaperBtn.style.display = 'none';
   resultSection.style.display = 'none';
   setupSection.style.display = 'block';
 });
@@ -402,8 +509,7 @@ function startQuiz(section) {
 
     setupSection.style.display = 'none';
     quizSection.style.display = 'block';
-    document.getElementById('banner-top').style.display = 'block';
-    document.getElementById('banner-bottom').style.display = 'block';
+    questionPaperBtn.style.display = 'inline-block';
     showNextQuestion();
     renderQuestionNavigator();
     updateQuestionStatusCounts();
@@ -516,7 +622,7 @@ skipQuestionButton.addEventListener('click', () => {
   // save time, then record skip
   storeTimeBeforeLeaving();
   if (hasAnswered) return;
-  recordResponse('Skipped', false);
+  recordResponse('Skipped', null);
   updateQuestionStatusCounts();
   goToNextOrEnd();
 });
@@ -543,12 +649,6 @@ document.getElementById('clearResponse').addEventListener('click', () => {
   $('#loadCalc').hide();
 
   if (!quizSection.style.display || quizSection.style.display === 'none') return;
-
-  const prev = userResponses[currentQuestionIndex];
-  if (prev) {
-    if (prev.correct === true) score--;
-    else if (prev.correct === false && prev.response !== 'Skipped') wrong--;
-  }
 
   // Enable all options
   document.querySelectorAll('.answer-option').forEach(btn => {
@@ -615,7 +715,7 @@ nextQuestionButton.addEventListener('click', () => {
       recordResponse(val.toString(), isCorrect);
     } else {
       // If no range present, just store the value
-      recordResponse(input.value || 'Skipped', false);
+      recordResponse(input.value || 'Skipped', null);
     }
   }
 
@@ -663,13 +763,61 @@ function showNextQuestion() {
 
   // Type tag
   const typeTag = document.createElement('div');
-  typeTag.textContent = `[${questionType} | ${weightage} Mark(s)]`;
-  typeTag.style.fontWeight = 'bold';
-  typeTag.style.fontSize = '15px';
-  typeTag.style.marginBottom = '8px';
-  typeTag.style.marginRight = '15px';
-  typeTag.style.textAlign = 'right';
+  typeTag.className = 'question-type-row';
+
+  // ---- Negative marking logic ----
+  let negMarking = 0;
+  if (questionType === 'MCQ') {
+    if (weightage === 1) negMarking = '1/3';
+    else if (weightage === 2) negMarking = '2/3';
+  }
+
+  // ---- LEFT: Question Type ----
+  const leftDiv = document.createElement('div');
+  leftDiv.style.fontWeight = 'bold';
+  leftDiv.textContent = `Question Type: ${questionType}`;
+
+  // ---- RIGHT: Marks Info ----
+  const rightDiv = document.createElement('div');
+
+  const marksText = document.createElement('span');
+  marksText.textContent = 'Marks for correct Answer: ';
+
+  const marksValue = document.createElement('span');
+  marksValue.textContent = weightage;
+  marksValue.style.color = 'green';
+  marksValue.style.fontWeight = 'bold';
+
+  const separator = document.createElement('span');
+  separator.textContent = ' | ';
+
+  const negText = document.createElement('span');
+  negText.textContent = 'Negative Marks: ';
+
+  const negValue = document.createElement('span');
+  negValue.textContent = negMarking;
+  negValue.style.color = 'red';
+  negValue.style.fontWeight = 'bold';
+
+  rightDiv.append(
+    marksText,
+    marksValue,
+    separator,
+    negText,
+    negValue
+  );
+
+  // ---- Append row ----
+  typeTag.append(leftDiv, rightDiv);
   questionContainer.appendChild(typeTag);
+
+  // ---- Spacer line ----
+  const spacer = document.createElement('hr');
+  spacer.style.border = '0';
+  spacer.style.borderTop = '1px solid #ddd';
+  spacer.style.margin = '6px 0 12px 0';
+
+  questionContainer.appendChild(spacer);
 
   if (current['Comprehension']) {
     const comp = document.createElement('div');
@@ -682,7 +830,7 @@ function showNextQuestion() {
 
   if (current['Question Image URL']) {
     const img = document.createElement('img');
-    img.src = `http://192.168.1.2:5000${current['Question Image URL']}`;
+    img.src = `http://10.81.180.170:5000${current['Question Image URL']}`;
     img.alt = 'Question Image';
     questionContainer.appendChild(img);
   }
@@ -735,7 +883,7 @@ function showNextQuestion() {
       if (text) btn.innerHTML = text;
       if (imgUrl) {
         const img = document.createElement('img');
-        img.src = `http://192.168.1.2:5000${imgUrl}`;
+        img.src = `http://10.81.180.170:5000${imgUrl}`;
         img.alt = text || `Option ${i}`;
         btn.appendChild(img);
       }
@@ -831,7 +979,7 @@ function showNextQuestion() {
         const idx = parseInt(btn.dataset.index, 10);
         const optTextRaw = cleanTextForStorage(q[`Answer ${idx + 1} Text`] || '');
         const optImgRel = normalize(q[`Answer ${idx + 1} Image URL`]); // likely relative path
-        const fullImg = optImgRel ? `http://192.168.1.2:5000${optImgRel}` : '';
+        const fullImg = optImgRel ? `http://10.81.180.170:5000${optImgRel}` : '';
 
         // saved.response could be an image path or raw text
         const savedResp = normalize(saved.response || '');
@@ -926,6 +1074,8 @@ function handleAnswer(index, button) {
 function recordResponse(response, correct, timeSpent = null) {
   const current = selectedQuestions[currentQuestionIndex];
   const questionType = current['Question Type'] || 'MCQ';
+  let marks = Number(current['Marks']);
+  if (!Number.isFinite(marks) || marks <= 0) marks = 1;
 
   const commentInput = document.getElementById('userComment');
   const userComment = commentInput ? commentInput.value.trim() : '';
@@ -936,18 +1086,29 @@ function recordResponse(response, correct, timeSpent = null) {
   // Undo previous scoring if already answered fully (only if prev.correct is explicitly boolean)
   if (prev && typeof prev.correct === 'boolean') {
     if (prev.correct === true) {
-      score--;
-    } else if (prev.correct === false && prev.response !== 'Skipped') {
-      wrong--;
+      score -= prev.marksAwarded || 0;
+    } else if (prev.correct === false && prev.negativePenalty) {
+      score += prev.negativePenalty;
     }
   }
 
-  // Update score based on correctness
+  /* ---- Apply new scoring ---- */
+  let marksAwarded = 0;
+  let negativePenalty = 0;
+
   if (correct === true) {
-    score++;
-  } else if (response !== 'Skipped') {
-    wrong++;
+    marksAwarded = marks;
+    score += marks;
+  } 
+  else if (
+    questionType === 'MCQ' &&
+    correct === false &&
+    response !== 'Skipped'
+  ) {
+    negativePenalty = marks === 1 ? 1 / 3 : 2 / 3;
+    score -= negativePenalty;
   }
+  // MSQ & NAT → NO negative marking
 
   const timeSpentCalc = (timeSpent ?? Math.round((Date.now() - questionStartTime) / 1000));
 
@@ -957,9 +1118,11 @@ function recordResponse(response, correct, timeSpent = null) {
     question: current['Question'] || '',
     questionImage: current['Question Image URL'] || '',
     comprehension: current['Comprehension'] || '',
-    weightage: current['Marks'] || '1',
+    weightage: marks,
     response,
     correct,
+    marksAwarded,
+    negativePenalty,
     responseTime: (prev?.responseTime || 0) + timeSpentCalc,
     comment: userComment,
     questionType
@@ -1001,15 +1164,15 @@ function startExamTimer() {
 
 // End quiz
 function endQuiz() {
-
   if (quizEnded) return;
   quizEnded = true;
   clearInterval(examTimer);
+  questionPaperBtn.style.display = 'none';
   quizSection.style.display = 'none';
-  document.getElementById('banner-top').style.display = 'none';
-  document.getElementById('banner-bottom').style.display = 'none';
   resultSection.style.display = 'block';
-  scoreDisplay.textContent = `You scored ${score} & lost ${wrong} out of ${selectedQuestions.length}! Your Final Score is ${(score-0.3*wrong).toFixed(2)}`;
+  const finalScore = Math.round(score * 100) / 100;
+  scoreDisplay.textContent =
+    `Final Score: ${finalScore.toFixed(2)} out of ${selectedQuestions.length}`;
   submitResponses();
 }
 
@@ -1018,6 +1181,7 @@ function submitResponses() {
   const username = 'Admin';
   const section = sectionSearchInput.value.trim();
   const submitTime = new Date().toISOString();
+  const finalScore = Math.round(score * 100) / 100;
 
   const responses = selectedQuestions.map((q, i) => {
     const u = userResponses[i] || {
@@ -1064,32 +1228,32 @@ function submitResponses() {
       correctAnswer,
       response: u.response || 'Skipped',
       comment: u.comment || '',
-      correct: u.correct,
+      correct: typeof u.correct === 'boolean' ? u.correct : null,
       weightage: q['Marks'] || '1',
       responseTime: u.responseTime,
       timestamp: examStartTime,
       submitTime,
       username,
       section,
-      score
+      score: finalScore
     };
   });
 
   // Send responses
-  fetch('http://192.168.1.2:5000/api/response', {
+  fetch('http://10.81.180.170:5000/api/response', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ username, responses, score, section, examStartTime, submitTime })
+    body: JSON.stringify({ username, responses, score: finalScore, section, examStartTime, submitTime })
   })
     .then(res => res.json())
     .then(data => alert(data.message))
     .catch(err => console.error('Error submitting responses:', err));
 
   // Send score summary
-  fetch('http://192.168.1.2:5000/api/score', {
+  fetch('http://10.81.180.170:5000/api/score', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ username, score, wrong })
+    body: JSON.stringify({ username, score: finalScore, wrong })
   })
     .then(res => res.json())
     .then(data => alert(data.message))

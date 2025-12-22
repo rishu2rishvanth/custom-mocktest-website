@@ -97,7 +97,6 @@ $(function() {
 </head>
 <body class="unselectable" oncontextmenu="return false;" onselect="return false;" onmousewheel="return false;" onkeydown="return false" onkeypress="return false;" onpaste="return false">
 <!--<body>-->
-<img id="banner-top" align="absmiddle" class="banner-top" src="images/banner.png" style="display: none;">
   <div class="quiz-container">
     <h1>Mock Test</h1>
 
@@ -160,6 +159,11 @@ $(function() {
 
     <!-- Quiz Section -->
     <div class="quiz" style="display: none; position: relative;">
+
+      <div style="text-align:center;">
+         <img id="banner-top" align="absmiddle" class="banner-top" src="images/banner.png">
+         <img id="banner-bottom" align="absmiddle" class="banner-bottom" src="images/bottom.png">
+      </div>
 
       <div id="questionContainer"></div>
 
@@ -385,7 +389,6 @@ $(function() {
     <button id="goTop" title="Go to Top">⬆️</button>
     <button id="goBottom" title="Go to Bottom">⬇️</button>
   </div>
-  <img id="banner-bottom" align="absmiddle" class="banner-bottom" src="images/bottom.png" style="display: none;">
   <script type="module" src="script.js"></script>
   <script src="js/chart.js"></script>
   <script>

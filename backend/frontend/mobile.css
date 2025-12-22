@@ -546,7 +546,7 @@ button:hover {
   top: 80px;
   max-width: fit-content;
   right: 20px;
-  z-index: 1001;
+  z-index: 99;
   padding: 8px 12px;
   font-size: 14px;
   background-color: #004085;
@@ -710,13 +710,12 @@ button:hover {
   border-radius: 4px;
 }
 
-@media (max-width: 1440px) {
-    #banner-top {
-        display: none !important;
-    }
-    #banner-bottom {
-        display: none !important;
-    }
+.banner-top {
+  display: none !important;
+}
+
+.banner-bottom {
+  display: none !important;
 }
 
 .icon-0 {
@@ -745,4 +744,31 @@ button:hover {
 
 .nav-status-content {
   display: none;
+}
+
+#questionPaperBtn {
+  display: none !important;
+}
+
+.question-type-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 15px;
+  margin-top: 6px;
+  margin-bottom: 6px;
+  gap: 6px;
+}
+
+/* 🔽 Small screens fallback */
+@media (max-width: 600px) {
+  .question-type-row {
+    flex-direction: column;
+    align-items: flex-start;
+    font-size: 10px;
+  }
+
+  .question-type-row > div {
+    width: 100%;
+  }
 }

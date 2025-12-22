@@ -597,7 +597,7 @@ button:hover {
   top: 340px;
   max-width: fit-content;
   right: 20px;
-  z-index: 99;
+  z-index: 9;
   padding: 8px 12px;
   font-size: 14px;
   background-color: #004085;
@@ -770,6 +770,7 @@ button:hover {
 .banner-top {
   position: fixed;
   top: 0px;
+  left: 0px;
   width: 100%;
   z-index: 99;
 }
@@ -777,6 +778,7 @@ button:hover {
 .banner-bottom {
   position: fixed;
   bottom: 0px;
+  left: 0px;
   width: 100%;
   z-index: 99;
 }
@@ -849,8 +851,8 @@ button:hover {
   background: #fff;
   border: 1px solid #ccc;
   border-radius: 10px;
-  z-index: 1000;
   font-size: 13px;
+  z-index: 99;
 }
 
 .question-status-panel .nav-header {
@@ -907,3 +909,61 @@ button:hover {
 #count-marked {
   background-color: #e2d5f7;
 }
+
+.questionPaperBtn {
+  position:fixed;
+  padding: 5px 15px;
+  top: 32px;
+  right: 10px;
+  margin-left: 10px;
+  width: auto;
+  background-color: #333;
+  z-index: 99;
+}
+
+#questionPaperPanel::before {
+  content: 
+    "5479095978302   5479095978302   5479095978302   5479095978302   5479095978302   5479095978302\A
+             5479095978302   5479095978302   5479095978302   5479095978302   5479095978302   5479095978302\A
+     5479095978302   5479095978302   5479095978302   5479095978302   5479095978302   5479095978302\A
+             5479095978302   5479095978302   5479095978302   5479095978302   5479095978302   5479095978302\A
+     5479095978302   5479095978302   5479095978302   5479095978302   5479095978302   5479095978302\A
+             5479095978302   5479095978302   5479095978302   5479095978302   5479095978302   5479095978302\A
+     5479095978302   5479095978302   5479095978302   5479095978302   5479095978302   5479095978302\A
+             5479095978302   5479095978302   5479095978302   5479095978302   5479095978302   5479095978302\A
+     5479095978302   5479095978302   5479095978302   5479095978302   5479095978302   5479095978302";
+
+  position: absolute;
+  inset: -10%;
+
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: rgba(0, 0, 0, 0.05);
+
+  transform: rotate(-45deg);
+  white-space: pre;
+  line-height: 6rem;
+  letter-spacing: 1.2rem;
+
+  pointer-events: none;
+  user-select: none;
+  z-index: 99;
+}
+
+.qp-content {
+  position: relative;
+  z-index: 1;
+  height: 100%;
+  overflow-y: auto; /* scroll here */
+}
+
+.question-type-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 15px;
+  margin-top: 6px;
+  margin-bottom: 6px;
+  gap: 6px;
+}
+

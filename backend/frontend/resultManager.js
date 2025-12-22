@@ -7,6 +7,17 @@ function sanitize(text) {
         .replace(/>/g, '&gt;');
 }
 
+function normalizeValue(val) {
+    if (val === null || val === undefined) return '';
+
+    // Convert numbers & numeric strings to normalized string
+    if (!isNaN(val) && val !== '') {
+        return String(Number(val)); // "3", 3, "3.0" → "3"
+    }
+
+    return String(val).trim();
+}
+
 // Format duration as mm:ss
 function calculateTimeDifference(start, end) {
     if (!start || !end) return '-';
@@ -118,13 +129,18 @@ function renderOptionsMCQ(r) {
             : '';
 
         // Compare EXACT VALUES (text or image path)
+        const correctNorm = normalizeValue(r.correctAnswer);
+        const responseNorm = normalizeValue(r.response);
+        const textNorm = normalizeValue(rawText);
+        const imgNorm = normalizeValue(rawImage);
+
         const isCorrect =
-            r.correctAnswer === rawText ||
-            r.correctAnswer === rawImage;
+            correctNorm === textNorm ||
+            correctNorm === imgNorm;
 
         const isUser =
-            r.response === rawText ||
-            r.response === rawImage;
+            responseNorm === textNorm ||
+            responseNorm === imgNorm;
 
         let style = "";
 
@@ -207,17 +223,32 @@ function viewResponseDetails(data, username, timestamp) {
     let wrong = 0;
     let skipped = 0;
     let totalTime = 0;
+    let mcqWrong = 0;
+    let penalty = 0;
 
     responses.forEach(r => {
-        if (r.response === 'Skipped') skipped++;
-        else if (r.correct === true) correct++;
-        else if (r.correct === false) wrong++;
+        if (r.response === 'Skipped') {
+            skipped++;
+        }
+        else if (r.correct === true) {
+            correct++;
+        }
+        else if (r.correct === false) {
+            wrong++;
 
-        const time = typeof r.responseTime === 'number' ? r.responseTime : parseFloat(r.responseTime);
+            if (r.type === 'MCQ') {
+                const marks = Number(r.weightage) || 1;
+                penalty += (marks === 1 ? 1/3 : 2/3);
+            }
+        }
+
+        const time = typeof r.responseTime === 'number'
+            ? r.responseTime
+            : parseFloat(r.responseTime);
         if (!isNaN(time)) totalTime += time;
     });
 
-    const penalizedScore = (0.33 * wrong).toFixed(2);
+    const penalizedScore = penalty.toFixed(2);
     const attempted = total - skipped;
 
     function formatDuration(seconds) {
@@ -227,23 +258,61 @@ function viewResponseDetails(data, username, timestamp) {
     }
 
     let html = `<h3>Response Details for ${sanitize(username)}</h3>`;
-    html += `<p>Section: <b>${sanitize(sectionName)}</b>  |   Attempted at: <b>${sanitize(timestamp)}</b>  |   Scored: <b>${sanitize(CurrentScore)}</b></p>`;
+    html += `<p>Section: <b>${sanitize(sectionName)}</b>  |   Attempted at: <b>${sanitize(timestamp)}</b>  |  Final Score: 
+    <b>
+    <span style="font-size: 22px;">
+        ${sanitize(CurrentScore)}
+    </span>
+    </b></p>`;
     html += `
     <div style="margin-top: 15px; font-size: 15px; line-height: 1.6;">
-        <p><b>🧮Total Questions:</b> ${total} | <b>📌Attempted:</b> ${attempted} | <b>🟣Skipped:</b> <span style="color: purple;">${skipped}</span> <br> <b>🎯Correct:</b> <span style="color: green;">${correct}</span> | <b>❌Wrong:</b> <span style="color: red;">${wrong}</span> | <b>🔻Penalized (0.33 per Q):</b> <span style="color: darkorange;">${penalizedScore}</span></p>
+        <p><b>🧮Total Questions:</b> ${total} | <b>📌Attempted:</b> ${attempted} | <b>🟣Skipped:</b> <span style="color: purple;">${skipped}</span> <br> <b>🎯Correct:</b> <span style="color: green;">${correct}</span> | <b>❌Wrong:</b> <span style="color: red;">${wrong}</span> | <b>🔻Penalized:</b> <span style="color: darkorange;">${penalizedScore}</span></p>
     </div>`;
     html += `<button onclick="window.location.reload()">Home</button>`;
 
     responses.forEach((r, index) => {
         let questionHTML = '';
         if (r.type || r.weightage) {
-            questionHTML += `<div style="font-size: 15px; line-height: 1.6; text-align: right">${sanitize(r.type)} | ${sanitize(r.weightage)} Mark(s)</div>`;
+            const questionType = r.type || 'MCQ';
+            const weightage = Number(r.weightage) || 1;
+
+            // ---- Negative marking logic (same as quiz page) ----
+            let negMarking = '0';
+            if (questionType === 'MCQ') {
+                if (weightage === 1) negMarking = '1/3';
+                else if (weightage === 2) negMarking = '2/3';
+            }
+
+            questionHTML += `
+                <div class="question-type-row"
+                    style="display:flex; justify-content:space-between; align-items:center;
+                            font-size:15px; margin-bottom:6px;">
+                    
+                    <!-- LEFT -->
+                    <div style="font-weight:bold;">
+                        Question Type: ${sanitize(questionType)}
+                    </div>
+
+                    <!-- RIGHT -->
+                    <div>
+                        <span>Marks for correct Answer: </span>
+                        <span style="color:green; font-weight:bold;">
+                            ${sanitize(weightage)}
+                        </span>
+                        <span> | </span>
+                        <span>Negative Marks: </span>
+                        <span style="color:red; font-weight:bold;">
+                            ${negMarking}
+                        </span>
+                    </div>
+                </div>
+            `;
         }
         if (r.question) {
             questionHTML += `<div>${formatText(sanitize(r.question))}</div>`;
         }
         if (r.questionImage) {
-            questionHTML += `<div><img src="http://192.168.1.2:5000${r.questionImage}" alt="Question Image" style="max-width: 100%; margin-top: 8px;"></div>`;
+            questionHTML += `<div><img src="http://10.81.180.170:5000${r.questionImage}" alt="Question Image" style="max-width: 100%; margin-top: 8px;"></div>`;
         }
         if (!questionHTML) {
             questionHTML = 'N/A';

@@ -103,7 +103,7 @@ app.post('/api/response', (req, res) => {
         comment: r.comment || '',
         correct: r.correct,
         weightage: r.weightage,
-        score,
+        score: Number(score).toFixed(2),
         responseTime: r.responseTime ?? '',
         correctAnswer: r.correctAnswer || '',
         options: JSON.stringify(r.options || []), // Store options as JSON string
