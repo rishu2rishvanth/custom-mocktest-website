@@ -233,7 +233,7 @@ function viewResponseDetails(data, username, timestamp) {
         else if (r.correct === true) {
             correct++;
         }
-        else if (r.correct === false) {
+        else if (r.correct === false && r.response !== 'Skipped') {
             wrong++;
 
             if (r.type === 'MCQ') {
@@ -245,6 +245,7 @@ function viewResponseDetails(data, username, timestamp) {
         const time = typeof r.responseTime === 'number'
             ? r.responseTime
             : parseFloat(r.responseTime);
+
         if (!isNaN(time)) totalTime += time;
     });
 
@@ -312,7 +313,7 @@ function viewResponseDetails(data, username, timestamp) {
             questionHTML += `<div>${formatText(sanitize(r.question))}</div>`;
         }
         if (r.questionImage) {
-            questionHTML += `<div><img src="http://10.81.180.170:5000${r.questionImage}" alt="Question Image" style="max-width: 100%; margin-top: 8px;"></div>`;
+            questionHTML += `<div><img src="http://192.168.1.2:5000${r.questionImage}" alt="Question Image" style="max-width: 100%; margin-top: 8px;"></div>`;
         }
         if (!questionHTML) {
             questionHTML = 'N/A';

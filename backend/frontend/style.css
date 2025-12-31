@@ -879,7 +879,7 @@ button:hover {
 /* ===== Number boxes ===== */
 .nav-status-content span {
   display: inline-block;
-  min-width: 28px;
+  width: 40px;
   padding: 4px 8px;
   text-align: center;
   border-radius: 6px;
@@ -919,6 +919,7 @@ button:hover {
   width: auto;
   background-color: #333;
   z-index: 99;
+  font-size: 12px;
 }
 
 #questionPaperPanel::before {
@@ -962,6 +963,7 @@ button:hover {
   justify-content: space-between;
   align-items: center;
   font-size: 15px;
+  font-style: italic;
   margin-top: 6px;
   margin-bottom: 6px;
   gap: 6px;

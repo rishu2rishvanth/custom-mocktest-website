@@ -170,7 +170,7 @@ padding:10px;
     cursor: pointer;
     /*  display: block; */
     float: left;
-    font-size: 12px;
+    font-size: 10px;
     font-weight: bold;
     height: 25px;
     line-height: 20px;
@@ -226,7 +226,7 @@ padding:10px;
     border-radius: 3px;
     border-style: solid;
     border-width: 1px 1px 3px;
-    font-size: 20px;
+    font-size: 10px;
     height: 30px;
     line-height: 30px;
     text-align: right;
@@ -303,15 +303,15 @@ background: none repeat scroll 0 0 #e74c3c;
 #keyPad #keyPad_btnSquare,
 #keyPad #keyPad_btnCube,
 #keyPad #keyPad_btnExp,
-#keyPad #keyPad_btnYpowX{ 
-    font-size: 12px;
+#keyPad #keyPad_btnYpowX{
+    font-size: 10px;
 }
 
 /* CLEAR BOTH */
 .clear {clear:both;}
 
 .superscript,.subscript  {
-    font-size: 0.7em;
+    font-size: 0.6em;
     position: relative;
     top: -0.5em;
 }

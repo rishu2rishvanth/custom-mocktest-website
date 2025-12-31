@@ -78,7 +78,7 @@ document.addEventListener('DOMContentLoaded', () => {
 const questionPaperBtn = document.createElement('button');
 questionPaperBtn.id = 'questionPaperBtn';
 questionPaperBtn.className = 'questionPaperBtn';
-questionPaperBtn.textContent = 'Question Paper';
+questionPaperBtn.textContent = '📗 Question Paper';
 questionPaperBtn.style.display = 'none'; // 🔒 hidden by default
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -141,16 +141,21 @@ function renderQuestionPaper() {
       border-bottom: 1px solid #ddd;
     `;
 
-    const type = q['Question Type'] || 'MCQ';
+    const type = q['Question type'] || 'MCQ';
     const marks = q['Marks'] || 1;
-    const negative = q['Negative Marks'] || 0;
 
+    // ---- Negative marking logic ----
+    let negative = 0;
+    if (type === 'MCQ') {
+      if (marks === 1) negative = '1/3';
+      else if (marks === 2) negative = '2/3';
+    }
 
     const questionText = formatText(q['Question'] || '');
     const questionImage = q['Question Image URL']
       ? `<img 
-            src="http://10.81.180.170:5000${q['Question Image URL']}" 
-            style="max-width:50%; margin-top:8px; display:block;"
+            src="http://192.168.1.2:5000${q['Question Image URL']}" 
+            style="max-width:80%; margin-top:8px; display:block;"
             alt="Question Image"
         >`
       : '';
@@ -159,10 +164,10 @@ function renderQuestionPaper() {
       <b>Q${i + 1}.</b>
       <div style="margin-top:6px;">${questionText}</div>
       ${questionImage}
-      <div style="font-size:15px; margin-top:8px; color:#555;">
-        <b>Type:</b> ${type} |
-        <b>Marks:</b> ${marks} |
-        <b>Negative:</b> ${negative}
+      <div style="font-size:15px; margin-top:15px; color:#555; font-style: italic;">
+        Question Type: <b>${type}</b> |
+        Marks for correct Answer : <b><span style="color: green;">${marks}</span></b> |
+        Negative Marks: <b><span style="color: red;">${negative}</span></b>
       </div>
     `;
 
@@ -213,8 +218,8 @@ function addSectionSearchButton() {
       btn.style.cssText = `
           width: auto;
           margin-left: 8px;
-	  margin-top: 0px;
-	  margin-bottom: 15px;
+	        margin-top: 0px;
+	        margin-bottom: 15px;
           cursor: pointer;
       `;
     }
@@ -235,7 +240,7 @@ function addSectionSearchButton() {
 
 // Load section names and their questions
 function populateSections() {
-  fetch('http://10.81.180.170:5000/api/questions/sections')
+  fetch('http://192.168.1.2:5000/api/questions/sections')
     .then(res => res.json())
     .then(data => {
       if (!Array.isArray(data)) return;
@@ -650,6 +655,18 @@ document.getElementById('clearResponse').addEventListener('click', () => {
 
   if (!quizSection.style.display || quizSection.style.display === 'none') return;
 
+  const prev = userResponses[currentQuestionIndex];
+
+  // 🔁 UNDO previous scoring if it existed
+  if (prev && typeof prev.correct === 'boolean') {
+    if (prev.correct === true) {
+      score -= prev.marksAwarded || 0;
+    } else if (prev.correct === false && prev.negativePenalty) {
+      score += prev.negativePenalty;
+      if (wrong > 0) wrong--;
+    }
+  }
+
   // Enable all options
   document.querySelectorAll('.answer-option').forEach(btn => {
     btn.disabled = false;
@@ -660,13 +677,17 @@ document.getElementById('clearResponse').addEventListener('click', () => {
   const commentBox = document.getElementById('userComment');
   if (commentBox) commentBox.value = '';
 
-  // 🔹 Clear NAT input as well
+  // Clear NAT input
   const natInput = document.getElementById('natInput');
   if (natInput) natInput.value = '';
 
-  // Clear recorded response
+  // Store neutral cleared state
   userResponses[currentQuestionIndex] = {
-    responseTime: userResponses[currentQuestionIndex]?.responseTime || 0,
+    response: 'Skipped',
+    correct: null,
+    negativePenalty: 0,
+    marksAwarded: 0,
+    responseTime: prev?.responseTime || 0,
     _noAnswer: true
   };
 
@@ -830,7 +851,7 @@ function showNextQuestion() {
 
   if (current['Question Image URL']) {
     const img = document.createElement('img');
-    img.src = `http://10.81.180.170:5000${current['Question Image URL']}`;
+    img.src = `http://192.168.1.2:5000${current['Question Image URL']}`;
     img.alt = 'Question Image';
     questionContainer.appendChild(img);
   }
@@ -883,7 +904,7 @@ function showNextQuestion() {
       if (text) btn.innerHTML = text;
       if (imgUrl) {
         const img = document.createElement('img');
-        img.src = `http://10.81.180.170:5000${imgUrl}`;
+        img.src = `http://192.168.1.2:5000${imgUrl}`;
         img.alt = text || `Option ${i}`;
         btn.appendChild(img);
       }
@@ -979,7 +1000,7 @@ function showNextQuestion() {
         const idx = parseInt(btn.dataset.index, 10);
         const optTextRaw = cleanTextForStorage(q[`Answer ${idx + 1} Text`] || '');
         const optImgRel = normalize(q[`Answer ${idx + 1} Image URL`]); // likely relative path
-        const fullImg = optImgRel ? `http://10.81.180.170:5000${optImgRel}` : '';
+        const fullImg = optImgRel ? `http://192.168.1.2:5000${optImgRel}` : '';
 
         // saved.response could be an image path or raw text
         const savedResp = normalize(saved.response || '');
@@ -1089,6 +1110,7 @@ function recordResponse(response, correct, timeSpent = null) {
       score -= prev.marksAwarded || 0;
     } else if (prev.correct === false && prev.negativePenalty) {
       score += prev.negativePenalty;
+      if (wrong > 0) wrong--; 
     }
   }
 
@@ -1107,6 +1129,7 @@ function recordResponse(response, correct, timeSpent = null) {
   ) {
     negativePenalty = marks === 1 ? 1 / 3 : 2 / 3;
     score -= negativePenalty;
+    wrong++;
   }
   // MSQ & NAT → NO negative marking
 
@@ -1186,7 +1209,7 @@ function submitResponses() {
   const responses = selectedQuestions.map((q, i) => {
     const u = userResponses[i] || {
       response: 'Skipped',
-      correct: false,
+      correct: null,
       responseTime: 'Skipped',
       comment: ''
     };
@@ -1240,7 +1263,7 @@ function submitResponses() {
   });
 
   // Send responses
-  fetch('http://10.81.180.170:5000/api/response', {
+  fetch('http://192.168.1.2:5000/api/response', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ username, responses, score: finalScore, section, examStartTime, submitTime })
@@ -1250,7 +1273,7 @@ function submitResponses() {
     .catch(err => console.error('Error submitting responses:', err));
 
   // Send score summary
-  fetch('http://10.81.180.170:5000/api/score', {
+  fetch('http://192.168.1.2:5000/api/score', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ username, score: finalScore, wrong })
