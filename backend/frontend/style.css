@@ -10,28 +10,31 @@ body {
 /* Watermark background */
 body::before {
   content: 
-    "5479095978302   5479095978302   5479095978302   5479095978302   5479095978302   5479095978302\A
-             5479095978302   5479095978302   5479095978302   5479095978302   5479095978302   5479095978302\A
-     5479095978302   5479095978302   5479095978302   5479095978302   5479095978302   5479095978302\A
-             5479095978302   5479095978302   5479095978302   5479095978302   5479095978302   5479095978302\A
-     5479095978302   5479095978302   5479095978302   5479095978302   5479095978302   5479095978302\A
-             5479095978302   5479095978302   5479095978302   5479095978302   5479095978302   5479095978302\A
-     5479095978302   5479095978302   5479095978302   5479095978302   5479095978302   5479095978302\A
-             5479095978302   5479095978302   5479095978302   5479095978302   5479095978302   5479095978302\A
-     5479095978302   5479095978302   5479095978302   5479095978302   5479095978302   5479095978302";
-
+    "5479095978302              5479095978302              5479095978302              5479095978302              5479095978302              5479095978302\A
+                   5479095978302              5479095978302              5479095978302              5479095978302              5479095978302              5479095978302\A
+     5479095978302              5479095978302              5479095978302              5479095978302              5479095978302              5479095978302\A
+                   5479095978302              5479095978302              5479095978302              5479095978302              5479095978302              5479095978302\A
+     5479095978302              5479095978302              5479095978302              5479095978302              5479095978302              5479095978302\A
+                   5479095978302              5479095978302              5479095978302              5479095978302              5479095978302              5479095978302\A
+     5479095978302              5479095978302              5479095978302              5479095978302              5479095978302              5479095978302\A
+                   5479095978302              5479095978302              5479095978302              5479095978302              5479095978302              5479095978302\A
+     5479095978302              5479095978302              5479095978302              5479095978302              5479095978302              5479095978302\A
+                   5479095978302              5479095978302              5479095978302              5479095978302              5479095978302              5479095978302\A
+     5479095978302              5479095978302              5479095978302              5479095978302              5479095978302              5479095978302\A
+                   5479095978302              5479095978302              5479095978302              5479095978302              5479095978302              5479095978302";
   position: fixed;
-  top: -1000px;
-  left: -500px;
+  top: -180%;
+  left: -10%;
   width: 300%;
   height: 300%;
+  font-family: fantasy;
   font-size: 2rem;
-  font-weight: 600;
+  font-style: italic;
   color: rgba(0,0,0,0.05);
   transform: rotate(-45deg);
   white-space: pre;     /* <-- allows the \A line breaks */
   line-height: 8rem;
-  letter-spacing: 1.5rem;
+  letter-spacing: 0.001rem;
   z-index: 99;
   pointer-events: none;
 }
@@ -41,14 +44,16 @@ body::before {
   position: relative;
   background-color: #fff;
   padding: 30px;
+  padding-top: 130px;
+  padding-right: 55%;
   border-radius: 10px;
   width: 100%;
-  max-width: 750px;
-  margin-left: 20px; /* ✅ Positions it 200px from the left */
-  margin-top: 100px;
+  /* max-width: 750px; */
+  /* margin-left: 20px; */ /* ✅ Positions it 200px from the left */
+  /* margin-top: 100px; */
   margin-bottom: 25px;
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
-  min-height: 700px;
+  min-height: 850px;
 }
 
 #questionContainer {
@@ -246,7 +251,7 @@ button:hover {
 /* ====== Answer Options ====== */
 #optionsContainer {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(45%, 1fr));
+  /* grid-template-columns: repeat(auto-fit, minmax(45%, 1fr)); */
   gap: 10px;
 }
 
@@ -261,6 +266,7 @@ button:hover {
   overflow: hidden;
   color: #000;
   transition: background-color 0.2s ease;
+  width: fit-content;
 }
 
 .answer-option:hover {
@@ -434,11 +440,11 @@ button:hover {
 
 .section-grouped-dropdown {
   position: absolute;
-  width: 100%;
+  width: 75%;
   background: white;
   border: 1px solid #ccc;
   border-top: none;
-  max-height: 300px;
+  max-height: 250px;
   overflow-y: auto;
   z-index: 100;
   display: none;
@@ -508,14 +514,15 @@ button:hover {
   background-color: #f9f9f9;
   border: 1px solid #ccc;
   border-radius: 8px;
-  padding: 10px;
+  padding: 8px 12px;
   z-index: 99;
   box-shadow: 0 0 6px rgba(0,0,0,0.1);
   cursor: pointer;
 }
 
 .question-navigator h4 {
-  margin-top: 0;
+  margin-top: 5px;
+  margin-bottom: 10px;
   font-size: 16px;
   text-align: center;
 }
@@ -525,7 +532,7 @@ button:hover {
   width: 36px;
   height: 36px;
   margin: 5px;
-  padding: 0;
+  padding: 0px;
   border: none;
   border-radius: 4px;
   font-weight: bold;
@@ -678,15 +685,15 @@ button:hover {
 
 .quiz .question-nav-panel {
   position: fixed;
-  right: 20px;
+  right: 10px;
   top: 400px;
   bottom: 80px;
-  width: 220px;
-  background: #f5f5f5;
+  width: 235px;
+  background: #e5f6fd;
   border: 1px solid #ccc;
   font-family: Arial, sans-serif;
   font-size: 13px;
-  padding: 10px;
+  padding: 5px;
   z-index: 99;
   border-radius: 8px;
   max-height: 400px; /* or something suitable */
@@ -703,6 +710,7 @@ button:hover {
 
 .quiz .question-nav-panel .nav-header {
   font-weight: bold;
+  margin-top: 5px;
   margin-bottom: 10px;
   text-align: center;
   color: #104a77;
@@ -711,7 +719,7 @@ button:hover {
 .quiz .nav-content {
   display: flex;
   flex-wrap: wrap;
-  gap: 0px;
+  gap: 1px;
   justify-content: center;
   max-height: none;        /* or whatever height fits your screen */
   overflow-y: auto;
@@ -722,14 +730,17 @@ button:hover {
 
 
 .quiz .nav-btn {
-  width: 35px;
-  height: 35px;
-  border: 1px solid #999;
-  background-color: #fff;
+  width: 51px;
+  height: 50px;
+  /* border: 1px solid #999; */
+  /* background-color: #fff; */
   cursor: pointer;
-  border-radius: 4px;
+  /* border-radius: 4px; */
   font-weight: bold;
-  color: #333;
+  color: #474747;
+  background: url(../images/questions-sprite.png) no-repeat;
+  background-position: -157px -1px;
+  margin: 0px;
 }
 
 .quiz .nav-btn:hover {
@@ -737,26 +748,57 @@ button:hover {
   background-color: #d0eaff;
 }
 
+.quiz .nav-btn.visited:hover {
+  /* background-color: rgb(111, 82, 150); */
+  background-color: #d0eaff;
+}
+
+.quiz .nav-btn.marked:hover {
+  /* background-color: rgb(111, 82, 150); */
+  background-color: #d0eaff;
+}
+.quiz .nav-btn.skipped:hover {
+  /* background-color: rgb(111, 82, 150); */
+  background-color: #d0eaff;
+}
+
+.quiz .nav-btn.answered:hover {
+  /* background-color: rgb(111, 82, 150); */
+  background-color: #d0eaff;
+}
+
 .quiz .nav-btn.visited {
   /* background-color: #d0eaff; */
-  background-color: red;
+  /* background-color: red; */
+  background: url(../images/questions-sprite.png) no-repeat;
+  background-position: -56px -1px;
+  color: snow;
 }
 
 .quiz .nav-btn.marked {
   background-color: #e2d5f7;
- /* background-color: rgb(255, 0, 217); */
+  /* background-color: rgb(255, 0, 217); */
+  background: url(../images/questions-sprite.png) no-repeat;
+  background-position: -107px 0px;
+  color: snow;
 }
 
 .quiz .nav-btn.answered {
   background-color: #b6fcb6;
+  background: url(../images/questions-sprite.png) no-repeat;
+  background-position: -4px 0px;
+  color: snow;
 }
 
 .quiz .nav-btn.skipped {
   background-color: #ffd6d6;
+  background: url(../images/questions-sprite.png) no-repeat;
+  background-position: -205px 1px;
+  color: snow;
 }
 
 .quiz .nav-btn.active {
-  outline: 2px solid #0000ff;
+  outline: none !important;
 }
 
 .quiz .nav-content::-webkit-scrollbar {
@@ -845,9 +887,10 @@ button:hover {
 /* ===== Question Status Panel ===== */
 .question-status-panel {
   position: fixed;
-  right: 20px;
+  right: 10px;
   top: 200px;            /* ABOVE nav panel */
-  width: 220px;
+  width: 235px;
+  height: 195px;
   background: #fff;
   border: 1px solid #ccc;
   border-radius: 10px;
@@ -865,7 +908,9 @@ button:hover {
 }
 
 .nav-status-content {
-  padding: 8px;
+  padding-top: 6px;
+  padding-left: 20px;
+  padding-right: 20px;
 }
 
 .nav-status-content div {
@@ -880,34 +925,83 @@ button:hover {
 .nav-status-content span {
   display: inline-block;
   width: 40px;
-  padding: 4px 8px;
+  /* padding: 4px 8px; */
   text-align: center;
-  border-radius: 6px;
+  /* border-radius: 6px; */
   font-weight: bold;
   font-size: 13px;
-  color: #333;
-  border: 1px solid #999;
+  color: #474747;
+  /* border: 1px solid #999; */
 }
 
 /* ===== Individual colors ===== */
 #count-notVisited {
   background-color: #fff;
+  background: url(../images/questions-sprite.png) no-repeat;
+  background-position: -107px -56px;
+  float: left;
+  height: 26px;
+  line-height: 20px;
+  margin-right: 10px;
+  width: 29px;
+  color: #474747;
+  padding-top: 3px;
 }
 
 #count-unanswered {
-  background-color: red;
+  background-color: #e44507;
+  color: snow;
+  background: url(../images/questions-sprite.png) no-repeat;
+  background-position: -42px -55px;
+  float: left;
+  height: 26px;
+  line-height: 20px;
+  margin-right: 10px;
+  width: 29px;
+  color: #fff;
+  padding-top: 3px;
 }
 
 #count-skipped {
-  background-color: #ffd6d6;
+  background-color: #6b6e6f;
+  color: snow;
+  background: url(../images/questions-sprite.png) no-repeat;
+  background-position: -139px -55px;
+  float: left;
+  height: 26px;
+  line-height: 20px;
+  margin-right: 10px;
+  width: 29px;
+  color: #fff;
+  padding-top: 3px;
 }
 
 #count-answered {
-  background-color: #b6fcb6;
+  background-color: #64b41c;
+  color: snow;
+  background: url(../images/questions-sprite.png) no-repeat;
+  background-position: -7px -55px;
+  float: left;
+  height: 26px;
+  line-height: 20px;
+  margin-right: 10px;
+  width: 29px;
+  color: #fff;
+  padding-top: 3px;
 }
 
 #count-marked {
-  background-color: #e2d5f7;
+  background-color: #745295;
+  color: snow;
+  background: url(../images/questions-sprite.png) no-repeat;
+  background-position: -75px -54px;
+  float: left;
+  height: 30px;
+  line-height: 20px;
+  margin-right: 10px;
+  width: 29px;
+  color: #fff;
+  padding-top: 3px;
 }
 
 .questionPaperBtn {
@@ -924,28 +1018,27 @@ button:hover {
 
 #questionPaperPanel::before {
   content: 
-    "5479095978302   5479095978302   5479095978302   5479095978302   5479095978302   5479095978302\A
-             5479095978302   5479095978302   5479095978302   5479095978302   5479095978302   5479095978302\A
-     5479095978302   5479095978302   5479095978302   5479095978302   5479095978302   5479095978302\A
-             5479095978302   5479095978302   5479095978302   5479095978302   5479095978302   5479095978302\A
-     5479095978302   5479095978302   5479095978302   5479095978302   5479095978302   5479095978302\A
-             5479095978302   5479095978302   5479095978302   5479095978302   5479095978302   5479095978302\A
-     5479095978302   5479095978302   5479095978302   5479095978302   5479095978302   5479095978302\A
-             5479095978302   5479095978302   5479095978302   5479095978302   5479095978302   5479095978302\A
-     5479095978302   5479095978302   5479095978302   5479095978302   5479095978302   5479095978302";
-
+    "5479095978302              5479095978302              5479095978302              5479095978302              5479095978302              5479095978302\A
+                   5479095978302              5479095978302              5479095978302              5479095978302              5479095978302              5479095978302\A
+     5479095978302              5479095978302              5479095978302              5479095978302              5479095978302              5479095978302\A
+                   5479095978302              5479095978302              5479095978302              5479095978302              5479095978302              5479095978302\A
+     5479095978302              5479095978302              5479095978302              5479095978302              5479095978302              5479095978302\A
+                   5479095978302              5479095978302              5479095978302              5479095978302              5479095978302              5479095978302\A
+     5479095978302              5479095978302              5479095978302              5479095978302              5479095978302              5479095978302\A
+                   5479095978302              5479095978302              5479095978302              5479095978302              5479095978302              5479095978302\A
+     5479095978302              5479095978302              5479095978302              5479095978302              5479095978302              5479095978302\A
+                   5479095978302              5479095978302              5479095978302              5479095978302              5479095978302              5479095978302\A
+     5479095978302              5479095978302              5479095978302              5479095978302              5479095978302              5479095978302\A
+                   5479095978302              5479095978302              5479095978302              5479095978302              5479095978302              5479095978302";
   position: absolute;
-  inset: -10%;
-
+  inset: -25%;
+  font-family: fantasy;
   font-size: 1.5rem;
-  font-weight: 600;
   color: rgba(0, 0, 0, 0.05);
-
   transform: rotate(-45deg);
   white-space: pre;
   line-height: 6rem;
-  letter-spacing: 1.2rem;
-
+  letter-spacing: 0.1rem;
   pointer-events: none;
   user-select: none;
   z-index: 99;

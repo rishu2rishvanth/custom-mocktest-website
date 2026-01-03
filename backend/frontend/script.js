@@ -94,9 +94,9 @@ function createQuestionPaperPanel() {
   panel.id = 'questionPaperPanel';
   panel.style.cssText = `
     position: fixed;
-    width: 80%;
+    width: 70%;
     top: 10%;
-    right: 10%;
+    right: 15%;
     height: 80%;
     background: #fff;
     border: 1px solid #ccc;
@@ -155,7 +155,7 @@ function renderQuestionPaper() {
     const questionImage = q['Question Image URL']
       ? `<img 
             src="http://192.168.1.2:5000${q['Question Image URL']}" 
-            style="max-width:80%; margin-top:8px; display:block;"
+            style="max-width:60%; margin-top:8px; display:block;"
             alt="Question Image"
         >`
       : '';
@@ -846,7 +846,7 @@ function showNextQuestion() {
     questionContainer.appendChild(comp);
   }
 
-  questionText.innerHTML = `<b>Question ${qNum}</b><br>${formatText(current['Question'])}`;
+  questionText.innerHTML = `<b style="font-size: large;">Question ${qNum}</b><br>${formatText(current['Question'])}`;
   questionContainer.appendChild(questionText);
 
   if (current['Question Image URL']) {
@@ -1194,8 +1194,10 @@ function endQuiz() {
   quizSection.style.display = 'none';
   resultSection.style.display = 'block';
   const finalScore = Math.round(score * 100) / 100;
-  scoreDisplay.textContent =
-    `Final Score: ${finalScore.toFixed(2)} out of ${selectedQuestions.length}`;
+  scoreDisplay.innerHTML =
+    `Final Score: <b>${finalScore.toFixed(2)}</b><br><br>
+     Check the breakup in results page.<br>
+     Thank you for your patience & Good Luck!`;
   submitResponses();
 }
 
