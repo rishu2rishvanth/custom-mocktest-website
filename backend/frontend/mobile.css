@@ -854,3 +854,24 @@ button:hover {
     width: 100%;
   }
 }
+
+.edit-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.edit-modal-content {
+    background: #fff;
+    width: 70%;
+    max-height: 80vh;          /* 🔹 limit height */
+    overflow-y: auto;          /* 🔹 enable scrolling */
+    padding: 20px;
+    border-radius: 8px;
+    position: relative;
+}
+

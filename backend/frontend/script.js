@@ -538,9 +538,14 @@ function renderQuestionNavigator() {
     btn.onclick = () => {
       // save time, then record skip
       storeTimeBeforeLeaving();
-   $('#keyPad_btnAllClr').trigger('click');
-   $('#keyPad_MC').trigger('click');   
-   $('#loadCalc').hide();
+      $('#keyPad_btnAllClr').trigger('click');
+      $('#keyPad_MC').trigger('click');   
+      $('#loadCalc').hide();
+      // scroll to top
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth' // optional
+      });
       currentQuestionIndex = i;
       showNextQuestion();
     };
@@ -748,7 +753,11 @@ function goToNextOrEnd() {
   $('#keyPad_btnAllClr').trigger('click');
   $('#keyPad_MC').trigger('click');   
   $('#loadCalc').hide();
-
+  // scroll to top
+  window.scrollTo({
+    top: 0,
+    behavior: 'smooth' // optional
+  });
   if (currentQuestionIndex < selectedQuestions.length - 1) {
     currentQuestionIndex++;
   } else {

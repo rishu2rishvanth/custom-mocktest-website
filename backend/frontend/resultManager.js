@@ -405,6 +405,11 @@ function viewResponseDetails(data, username, timestamp) {
             ${r.comment ? `<p><b>Comment:</b> ${sanitize(r.comment)}</p>` : ''}
             <p><b>Correct Answer:<br></b> ${correctAnswerHTML || r.correctAnswer}</p>
             <p><b>Time Taken:</b> ${timeTaken} seconds</p>
+            <button class="edit-question-btn"
+                data-section="${sanitize(sectionName)}"
+                data-question="${sanitize(r.question)}">
+                    ✏️ Edit
+            </button>
         </div>`;
     });
 
@@ -715,3 +720,5 @@ function formatInlineText(raw) {
         .replace(/\^\((.*?)\)/g, '<sup>$1</sup>')
         .replace(/\_\((.*?)\)/g, '<sub>$1</sub>');
 }
+
+window.fetchAndRenderResults = fetchAndRenderResults;

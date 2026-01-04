@@ -39,6 +39,18 @@ try {
     console.error('Error reading Excel file:', error);
 }
 
+function readWorkbookSafe(filePath) {
+    if (!fs.existsSync(filePath)) {
+        throw new Error(`File not found: ${filePath}`);
+    }
+    return XLSX.readFile(filePath);
+}
+
+function backupFile(filePath) {
+    const backup = filePath.replace('.xlsx', `_backup_${Date.now()}.xlsx`);
+    fs.copyFileSync(filePath, backup);
+}
+
 // Static file serving
 app.use('/images', express.static(
     path.join(__dirname, 'quiz-database/Exam/images'),
@@ -249,6 +261,155 @@ app.post('/api/delete-response', (req, res) => {
     } catch (error) {
         console.error('Error deleting response:', error);
         res.status(500).json({ message: 'Failed to delete response.' });
+    }
+});
+
+
+app.post('/api/edit/save-question', (req, res) => {
+    const {
+        section,
+        rowIndex,
+        question,
+        options,
+        type,
+        correctAnswerIndex,
+        msqAnswers,
+        natRange,
+        marks
+    } = req.body;
+
+    if (!section || rowIndex === undefined) {
+        return res.status(400).json({ message: 'Invalid edit payload.' });
+    }
+
+    try {
+        const qPath = path.join(__dirname, 'quiz-database/Exam/questions.xlsx');
+        const rPath = path.join(__dirname, 'quiz-database/responses.xlsx');
+
+        // 🔐 BACKUP
+        backupFile(qPath);
+        if (fs.existsSync(rPath)) backupFile(rPath);
+
+        /* ---------- UPDATE questions.xlsx ---------- */
+        const qWB = readWorkbookSafe(qPath);
+        const qSheet = qWB.Sheets[section];
+        const qRows = XLSX.utils.sheet_to_json(qSheet, { defval: '' });
+
+        const q = qRows[rowIndex];
+        const oldQuestion = q.Question;
+
+        q.Question = question;
+        q['Question Type'] = type;
+        q.Marks = marks;
+
+        options.forEach((o, i) => {
+            q[`Answer ${i+1} Text`] = o.text || '';
+            q[`Answer ${i+1} Image URL`] = o.image || '';
+        });
+
+        q['Correct Answer Index'] = type === 'MCQ' ? correctAnswerIndex : '';
+        q['MSQ Answers'] = type === 'MSQ' ? msqAnswers : '';
+        q['NAT Answer Range'] = type === 'NAT' ? natRange : '';
+
+        qWB.Sheets[section] = XLSX.utils.json_to_sheet(qRows);
+        XLSX.writeFile(qWB, qPath);
+
+        /* ---------- PATCH responses.xlsx ---------- */
+        if (fs.existsSync(rPath)) {
+            const rWB = XLSX.readFile(rPath);
+            const rSheet = rWB.Sheets['Responses'];
+            const rRows = XLSX.utils.sheet_to_json(rSheet, { defval: '' });
+
+            rRows.forEach(r => {
+                if (r.section !== section || r.question !== oldQuestion) return;
+
+                let correct = null;
+
+                if (type === 'MCQ') {
+                    const opt = options[correctAnswerIndex];
+                    const correctVal = opt.image || opt.text;
+                    correct = r.response === correctVal;
+                    r.correctAnswer = correctVal;
+                }
+                else if (type === 'MSQ') {
+                    const norm = s => String(s).split(',').map(x=>x.trim()).sort().join(',');
+                    correct = norm(r.response || '') === norm(msqAnswers || '');
+                    r.correctAnswer = msqAnswers;
+                }
+                else if (type === 'NAT') {
+                    const [lo, hi] = natRange.split('-').map(Number);
+                    const v = Number(r.response);
+                    correct = !isNaN(v) && v >= lo && v <= hi;
+                    r.correctAnswer = natRange;
+                }
+
+                r.correct = correct;
+                r.type = type;
+                r.weightage = marks;
+                if (type === 'MCQ' || type === 'MSQ') {
+                   r.options = JSON.stringify(options);
+                } else {
+                   r.options = '';
+                }
+                r.question = question;
+            });
+
+            rWB.Sheets['Responses'] = XLSX.utils.json_to_sheet(rRows);
+            XLSX.writeFile(rWB, rPath);
+        }
+
+        res.json({ message: 'Question updated & responses regraded.' });
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Failed to save edits.' });
+    }
+});
+app.post('/api/edit/get-question', (req, res) => {
+    const { section, question } = req.body;
+
+    if (!section || !question) {
+        return res.status(400).json({ message: 'Missing section or question.' });
+    }
+
+    try {
+        const qPath = path.join(__dirname, 'quiz-database/Exam/questions.xlsx');
+        const workbook = readWorkbookSafe(qPath);
+        const sheet = workbook.Sheets[section];
+
+        if (!sheet) {
+            return res.status(404).json({ message: 'Section not found.' });
+        }
+
+        const rows = XLSX.utils.sheet_to_json(sheet, { defval: '' });
+        const rowIndex = rows.findIndex(r => r.Question === question);
+
+        if (rowIndex === -1) {
+            return res.status(404).json({ message: 'Question not found.' });
+        }
+
+        const r = rows[rowIndex];
+
+        res.json({
+            rowIndex,
+            section,
+            question: r.Question,
+            comprehension: r.Comprehension,
+            questionImage: r['Question Image URL'],
+            type: r['Question Type'],
+            marks: r.Marks,
+            correctAnswerIndex: r['Correct Answer Index'],
+            msqAnswers: r['MSQ Answers'],
+            natRange: r['NAT Answer Range'],
+            options: [1,2,3,4].map(i => ({
+                text: r[`Answer ${i} Text`] || '',
+                image: r[`Answer ${i} Image URL`] || ''
+            }))
+        });
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Failed to load question.' });
     }
 });
 
