@@ -407,7 +407,7 @@ function viewResponseDetails(data, username, timestamp) {
             <p><b>Time Taken:</b> ${timeTaken} seconds</p>
             <button class="edit-question-btn"
                 data-section="${sanitize(sectionName)}"
-                data-question="${sanitize(r.question)}">
+                data-question-id="${sanitize(r.questionId)}">
                     ✏️ Edit
             </button>
         </div>`;

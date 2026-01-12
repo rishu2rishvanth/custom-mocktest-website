@@ -33,7 +33,9 @@ try {
     const workbook = XLSX.readFile(excelFilePath);
     workbook.SheetNames.forEach(sheetName => {
         const worksheet = workbook.Sheets[sheetName];
-        jsonData[sheetName] = XLSX.utils.sheet_to_json(worksheet);
+
+jsonData[sheetName] = XLSX.utils.sheet_to_json(worksheet, { defval: '' });
+
     });
 } catch (error) {
     console.error('Error reading Excel file:', error);
@@ -46,10 +48,10 @@ function readWorkbookSafe(filePath) {
     return XLSX.readFile(filePath);
 }
 
-function backupFile(filePath) {
-    const backup = filePath.replace('.xlsx', `_backup_${Date.now()}.xlsx`);
-    fs.copyFileSync(filePath, backup);
-}
+// function backupFile(filePath) {
+//     const backup = filePath.replace('.xlsx', `_backup_${Date.now()}.xlsx`);
+//     fs.copyFileSync(filePath, backup);
+// }
 
 // Static file serving
 app.use('/images', express.static(
@@ -104,6 +106,7 @@ app.post('/api/response', (req, res) => {
     const existingData = XLSX.utils.sheet_to_json(existingSheet);
 
     const newResponses = responses.map(r => ({
+        questionId: r.QuestionID || r.questionId || '',
         timestamp: moment(examStartTime).format('YYYY-MM-DD HH:mm:ss'),
         username,
         section: section || 'unknown',
@@ -264,21 +267,22 @@ app.post('/api/delete-response', (req, res) => {
     }
 });
 
-
 app.post('/api/edit/save-question', (req, res) => {
     const {
-        section,
-        rowIndex,
-        question,
-        options,
-        type,
-        correctAnswerIndex,
-        msqAnswers,
-        natRange,
-        marks
+    section,
+    questionId,
+    question,
+    comprehension,
+    options,
+    type,
+    correctAnswerIndex,
+    msqAnswers,
+    natRange,
+    marks
     } = req.body;
 
-    if (!section || rowIndex === undefined) {
+
+    if (!section || !questionId) {
         return res.status(400).json({ message: 'Invalid edit payload.' });
     }
 
@@ -287,18 +291,21 @@ app.post('/api/edit/save-question', (req, res) => {
         const rPath = path.join(__dirname, 'quiz-database/responses.xlsx');
 
         // 🔐 BACKUP
-        backupFile(qPath);
-        if (fs.existsSync(rPath)) backupFile(rPath);
+        // backupFile(qPath);
+        // if (fs.existsSync(rPath)) backupFile(rPath);
 
         /* ---------- UPDATE questions.xlsx ---------- */
         const qWB = readWorkbookSafe(qPath);
         const qSheet = qWB.Sheets[section];
         const qRows = XLSX.utils.sheet_to_json(qSheet, { defval: '' });
 
-        const q = qRows[rowIndex];
-        const oldQuestion = q.Question;
+        const q = qRows.find(r => String(r.QuestionID) === String(questionId));
+        if (!q) {
+        return res.status(404).json({ message: 'QuestionID not found.' });
+        }
 
         q.Question = question;
+        q.Comprehension = comprehension;
         q['Question Type'] = type;
         q.Marks = marks;
 
@@ -321,7 +328,10 @@ app.post('/api/edit/save-question', (req, res) => {
             const rRows = XLSX.utils.sheet_to_json(rSheet, { defval: '' });
 
             rRows.forEach(r => {
-                if (r.section !== section || r.question !== oldQuestion) return;
+                if (
+                  String(r.section) !== String(section) ||
+                  String(r.questionId) !== String(questionId)
+                ) return;
 
                 let correct = null;
 
@@ -352,6 +362,7 @@ app.post('/api/edit/save-question', (req, res) => {
                    r.options = '';
                 }
                 r.question = question;
+                r.comprehension = comprehension;
             });
 
             rWB.Sheets['Responses'] = XLSX.utils.json_to_sheet(rRows);
@@ -365,11 +376,12 @@ app.post('/api/edit/save-question', (req, res) => {
         res.status(500).json({ message: 'Failed to save edits.' });
     }
 });
-app.post('/api/edit/get-question', (req, res) => {
-    const { section, question } = req.body;
 
-    if (!section || !question) {
-        return res.status(400).json({ message: 'Missing section or question.' });
+app.post('/api/edit/get-question', (req, res) => {
+    const { section, questionId } = req.body;
+
+    if (!section || !questionId) {
+        return res.status(400).json({ message: 'Missing section or questionId.' });
     }
 
     try {
@@ -382,8 +394,8 @@ app.post('/api/edit/get-question', (req, res) => {
         }
 
         const rows = XLSX.utils.sheet_to_json(sheet, { defval: '' });
-        const rowIndex = rows.findIndex(r => r.Question === question);
 
+        const rowIndex = rows.findIndex(r => r.QuestionID === questionId);
         if (rowIndex === -1) {
             return res.status(404).json({ message: 'Question not found.' });
         }
@@ -391,6 +403,7 @@ app.post('/api/edit/get-question', (req, res) => {
         const r = rows[rowIndex];
 
         res.json({
+            questionId: r.QuestionID,
             rowIndex,
             section,
             question: r.Question,

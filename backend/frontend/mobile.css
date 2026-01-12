@@ -122,6 +122,10 @@ button:hover {
   z-index: 1000;
 }
 
+.prev-question-button {
+ display: none !important;
+}
+
 #markQuestion {
   width: auto;
   padding: 5px 15px;
@@ -741,6 +745,19 @@ button:hover {
   background-color: #b6fcb6;
   background: url(../images/questions-sprite.png) no-repeat;
   background-position: -7px -55px;
+  float: left;
+  height: 26px;
+  line-height: 20px;
+  margin-right: 10px;
+  width: 29px;
+  color: #fff;
+  padding-top: 3px;
+}
+
+.nav-btn.answered-marked {
+  background-color: #8e44ad; /* purple */
+  background: url(../images/questions-sprite.png) no-repeat;
+  background-position: -8px -89px !important;
   float: left;
   height: 26px;
   line-height: 20px;

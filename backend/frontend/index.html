@@ -5,9 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Mock Test</title>
   <!-- Desktop -->
-  <link rel="stylesheet" href="style.css" media="screen and (min-width: 1441px)">
+  <link rel="stylesheet" href="style.css" media="screen and (min-width: 1081px)">
   <!-- Mobile -->
-  <link rel="stylesheet" href="mobile.css" media="screen and (max-width: 1440px)">
+  <link rel="stylesheet" href="mobile.css" media="screen and (max-width: 1080px)">
   <link type="text/css" rel="stylesheet" href="css/keyboard.css"  />
   <link type="text/css" rel="stylesheet" href="css/numeric_keyboard.css"  />
   <link type="text/css" rel="stylesheet" href="css/calclayout.css"  />		
@@ -215,6 +215,9 @@ $(function() {
       <!-- Mark & Next Question Button -->
       <button id="markQuestion" class="mark-button">Mark & Next</button>
       
+      <!-- Previous Question Button -->
+      <button id="prevQuestion" class="prev-question-button">Previous</button>
+
       <!-- Submit Quiz Button -->
       <button id="submitQuiz" class="submit-button">Submit</button>
     </div>
@@ -444,6 +447,22 @@ $(function() {
     document.getElementById('toggleNavPanelBtn').addEventListener('click', () => {
       const nav = document.getElementById('questionNavPanel');
       nav.classList.toggle('collapsed');
+    });
+  </script>
+
+  <script>
+    // Disable browser's automatic scroll restoration
+    if ('scrollRestoration' in history) {
+      history.scrollRestoration = 'manual';
+    }
+
+    // Smooth scroll to top on page load / reload
+    window.addEventListener('load', function () {
+      window.scrollTo({
+        top: 0,
+        left: 0,
+        behavior: 'smooth'
+      });
     });
   </script>
 

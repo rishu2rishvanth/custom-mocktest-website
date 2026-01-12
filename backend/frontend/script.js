@@ -4,6 +4,7 @@ import { initResultsButton } from './resultManager.js';
 // DOM Elements
 const startQuizButton = document.getElementById('startQuiz');
 const nextQuestionButton = document.getElementById('nextQuestion');
+const prevQuestionButton = document.getElementById('prevQuestion');
 const skipQuestionButton = document.getElementById('skipQuestion');
 const markQuestionButton = document.getElementById('markQuestion');
 const restartQuizButton = document.getElementById('restartQuiz');
@@ -414,6 +415,11 @@ startQuizButton.addEventListener('click', () => {
   const section = sectionSearchInput.value.trim();;
   if (!section) return alert('Please select a section.');
   startQuiz(section);
+  // scroll to top
+  window.scrollTo({
+    top: 0,
+    behavior: 'smooth' // optional
+  });
 });
 
 // Restart quiz button
@@ -477,15 +483,23 @@ submitQuizButton.addEventListener('click', (e) => {
             const input = document.getElementById('natInput');
             if (input && input.value.trim() !== '') {
                 const val = parseFloat(input.value);
-                const range = q['NAT Answer Range'] || '';
-                const match = range.match(/(-?\d+(?:\.\d+)?)\s*-\s*(-?\d+(?:\.\d+)?)/);
-
+                const raw = q['NAT Answer Range'] || '';
                 let isCorrect = false;
-                if (match) {
-                    let low = parseFloat(match[1]);
-                    let high = parseFloat(match[2]);
-                    if (low > high) [low, high] = [high, low];
-                    isCorrect = val >= low && val <= high;
+
+                if (!isNaN(val)) {
+                    const parts = raw.split(/\s+OR\s+/i);
+                    for (const part of parts) {
+                        const m = part.match(/(-?\d+(?:\.\d+)?)\s*-\s*(-?\d+(?:\.\d+)?)/);
+                        if (m) {
+                            let low = parseFloat(m[1]);
+                            let high = parseFloat(m[2]);
+                            if (low > high) [low, high] = [high, low];
+                            if (val >= low && val <= high) {
+                                isCorrect = true;
+                                break;
+                            }
+                        }
+                    }
                 }
 
                 recordResponse(input.value, isCorrect);
@@ -497,6 +511,99 @@ submitQuizButton.addEventListener('click', (e) => {
     endQuiz();
 });
 
+// -------------------- Question paper validation (FAILSAFE) --------------------
+function validateQuestionPaper(questions) {
+  const errors = [];
+
+  questions.forEach((q, idx) => {
+    const qNo = idx + 1;
+    const type = q['Question Type'] || 'MCQ';
+
+    // ---------- MCQ ----------
+    if (type === 'MCQ') {
+      const idxVal = q['Correct Answer Index'];
+
+      if (!Number.isInteger(idxVal) || idxVal < 0 || idxVal > 3) {
+        errors.push(`Q${qNo}: MCQ invalid Correct Answer Index`);
+        return;
+      }
+
+      const txt = q[`Answer ${idxVal + 1} Text`];
+      const img = q[`Answer ${idxVal + 1} Image URL`];
+      if (!txt && !img) {
+        errors.push(`Q${qNo}: MCQ correct option has no text/image`);
+      }
+    }
+
+    // ---------- MSQ ----------
+    else if (type === 'MSQ') {
+      const raw = q['MSQ Answers'];
+      if (!raw || typeof raw !== 'string') {
+        errors.push(`Q${qNo}: MSQ Answers missing`);
+        return;
+      }
+
+      const parts = raw.split(',').map(v => v.trim());
+      const seen = new Set();
+
+      for (const p of parts) {
+        const n = Number(p);
+        if (!Number.isInteger(n) || n < 0 || n > 3) {
+          errors.push(`Q${qNo}: MSQ invalid option index "${p}"`);
+          break;
+        }
+        if (seen.has(n)) {
+          errors.push(`Q${qNo}: MSQ duplicate option index "${n}"`);
+          break;
+        }
+        seen.add(n);
+      }
+    }
+
+    // ---------- NAT ----------
+    else if (type === 'NAT') {
+      const raw = q['NAT Answer Range'];
+
+      if (raw === undefined || raw === null) {
+        errors.push(`Q${qNo}: NAT Answer missing`);
+        return;
+      }
+
+      if (typeof raw !== 'string') {
+        errors.push(`Q${qNo}: NAT Answer must be string`);
+        return;
+      }
+
+      const value = raw.trim();
+      if (value === '') {
+        errors.push(`Q${qNo}: NAT Answer cannot be empty`);
+        return;
+      }
+
+      // Optional numeric validation (supports: 10-20, -2--15, OR)
+      const num = '[-+]?\\d+(?:\\.\\d+)?';
+      const range = `${num}\\s*-\\s*${num}`;
+      const orRange = new RegExp(`^(${range})(\\s+OR\\s+(${range}))*$`, 'i');
+      const singleNum = new RegExp(`^${num}$`);
+
+      if (singleNum.test(value) || orRange.test(value)) {
+        const parts = value.split(/\s+OR\s+/i);
+        for (const p of parts) {
+          if (singleNum.test(p)) continue;
+          const m = p.match(new RegExp(`(${num})\\s*-\\s*(${num})`));
+          if (!m) {
+            errors.push(`Q${qNo}: Invalid NAT range "${p}"`);
+            return;
+          }
+        }
+      }
+      // else → free-text NAT allowed
+    }
+  });
+
+  return errors;
+}
+
 // Start quiz setup
 function startQuiz(section) {
   const numQuestions = parseInt(numQuestionsInput.value);
@@ -504,6 +611,19 @@ function startQuiz(section) {
   const minutes = Math.round(duration / 60);
 
   showCustomConfirm(section, numQuestions, minutes, () => {
+
+    // 🔒 FAILSAFE CHECK
+    const errors = validateQuestionPaper(sections[section]);
+    if (errors.length) {
+      alert(
+        '❌ Test cannot start due to invalid questions:\n\n' +
+        errors.slice(0, 10).join('\n') +
+        (errors.length > 10 ? '\n\nMore errors exist…' : '')
+      );
+      return;
+    }
+
+    // ✅ SAFE TO START
     selectedQuestions = shuffleArray([...sections[section]]).slice(0, numQuestions);
     userResponses = Array(selectedQuestions.length).fill(null);
     currentQuestionIndex = 0;
@@ -572,6 +692,10 @@ function updateNavButtonStyle(index, state) {
     btn.classList.add('marked');
   } else {
     const user = userResponses[index];
+
+    if (user?.marked) {
+      btn.classList.add('marked');   // 🔧 restore mark on revisit
+    }
     if (!user) {
       // Visited but no record yet
       btn.classList.add('visited');
@@ -585,6 +709,10 @@ function updateNavButtonStyle(index, state) {
     }
     else if (typeof user.correct === 'boolean') {
       btn.classList.add('answered');
+
+      if (user.marked) {
+        btn.classList.add('answered-marked'); // 🟣 NEW CLASS
+      }
     }
   }
 
@@ -601,8 +729,7 @@ function updateQuestionStatusCounts() {
 
   for (let i = 0; i < selectedQuestions.length; i++) {
     const resp = userResponses[i];
-    const navBtn = document.getElementById(`nav-q-${i}`);
-    const isMarked = navBtn?.classList.contains('marked');
+    const isMarked = resp?.marked === true;
 
     if (!resp) {
       notVisited++;
@@ -637,11 +764,120 @@ skipQuestionButton.addEventListener('click', () => {
   goToNextOrEnd();
 });
 
+// Previous question
+prevQuestionButton.addEventListener('click', () => {
+  // Save time only
+  storeTimeBeforeLeaving();
+
+  // Clear calculator & keypad (same as others)
+  $('#keyPad_btnAllClr').trigger('click');
+  $('#keyPad_MC').trigger('click');   
+  $('#loadCalc').hide();
+
+  // Scroll to top
+  window.scrollTo({
+    top: 0,
+    behavior: 'smooth'
+  });
+
+  // Move to previous question (wrap around like GATE)
+  if (currentQuestionIndex > 0) {
+    currentQuestionIndex--;
+  } else {
+    currentQuestionIndex = selectedQuestions.length - 1;
+  }
+
+  showNextQuestion();
+  updateNavButtonStyle(currentQuestionIndex);
+});
+
+function updatePrevButtonVisibility() {
+  if (!prevQuestionButton) return;
+  prevQuestionButton.style.display =
+    currentQuestionIndex === 0 ? 'none' : 'inline-block';
+}
+
 // Mark question
 markQuestionButton.addEventListener('click', () => {
   // save time when marking and move on (do not force save answer)
   storeTimeBeforeLeaving();
-  updateNavButtonStyle(currentQuestionIndex, 'marked');
+
+  const current = selectedQuestions[currentQuestionIndex];
+  const type = current['Question Type'] || 'MCQ';
+
+  // 🔹 SAVE RESPONSE FIRST (if any)
+  if (!hasAnswered) {
+    // nothing selected → just mark
+  } else {
+    // ---- MCQ ----
+    if (type === 'MCQ') {
+      const selectedBtn = document.querySelector('.answer-option.selected');
+      if (selectedBtn) {
+        const index = parseInt(selectedBtn.dataset.index, 10);
+        const isCorrect = index === current['Correct Answer Index'];
+
+        const rawText = current[`Answer ${index + 1} Text`] || '';
+        const rawImg = current[`Answer ${index + 1} Image URL`] || '';
+
+        recordResponse(rawImg || rawText, isCorrect);
+      }
+    }
+
+    // ---- MSQ ----
+    else if (type === 'MSQ') {
+      const selected = [...document.querySelectorAll('.answer-option.selected')]
+        .map(btn => parseInt(btn.dataset.index));
+
+      if (selected.length) {
+        const correctList = (current['MSQ Answers'] || '')
+          .split(',')
+          .map(n => parseInt(n.trim(), 10));
+
+        const isCorrect =
+          selected.slice().sort().join(',') ===
+          correctList.slice().sort().join(',');
+
+        recordResponse(selected.join(', '), isCorrect);
+      }
+    }
+
+    // ---- NAT ----
+    else if (type === 'NAT') {
+      const input = document.getElementById('natInput');
+      if (input && input.value.trim() !== '') {
+        const val = parseFloat(input.value);
+        const raw = current['NAT Answer Range'] || '';
+        let isCorrect = false;
+
+        if (!isNaN(val)) {
+          const parts = raw.split(/\s+OR\s+/i);
+          for (const part of parts) {
+            const m = part.match(/(-?\d+(?:\.\d+)?)\s*-\s*(-?\d+(?:\.\d+)?)/);
+            if (m) {
+              let low = parseFloat(m[1]);
+              let high = parseFloat(m[2]);
+              if (low > high) [low, high] = [high, low];
+              if (val >= low && val <= high) {
+                isCorrect = true;
+                break;
+              }
+            }
+          }
+        }
+
+        recordResponse(input.value, isCorrect);
+      }
+    }
+  }
+
+  // 🔹 NOW APPLY MARK (without downgrading answer)
+  const prev = userResponses[currentQuestionIndex] || {};
+  userResponses[currentQuestionIndex] = {
+    ...prev,
+    marked: true
+  };
+
+  updateNavButtonStyle(currentQuestionIndex);
   updateQuestionStatusCounts();
   goToNextOrEnd();
 });
@@ -688,7 +924,7 @@ document.getElementById('clearResponse').addEventListener('click', () => {
 
   // Store neutral cleared state
   userResponses[currentQuestionIndex] = {
-    response: 'Skipped',
+    response: null,
     correct: null,
     negativePenalty: 0,
     marksAwarded: 0,
@@ -728,21 +964,25 @@ nextQuestionButton.addEventListener('click', () => {
   if (type === 'NAT') {
     const input = document.getElementById('natInput');
     const val = parseFloat(input.value);
+    const raw = current['NAT Answer Range'] || '';
+    let isCorrect = false;
 
-    // Match two signed numbers in the range string
-    const matches = (current['NAT Answer Range'] || '').match(/(-?\d+(?:\.\d+)?)\s*-\s*(-?\d+(?:\.\d+)?)/);
-
-    if (matches) {
-      let low = parseFloat(matches[1]);
-      let high = parseFloat(matches[2]);
-      if (low > high) [low, high] = [high, low]; // Swap if needed
-
-      const isCorrect = !isNaN(val) && val >= low && val <= high;
-      recordResponse(val.toString(), isCorrect);
-    } else {
-      // If no range present, just store the value
-      recordResponse(input.value || 'Skipped', null);
+    if (!isNaN(val)) {
+      const parts = raw.split(/\s+OR\s+/i);
+      for (const part of parts) {
+        const m = part.match(/(-?\d+(?:\.\d+)?)\s*-\s*(-?\d+(?:\.\d+)?)/);
+        if (m) {
+          let low = parseFloat(m[1]);
+          let high = parseFloat(m[2]);
+          if (low > high) [low, high] = [high, low];
+          if (val >= low && val <= high) {
+            isCorrect = true;
+            break;
+          }
+        }
+      }
     }
+    recordResponse(input.value || 'Skipped', isCorrect);
   }
 
   goToNextOrEnd();
@@ -958,8 +1198,8 @@ function showNextQuestion() {
     `;
   } else {
     commentBox.style.cssText = `
-      min-width: 90%;
-      max-width: 90%;
+      min-width: 70%;
+      max-width: 70%;
       box-sizing: border-box;
     `;
   }
@@ -1071,6 +1311,7 @@ function showNextQuestion() {
   })();
 
   updateNavButtonStyle(currentQuestionIndex);
+  updatePrevButtonVisibility();
   nextQuestionButton.style.display = 'none';
   skipQuestionButton.style.display = 'block';
 }
@@ -1147,6 +1388,7 @@ function recordResponse(response, correct, timeSpent = null) {
   // Merge existing fields to avoid losing anything (e.g., previously stored time-only placeholder)
   const merged = {
     ...(prev || {}),
+    questionId: current.QuestionID,
     question: current['Question'] || '',
     questionImage: current['Question Image URL'] || '',
     comprehension: current['Comprehension'] || '',
@@ -1253,6 +1495,7 @@ function submitResponses() {
     }
 
     return {
+      questionId: q.QuestionID,
       question: q['Question'] || '',
       questionImage: q['Question Image URL'] || '',
       comprehension: q['Comprehension'] || '',
