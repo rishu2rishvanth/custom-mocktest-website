@@ -292,6 +292,16 @@ button:hover {
   object-fit: contain;
 }
 
+.option-img {
+  max-height: 100px !important;     /* adjust if needed */
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  display: block;
+  margin: 6px auto;
+  margin: initial;
+}
+
 /* ====== Selected Option ====== */
 .selected {
   background-color: #d3d3d3;
@@ -406,6 +416,7 @@ button:hover {
 .quiz-container img {
   max-width: 100%;
   height: auto;
+  max-height: 700px;
 }
 
 #scrollButtons {
@@ -549,6 +560,12 @@ button:hover {
   border-radius: 4px;
   font-weight: bold;
   cursor: pointer;
+}
+
+.nav-btn sup {
+  font-size: 0.4em;
+  margin-left: 2px;
+  opacity: 0.8;
 }
 
 .nav-btn:hover {

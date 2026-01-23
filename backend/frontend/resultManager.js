@@ -125,7 +125,7 @@ function renderOptionsMCQ(r) {
 
         const displayText = formatInlineText(sanitize(rawText));
         const displayImg = rawImage
-            ? `<img src="${rawImage}" style="max-height: 200px;">`
+            ? `<img src="${rawImage}" class="option-img">`
             : '';
 
         // Compare EXACT VALUES (text or image path)
@@ -178,7 +178,7 @@ function renderOptionsMSQ(r) {
 
         const displayText = formatInlineText(sanitize(rawText));
         const displayImg = rawImage
-            ? `<img src="${rawImage}" style="max-height: 200px;">`
+            ? `<img src="${rawImage}" class="option-img">`
             : '';
 
         const isUser = userIdx.includes(index);
@@ -225,8 +225,11 @@ function viewResponseDetails(data, username, timestamp) {
     let totalTime = 0;
     let mcqWrong = 0;
     let penalty = 0;
+    let maxMarks = 0;
 
     responses.forEach(r => {
+        const w = Number(r.weightage) || 1;
+        maxMarks += w;
         if (r.response === 'Skipped') {
             skipped++;
         }
@@ -267,7 +270,17 @@ function viewResponseDetails(data, username, timestamp) {
     </b></p>`;
     html += `
     <div style="margin-top: 15px; font-size: 15px; line-height: 1.6;">
-        <p><b>🧮Total Questions:</b> ${total} | <b>📌Attempted:</b> ${attempted} | <b>🟣Skipped:</b> <span style="color: purple;">${skipped}</span> <br> <b>🎯Correct:</b> <span style="color: green;">${correct}</span> | <b>❌Wrong:</b> <span style="color: red;">${wrong}</span> | <b>🔻Penalized:</b> <span style="color: darkorange;">${penalizedScore}</span></p>
+        <p>
+            <b>🧮Total Questions:</b> ${total} |
+            <b>📌Attempted:</b> ${attempted} |
+            <b>🟣Skipped:</b> <span style="color: purple;">${skipped}</span> <br>
+
+            <b>🎯Correct:</b> <span style="color: green;">${correct}</span> |
+            <b>❌Wrong:</b> <span style="color: red;">${wrong}</span> |
+            <b>🔻Penalized:</b> <span style="color: darkorange;">${penalizedScore}</span> <br>
+
+            <b>🏁Maximum Marks:</b> <span style="color: #0d6efd; font-weight:bold;">${maxMarks}</span>
+        </p>
     </div>`;
     html += `<button onclick="window.location.reload()">Home</button>`;
 
@@ -325,11 +338,11 @@ function viewResponseDetails(data, username, timestamp) {
 
         // If the response/correctAnswer are images (png/jpg) show them
         userAnswerHTML = /\.(png|jpe?g)$/i.test(r.response)
-            ? `<img src="${r.response}" style="max-height:200px;">`
+            ? `<img src="${r.response}" class="option-img" style="max-height:150px;">`
             : sanitize(r.response);
 
         correctAnswerHTML = /\.(png|jpe?g)$/i.test(r.correctAnswer)
-            ? `<img src="${r.correctAnswer}" style="max-height:200px;">`
+            ? `<img src="${r.correctAnswer}" class="option-img" style="max-height:150px;">`
             : sanitize(r.correctAnswer);
 
         const timeTaken = r.responseTime || 'Skipped';
@@ -349,7 +362,7 @@ function viewResponseDetails(data, username, timestamp) {
                     .map(idx => {
                         const opt = r.options[idx - 1];
                         if (!opt) return '';
-                        if (opt.image) return `<img src="${opt.image}" style="max-height:80px;">`;
+                        if (opt.image) return `<img src="${opt.image}" class="option-img" style="max-height:80px;">`;
         		return `➡️ ${sanitize(opt.text || '')}`;
                     })
                     .filter(Boolean)
@@ -369,7 +382,7 @@ function viewResponseDetails(data, username, timestamp) {
                     .map(idx => {
                         const opt = r.options[idx - 1];
                         if (!opt) return '';
-                        if (opt.image) return `<img src="${opt.image}" style="max-height:80px;">`;
+                        if (opt.image) return `<img src="${opt.image}" class="option-img" style="max-height:80px;">`;
         		return `➡️ ${sanitize(opt.text || '')}`;
                     })
                     .filter(Boolean)
@@ -377,7 +390,7 @@ function viewResponseDetails(data, username, timestamp) {
             } else {
                 // fallback - keep original
                 correctAnswerHTML = /\.(png|jpe?g)$/i.test(r.correctAnswer)
-                    ? `<img src="${r.correctAnswer}" style="max-height:200px;">`
+                    ? `<img src="${r.correctAnswer}" class="option-img" style="max-height:150px;">`
                     : sanitize(r.correctAnswer);
             }
         }
@@ -434,7 +447,8 @@ function viewResponseDetails(data, username, timestamp) {
         if (r.correct === true) colorClass = 'nav-correct';
         else if (r.correct === false && r.response !== 'Skipped') colorClass = 'nav-wrong';
 
-        navHTML += `<button class="nav-btn ${colorClass}" data-target="q${index + 1}">${index + 1}</button>`;
+    const questionType = r.type || 'MCQ';
+        navHTML += `<button class="nav-btn ${colorClass}" data-target="q${index + 1}">${index + 1}<sup>${sanitize(questionType)}</sup></button>`;
     });
 
     navHTML += `</div>`;
