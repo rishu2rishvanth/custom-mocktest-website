@@ -49,21 +49,21 @@ function cleanTextForStorage(str) {
 
 // storeTimeBeforeLeaving: ONLY updates/creates responseTime, doesn't change other fields
 function storeTimeBeforeLeaving() {
-    const prev = userResponses[currentQuestionIndex];
-    const elapsed = Math.round((Date.now() - questionStartTime) / 1000);
+  const prev = userResponses[currentQuestionIndex];
+  const elapsed = Math.round((Date.now() - questionStartTime) / 1000);
 
-    if (!prev) {
-        // Store minimal entry but mark as no-answer placeholder
-        userResponses[currentQuestionIndex] = {
-            responseTime: elapsed,
-            _noAnswer: true
-        };
-    } else {
-        prev.responseTime = (prev.responseTime || 0) + elapsed;
-    }
+  if (!prev) {
+    // Store minimal entry but mark as no-answer placeholder
+    userResponses[currentQuestionIndex] = {
+      responseTime: elapsed,
+      _noAnswer: true
+    };
+  } else {
+    prev.responseTime = (prev.responseTime || 0) + elapsed;
+  }
 
-    // reset questionStartTime so repeated calls without navigation don't double-count
-    questionStartTime = Date.now();
+  // reset questionStartTime so repeated calls without navigation don't double-count
+  questionStartTime = Date.now();
 }
 
 // -------------------- End helpers --------------------
@@ -172,71 +172,71 @@ function renderQuestionPaper() {
       </div>
     `;
 
-        container.appendChild(qDiv);
-      });
-    }
+    container.appendChild(qDiv);
+  });
+}
 
-    questionPaperBtn.addEventListener('click', () => {
-      if (!selectedQuestions.length) {
-        alert('Start the quiz first.');
-        return;
-      }
+questionPaperBtn.addEventListener('click', () => {
+  if (!selectedQuestions.length) {
+    alert('Start the quiz first.');
+    return;
+  }
 
   renderQuestionPaper();
   document.getElementById('questionPaperPanel').style.display = 'block';
 });
 
 function triggerSectionSearch() {
-    const input = document.getElementById('sectionSearchInput');
-    const filter = input.value.toLowerCase();
-    const dropdown = document.getElementById('sectionGroupedDropdown');
+  const input = document.getElementById('sectionSearchInput');
+  const filter = input.value.toLowerCase();
+  const dropdown = document.getElementById('sectionGroupedDropdown');
 
-    dropdown.style.display = 'block'; // ← NEW
+  dropdown.style.display = 'block'; // ← NEW
 
-    const items = dropdown.querySelectorAll('summary, li'); // ← FIXED
-    items.forEach(item => {
-        const txt = item.textContent.toLowerCase();
-        item.style.display = txt.includes(filter) ? '' : 'none';
-    });
+  const items = dropdown.querySelectorAll('summary, li'); // ← FIXED
+  items.forEach(item => {
+    const txt = item.textContent.toLowerCase();
+    item.style.display = txt.includes(filter) ? '' : 'none';
+  });
 }
 
 function addSectionSearchButton() {
-    const wrapper = document.querySelector('.section-search-wrapper .input-with-keyboard');
-    if (!wrapper) return;
+  const wrapper = document.querySelector('.section-search-wrapper .input-with-keyboard');
+  if (!wrapper) return;
 
-    // Prevent duplicates
-    if (document.getElementById('sectionSearchBtn')) return;
+  // Prevent duplicates
+  if (document.getElementById('sectionSearchBtn')) return;
 
-    const btn = document.createElement('button');
-    btn.id = 'sectionSearchBtn';
-    btn.textContent = 'Search';
+  const btn = document.createElement('button');
+  btn.id = 'sectionSearchBtn';
+  btn.textContent = 'Search';
 
-    if (window.matchMedia("(max-width: 768px)").matches) {
-      btn.style.cssText = `
+  if (window.matchMedia("(max-width: 768px)").matches) {
+    btn.style.cssText = `
         display: none;
       `;
-    } else {
-      btn.style.cssText = `
+  } else {
+    btn.style.cssText = `
           width: auto;
           margin-left: 8px;
 	        margin-top: 0px;
 	        margin-bottom: 15px;
           cursor: pointer;
       `;
-    }
+  }
 
-    wrapper.appendChild(btn);
+  wrapper.appendChild(btn);
 
-    // Trigger search
-    btn.addEventListener('click', triggerSectionSearch);
+  // Trigger search
+  btn.addEventListener('click', triggerSectionSearch);
 
-    const input = document.getElementById('sectionSearchInput');
-    input.addEventListener('input', triggerSectionSearch);
+  const input = document.getElementById('sectionSearchInput');
+  input.addEventListener('input', triggerSectionSearch);
 
-    // Attach virtual keyboard if available
-    if (typeof VKI_attach === 'function') {
-        VKI_attach(input);
-    }
+  // Attach virtual keyboard if available
+  if (typeof VKI_attach === 'function') {
+    VKI_attach(input);
+  }
 }
 
 // Load section names and their questions
@@ -431,84 +431,84 @@ restartQuizButton.addEventListener('click', () => {
 
 // Submit quiz button
 submitQuizButton.addEventListener('click', (e) => {
-    // If triggered by timer, a flag is passed → skip confirmation
-    const autoSubmit = e.detail === 'AUTO';
+  // If triggered by timer, a flag is passed → skip confirmation
+  const autoSubmit = e.detail === 'AUTO';
 
-    if (!autoSubmit) {
-        const confirmSubmit = confirm("Are you sure you want to submit the quiz?");
-        if (!confirmSubmit) return;
+  if (!autoSubmit) {
+    const confirmSubmit = confirm("Are you sure you want to submit the quiz?");
+    if (!confirmSubmit) return;
+  }
+
+  // 1️⃣ Always save time first
+  storeTimeBeforeLeaving();
+
+  // 2️⃣ Force-save last answer IF user has answered something
+  const q = selectedQuestions[currentQuestionIndex];
+  const type = q['Question Type'] || 'MCQ';
+
+  if (!quizEnded) {
+
+    // --- MCQ ---
+    if (type === 'MCQ') {
+      const selectedBtn = document.querySelector('.answer-option.selected');
+      if (selectedBtn) {
+        const index = parseInt(selectedBtn.dataset.index, 10);
+        const isCorrect = index === q['Correct Answer Index'];
+
+        const rawText = q[`Answer ${index + 1} Text`] || '';
+        const rawImg = q[`Answer ${index + 1} Image URL`] || '';
+
+        recordResponse(rawImg || rawText, isCorrect);
+      }
     }
 
-    // 1️⃣ Always save time first
-    storeTimeBeforeLeaving();
+    // --- MSQ ---
+    else if (type === 'MSQ') {
+      const selected = [...document.querySelectorAll('.answer-option.selected')]
+        .map(btn => parseInt(btn.dataset.index));
 
-    // 2️⃣ Force-save last answer IF user has answered something
-    const q = selectedQuestions[currentQuestionIndex];
-    const type = q['Question Type'] || 'MCQ';
+      const correctList = (q['MSQ Answers'] || '')
+        .split(',')
+        .map(n => parseInt(n.trim(), 10));
 
-    if (!quizEnded) {
+      const isCorrect =
+        selected.slice().sort().join(',') ===
+        correctList.slice().sort().join(',');
 
-        // --- MCQ ---
-        if (type === 'MCQ') {
-            const selectedBtn = document.querySelector('.answer-option.selected');
-            if (selectedBtn) {
-                const index = parseInt(selectedBtn.dataset.index, 10);
-                const isCorrect = index === q['Correct Answer Index'];
-
-                const rawText = q[`Answer ${index + 1} Text`] || '';
-                const rawImg = q[`Answer ${index + 1} Image URL`] || '';
-
-                recordResponse(rawImg || rawText, isCorrect);
-            }
-        }
-
-        // --- MSQ ---
-        else if (type === 'MSQ') {
-            const selected = [...document.querySelectorAll('.answer-option.selected')]
-                .map(btn => parseInt(btn.dataset.index));
-
-            const correctList = (q['MSQ Answers'] || '')
-                .split(',')
-                .map(n => parseInt(n.trim(), 10));
-
-            const isCorrect =
-                selected.slice().sort().join(',') ===
-                correctList.slice().sort().join(',');
-
-            recordResponse(selected.join(', '), isCorrect);
-        }
-
-        // --- NAT ---
-        else if (type === 'NAT') {
-            const input = document.getElementById('natInput');
-            if (input && input.value.trim() !== '') {
-                const val = parseFloat(input.value);
-                const raw = q['NAT Answer Range'] || '';
-                let isCorrect = false;
-
-                if (!isNaN(val)) {
-                    const parts = raw.split(/\s+OR\s+/i);
-                    for (const part of parts) {
-                        const m = part.match(/(-?\d+(?:\.\d+)?)\s*-\s*(-?\d+(?:\.\d+)?)/);
-                        if (m) {
-                            let low = parseFloat(m[1]);
-                            let high = parseFloat(m[2]);
-                            if (low > high) [low, high] = [high, low];
-                            if (val >= low && val <= high) {
-                                isCorrect = true;
-                                break;
-                            }
-                        }
-                    }
-                }
-
-                recordResponse(input.value, isCorrect);
-            }
-        }
+      recordResponse(selected.join(', '), isCorrect);
     }
 
-    // 3️⃣ Finally end quiz
-    endQuiz();
+    // --- NAT ---
+    else if (type === 'NAT') {
+      const input = document.getElementById('natInput');
+      if (input && input.value.trim() !== '') {
+        const val = parseFloat(input.value);
+        const raw = q['NAT Answer Range'] || '';
+        let isCorrect = false;
+
+        if (!isNaN(val)) {
+          const parts = raw.split(/\s+OR\s+/i);
+          for (const part of parts) {
+            const m = part.match(/(-?\d+(?:\.\d+)?)\s*-\s*(-?\d+(?:\.\d+)?)/);
+            if (m) {
+              let low = parseFloat(m[1]);
+              let high = parseFloat(m[2]);
+              if (low > high) [low, high] = [high, low];
+              if (val >= low && val <= high) {
+                isCorrect = true;
+                break;
+              }
+            }
+          }
+        }
+
+        recordResponse(input.value, isCorrect);
+      }
+    }
+  }
+
+  // 3️⃣ Finally end quiz
+  endQuiz();
 });
 
 // -------------------- Question paper validation (FAILSAFE) --------------------
@@ -659,7 +659,7 @@ function renderQuestionNavigator() {
       // save time, then record skip
       storeTimeBeforeLeaving();
       $('#keyPad_btnAllClr').trigger('click');
-      $('#keyPad_MC').trigger('click');   
+      $('#keyPad_MC').trigger('click');
       $('#loadCalc').hide();
       // scroll to top
       window.scrollTo({
@@ -771,7 +771,7 @@ prevQuestionButton.addEventListener('click', () => {
 
   // Clear calculator & keypad (same as others)
   $('#keyPad_btnAllClr').trigger('click');
-  $('#keyPad_MC').trigger('click');   
+  $('#keyPad_MC').trigger('click');
   $('#loadCalc').hide();
 
   // Scroll to top
@@ -891,7 +891,7 @@ skipQuestionButton.parentNode.insertBefore(clearButton, skipQuestionButton.nextS
 
 document.getElementById('clearResponse').addEventListener('click', () => {
   $('#keyPad_btnAllClr').trigger('click');
-  $('#keyPad_MC').trigger('click');   
+  $('#keyPad_MC').trigger('click');
   $('#loadCalc').hide();
 
   if (!quizSection.style.display || quizSection.style.display === 'none') return;
@@ -947,8 +947,8 @@ nextQuestionButton.addEventListener('click', () => {
   const type = current['Question Type'] || 'MCQ';
 
   if (type === 'MCQ') {
-      // save time when marking and move on (do not force save answer)
-  storeTimeBeforeLeaving();
+    // save time when marking and move on (do not force save answer)
+    storeTimeBeforeLeaving();
   }
 
   if (type === 'MSQ') {
@@ -991,7 +991,7 @@ nextQuestionButton.addEventListener('click', () => {
 // Helper: Go to next question or end quiz
 function goToNextOrEnd() {
   $('#keyPad_btnAllClr').trigger('click');
-  $('#keyPad_MC').trigger('click');   
+  $('#keyPad_MC').trigger('click');
   $('#loadCalc').hide();
   // scroll to top
   window.scrollTo({
@@ -1257,8 +1257,8 @@ function showNextQuestion() {
         if (
           savedResp &&
           (savedResp === optTextRaw ||
-           savedResp === optImgRel ||
-           savedResp === fullImg)
+            savedResp === optImgRel ||
+            savedResp === fullImg)
         ) {
           btn.classList.add('selected');
           selectedButton = btn;
@@ -1360,7 +1360,7 @@ function recordResponse(response, correct, timeSpent = null) {
       score -= prev.marksAwarded || 0;
     } else if (prev.correct === false && prev.negativePenalty) {
       score += prev.negativePenalty;
-      if (wrong > 0) wrong--; 
+      if (wrong > 0) wrong--;
     }
   }
 
@@ -1371,7 +1371,7 @@ function recordResponse(response, correct, timeSpent = null) {
   if (correct === true) {
     marksAwarded = marks;
     score += marks;
-  } 
+  }
   else if (
     questionType === 'MCQ' &&
     correct === false &&

@@ -80,15 +80,15 @@ function deleteResponseDetails(data, username, timestamp) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, timestamp })
     })
-    .then(res => res.json())
-    .then(res => {
-        alert(res.message || 'Deleted successfully.');
-        fetchAndRenderResults(); // Refresh the table
-    })
-    .catch(err => {
-        console.error('Error deleting response:', err);
-        alert('Failed to delete response.');
-    });
+        .then(res => res.json())
+        .then(res => {
+            alert(res.message || 'Deleted successfully.');
+            fetchAndRenderResults(); // Refresh the table
+        })
+        .catch(err => {
+            console.error('Error deleting response:', err);
+            alert('Failed to delete response.');
+        });
 }
 
 /* -------------------------
@@ -241,7 +241,7 @@ function viewResponseDetails(data, username, timestamp) {
 
             if (r.type === 'MCQ') {
                 const marks = Number(r.weightage) || 1;
-                penalty += (marks === 1 ? 1/3 : 2/3);
+                penalty += (marks === 1 ? 1 / 3 : 2 / 3);
             }
         }
 
@@ -363,7 +363,7 @@ function viewResponseDetails(data, username, timestamp) {
                         const opt = r.options[idx - 1];
                         if (!opt) return '';
                         if (opt.image) return `<img src="${opt.image}" class="option-img" style="max-height:80px;">`;
-        		return `➡️ ${sanitize(opt.text || '')}`;
+                        return `➡️ ${sanitize(opt.text || '')}`;
                     })
                     .filter(Boolean)
                     .join('<br>');
@@ -383,7 +383,7 @@ function viewResponseDetails(data, username, timestamp) {
                         const opt = r.options[idx - 1];
                         if (!opt) return '';
                         if (opt.image) return `<img src="${opt.image}" class="option-img" style="max-height:80px;">`;
-        		return `➡️ ${sanitize(opt.text || '')}`;
+                        return `➡️ ${sanitize(opt.text || '')}`;
                     })
                     .filter(Boolean)
                     .join('<br>');
@@ -409,11 +409,10 @@ function viewResponseDetails(data, username, timestamp) {
             <b>Q${index + 1}:</b> ${questionHTML}
             ${optionsHTML || ''}
 		<p><b>Your Response:<br></b>
-  		${
-  		  userAnswerHTML === 'Skipped'
-		      ? `${userAnswerHTML} 🟣`
-		      : `${userAnswerHTML} ${r.correct ? '✅' : '❌'}`
-		  }
+  		${userAnswerHTML === 'Skipped'
+                ? `${userAnswerHTML} 🟣`
+                : `${userAnswerHTML} ${r.correct ? '✅' : '❌'}`
+            }
 		</p>
             ${r.comment ? `<p><b>Comment:</b> ${sanitize(r.comment)}</p>` : ''}
             <p><b>Correct Answer:<br></b> ${correctAnswerHTML || r.correctAnswer}</p>
@@ -447,18 +446,18 @@ function viewResponseDetails(data, username, timestamp) {
         if (r.correct === true) colorClass = 'nav-correct';
         else if (r.correct === false && r.response !== 'Skipped') colorClass = 'nav-wrong';
 
-    const questionType = r.type || 'MCQ';
+        const questionType = r.type || 'MCQ';
         navHTML += `<button class="nav-btn ${colorClass}" data-target="q${index + 1}">${index + 1}<sup>${sanitize(questionType)}</sup></button>`;
     });
 
     navHTML += `</div>`;
     html = html + navHTML; // Append navigator at end
     container.innerHTML = html;
-    if (!window.matchMedia('(max-width: 768px)').matches) {
-    container.insertAdjacentHTML(
-        'afterbegin',
-        '<div class="calculator-container"><span class="calc-toggle-btn icon-0"></span></div>'
-    );
+    if (!window.matchMedia('(max-width: 0px)').matches) {
+        container.insertAdjacentHTML(
+            'afterbegin',
+            '<div class="calculator-container"><span class="calc-toggle-btn icon-0"></span></div>'
+        );
     }
 
     document.querySelectorAll('.nav-btn').forEach(btn => {
@@ -567,7 +566,7 @@ function viewResponseDetails(data, username, timestamp) {
 }
 
 document.addEventListener('click', e => {
-  if (e.target.classList.contains('calc-toggle-btn')) toggleCalculator();
+    if (e.target.classList.contains('calc-toggle-btn')) toggleCalculator();
 });
 
 // Fetch and display all results
