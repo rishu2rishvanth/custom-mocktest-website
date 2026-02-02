@@ -427,6 +427,10 @@ restartQuizButton.addEventListener('click', () => {
   questionPaperBtn.style.display = 'none';
   resultSection.style.display = 'none';
   setupSection.style.display = 'block';
+  // 🔢 Restore floating keyboard on home
+  if (window.vKeyboard) {
+    vKeyboard.mode = 'floating';
+  }
 });
 
 // Submit quiz button
@@ -623,6 +627,11 @@ function startQuiz(section) {
       return;
     }
 
+    // 🔢 Switch numeric keyboard to STATIC mode during quiz
+    if (window.vKeyboard) {
+      vKeyboard.mode = 'static';
+    }
+
     // ✅ SAFE TO START
     selectedQuestions = shuffleArray([...sections[section]]).slice(0, numQuestions);
     userResponses = Array(selectedQuestions.length).fill(null);
@@ -725,40 +734,90 @@ function updateQuestionStatusCounts() {
   let unanswered = 0;
   let skipped = 0;
   let answered = 0;
-  let marked = 0;
+  let markedOnly = 0;
+  let answeredAndMarked = 0;
 
-  for (let i = 0; i < selectedQuestions.length; i++) {
+  const total = selectedQuestions.length;
+
+  for (let i = 0; i < total; i++) {
     const resp = userResponses[i];
-    const isMarked = resp?.marked === true;
 
+    // 1️⃣ Not visited
     if (!resp) {
       notVisited++;
       continue;
     }
 
-    if (isMarked) marked++;
+    const isMarked = resp.marked === true;
+    const isAnswered = typeof resp.correct === 'boolean';
 
-    if (resp._noAnswer) {
-      unanswered++;
-    } else if (resp.response === 'Skipped') {
+    // 2️⃣ Skipped
+    if (resp.response === 'Skipped') {
       skipped++;
-    } else if (typeof resp.correct === 'boolean') {
-      answered++;
+      continue;
     }
+
+    // 3️⃣ Answered & Marked
+    if (isAnswered && isMarked) {
+      answeredAndMarked++;
+      continue;
+    }
+
+    // 4️⃣ Answered only
+    if (isAnswered) {
+      answered++;
+      continue;
+    }
+
+    // 5️⃣ Marked only (never unanswered)
+    if (isMarked) {
+      markedOnly++;
+      continue;
+    }
+
+    // 6️⃣ Visited but unanswered
+    unanswered++;
   }
 
+  // 🔢 Update UI
   document.getElementById('count-notVisited').textContent = notVisited;
   document.getElementById('count-unanswered').textContent = unanswered;
   document.getElementById('count-skipped').textContent = skipped;
   document.getElementById('count-answered').textContent = answered;
-  document.getElementById('count-marked').textContent = marked;
+  document.getElementById('count-marked').textContent = markedOnly;
+  document.getElementById('count-answered-marked').textContent = answeredAndMarked;
+
+  // 🛡️ DEV SAFETY CHECK (optional but HIGHLY recommended)
+  const sum =
+    notVisited +
+    unanswered +
+    skipped +
+    answered +
+    markedOnly +
+    answeredAndMarked;
+
+  if (sum !== total) {
+    console.warn(
+      '❌ Question count mismatch!',
+      { total, sum, notVisited, unanswered, skipped, answered, markedOnly, answeredAndMarked }
+    );
+  }
+}
+
+function resetCalculatorPosition() {
+  const calc = document.getElementById('loadCalc');
+  if (!calc) return;
+
+  calc.style.position = 'fixed';
+  calc.style.top = '130px';
+  calc.style.right = '0px';
+  calc.style.left = 'auto';
 }
 
 // Skip current question
 skipQuestionButton.addEventListener('click', () => {
   // save time, then record skip
   storeTimeBeforeLeaving();
-  if (hasAnswered) return;
   recordResponse('Skipped', null);
   updateQuestionStatusCounts();
   goToNextOrEnd();
@@ -773,6 +832,7 @@ prevQuestionButton.addEventListener('click', () => {
   $('#keyPad_btnAllClr').trigger('click');
   $('#keyPad_MC').trigger('click');
   $('#loadCalc').hide();
+  resetCalculatorPosition();
 
   // Scroll to top
   window.scrollTo({
@@ -812,16 +872,19 @@ markQuestionButton.addEventListener('click', () => {
     // ---- MCQ ----
     if (type === 'MCQ') {
       const selectedBtn = document.querySelector('.answer-option.selected');
+
       if (selectedBtn) {
         const index = parseInt(selectedBtn.dataset.index, 10);
+        const responseValue =
+          current[`Answer ${index + 1} Image URL`] ||
+          current[`Answer ${index + 1} Text`] ||
+          '';
+
         const isCorrect = index === current['Correct Answer Index'];
-
-        const rawText = current[`Answer ${index + 1} Text`] || '';
-        const rawImg = current[`Answer ${index + 1} Image URL`] || '';
-
-        recordResponse(rawImg || rawText, isCorrect);
+        recordResponse(responseValue, isCorrect);
       }
     }
+
 
     // ---- MSQ ----
     else if (type === 'MSQ') {
@@ -893,6 +956,7 @@ document.getElementById('clearResponse').addEventListener('click', () => {
   $('#keyPad_btnAllClr').trigger('click');
   $('#keyPad_MC').trigger('click');
   $('#loadCalc').hide();
+  resetCalculatorPosition();
 
   if (!quizSection.style.display || quizSection.style.display === 'none') return;
 
@@ -937,52 +1001,78 @@ document.getElementById('clearResponse').addEventListener('click', () => {
   hasAnswered = false;
   updateNavButtonStyle(currentQuestionIndex);
   updateQuestionStatusCounts();
-  nextQuestionButton.style.display = 'none';
+  nextQuestionButton.style.display = 'block';
 });
 
 // Next button (after answering)
 nextQuestionButton.addEventListener('click', () => {
-  // DO NOT call storeTimeBeforeLeaving here — recordResponse will account for time
   const current = selectedQuestions[currentQuestionIndex];
   const type = current['Question Type'] || 'MCQ';
 
+  // Always save time
+  storeTimeBeforeLeaving();
+
+  // ---------- MCQ ----------
   if (type === 'MCQ') {
-    // save time when marking and move on (do not force save answer)
-    storeTimeBeforeLeaving();
+    const selectedBtn = document.querySelector('.answer-option.selected');
+
+    if (selectedBtn) {
+      const index = parseInt(selectedBtn.dataset.index, 10);
+      const isCorrect = index === current['Correct Answer Index'];
+
+      const rawText = current[`Answer ${index + 1} Text`] || '';
+      const rawImg = current[`Answer ${index + 1} Image URL`] || '';
+
+      recordResponse(rawImg || rawText, isCorrect);
+    }
+    // ❌ NO ELSE
   }
 
-  if (type === 'MSQ') {
-    const selectedButtons = document.querySelectorAll('.answer-option.selected');
-    const selectedIndexes = Array.from(selectedButtons).map(btn => parseInt(btn.dataset.index));
+  // ---------- MSQ ----------
+  else if (type === 'MSQ') {
+    const selected = [...document.querySelectorAll('.answer-option.selected')]
+      .map(btn => parseInt(btn.dataset.index, 10));
 
-    const correctIndexes = (current['MSQ Answers'] || '').split(',').map(x => parseInt(x.trim(), 10)).filter(n => !isNaN(n));
-    const isCorrect = selectedIndexes.slice().sort().join(',') === correctIndexes.slice().sort().join(',');
+    if (selected.length) {
+      const correct = (current['MSQ Answers'] || '')
+        .split(',')
+        .map(n => parseInt(n.trim(), 10));
 
-    recordResponse(selectedIndexes.join(', '), isCorrect);
+      const isCorrect =
+        selected.slice().sort().join(',') ===
+        correct.slice().sort().join(',');
+
+      recordResponse(selected.join(', '), isCorrect);
+    }
+    // ❌ NO ELSE
   }
 
-  if (type === 'NAT') {
+  // ---------- NAT ----------
+  else if (type === 'NAT') {
     const input = document.getElementById('natInput');
-    const val = parseFloat(input.value);
-    const raw = current['NAT Answer Range'] || '';
-    let isCorrect = false;
 
-    if (!isNaN(val)) {
-      const parts = raw.split(/\s+OR\s+/i);
-      for (const part of parts) {
-        const m = part.match(/(-?\d+(?:\.\d+)?)\s*-\s*(-?\d+(?:\.\d+)?)/);
-        if (m) {
-          let low = parseFloat(m[1]);
-          let high = parseFloat(m[2]);
-          if (low > high) [low, high] = [high, low];
-          if (val >= low && val <= high) {
-            isCorrect = true;
-            break;
+    if (input && input.value.trim() !== '') {
+      const val = parseFloat(input.value);
+      const raw = current['NAT Answer Range'] || '';
+      let isCorrect = false;
+
+      if (!isNaN(val)) {
+        for (const part of raw.split(/\s+OR\s+/i)) {
+          const m = part.match(/(-?\d+(?:\.\d+)?)\s*-\s*(-?\d+(?:\.\d+)?)/);
+          if (m) {
+            let [low, high] = [parseFloat(m[1]), parseFloat(m[2])];
+            if (low > high) [low, high] = [high, low];
+            if (val >= low && val <= high) {
+              isCorrect = true;
+              break;
+            }
           }
         }
       }
+
+      recordResponse(input.value, isCorrect);
     }
-    recordResponse(input.value || 'Skipped', isCorrect);
+    // ❌ NO ELSE
   }
 
   goToNextOrEnd();
@@ -993,6 +1083,8 @@ function goToNextOrEnd() {
   $('#keyPad_btnAllClr').trigger('click');
   $('#keyPad_MC').trigger('click');
   $('#loadCalc').hide();
+  resetCalculatorPosition();
+
   // scroll to top
   window.scrollTo({
     top: 0,
@@ -1116,7 +1208,7 @@ function showNextQuestion() {
     const input = document.createElement('input');
     input.type = 'text';  // Use text instead of number to allow selection
     input.id = 'natInput';
-    input.placeholder = 'e.g., 12.5';
+    input.placeholder = '';
     input.classList.add('nat-input');
     input.setAttribute('readonly', true); // Prevent typing
     input.onclick = function () {
@@ -1126,6 +1218,12 @@ function showNextQuestion() {
 
     optionsContainer.appendChild(label);
     optionsContainer.appendChild(input);
+
+    // 🔒 In quiz static mode, keep numeric keyboard always visible
+    if (vKeyboard.mode === 'static') {
+      showNumericKeyboard(input);
+    }
+
     // After creating the input element
     let previousValue = '';
 
@@ -1159,19 +1257,29 @@ function showNextQuestion() {
       }
 
       btn.addEventListener('click', () => {
+
         if (type === 'MCQ') {
-          handleAnswer(i - 1, btn);
-        } else if (type === 'MSQ') {
-          btn.classList.toggle('selected');
-          const anySelected = document.querySelectorAll('.answer-option.selected').length > 0;
-          nextQuestionButton.style.display = anySelected ? 'block' : 'none';
-          hasAnswered = anySelected;
+          document.querySelectorAll('.answer-option')
+            .forEach(b => b.classList.remove('selected'));
+          btn.classList.add('selected');
+          hasAnswered = true;
         }
+
+        else if (type === 'MSQ') {
+          btn.classList.toggle('selected');
+          hasAnswered =
+            document.querySelectorAll('.answer-option.selected').length > 0;
+        }
+
       });
+
 
       optionsContainer.appendChild(btn);
     }
   }
+  document.querySelectorAll('.answer-option').forEach(btn => {
+    btn.disabled = false;
+  });
 
   // --- Comment box AFTER options ---
   const commentWrapper = document.createElement('div');
@@ -1216,8 +1324,15 @@ function showNextQuestion() {
 
   if (selectedButton) selectedButton.classList.remove('selected');
   selectedButton = null;
-  hasAnswered = false;
   questionStartTime = Date.now(); // start timer BEFORE restore
+
+  // ✅ Mark current question as visited if not already
+  if (!userResponses[currentQuestionIndex]) {
+    userResponses[currentQuestionIndex] = {
+      responseTime: 0,
+      _noAnswer: true
+    };
+  }
 
   // ---------------------- Restore previously recorded response (robust) ----------------------
   (function restorePrevious() {
@@ -1265,11 +1380,11 @@ function showNextQuestion() {
         }
 
         // disable options because it was already answered
-        btn.disabled = true;
+        // btn.disabled = true;
       });
 
       nextQuestionButton.style.display = 'block';
-      skipQuestionButton.style.display = 'none';
+      skipQuestionButton.style.display = 'block';
     }
 
     // --- MSQ (multiple selected indices stored as "0, 2" etc) ---
@@ -1282,10 +1397,10 @@ function showNextQuestion() {
           const idx = parseInt(btn.dataset.index, 10);
           if (chosen.includes(idx)) btn.classList.add('selected');
           // keep disabled to prevent change
-          btn.disabled = true;
+          // btn.disabled = true;
         });
         nextQuestionButton.style.display = 'block';
-        skipQuestionButton.style.display = 'none';
+        skipQuestionButton.style.display = 'block';
       }
     }
 
@@ -1296,7 +1411,7 @@ function showNextQuestion() {
         input.value = saved.response;
         // If you use a virtual numeric keyboard, ensure keyboard's internal value syncs with input if needed
         nextQuestionButton.style.display = 'block';
-        skipQuestionButton.style.display = 'none';
+        skipQuestionButton.style.display = 'block';
       }
     }
 
@@ -1312,12 +1427,12 @@ function showNextQuestion() {
 
   updateNavButtonStyle(currentQuestionIndex);
   updatePrevButtonVisibility();
-  nextQuestionButton.style.display = 'none';
+  nextQuestionButton.style.display = 'block';
   skipQuestionButton.style.display = 'block';
 }
 
 // Handle selected answer
-function handleAnswer(index, button) {
+/* function handleAnswer(index, button) {
   const current = selectedQuestions[currentQuestionIndex];
   const type = current['Question Type'] || 'MCQ';
   if (hasAnswered || type !== 'MCQ') return;
@@ -1339,7 +1454,7 @@ function handleAnswer(index, button) {
 
   document.querySelectorAll('.answer-option').forEach(btn => btn.disabled = true);
   nextQuestionButton.style.display = 'block';
-}
+} */
 
 // Record user response (merge with prev, don't clobber)
 function recordResponse(response, correct, timeSpent = null) {
@@ -1423,7 +1538,9 @@ function startExamTimer() {
     timerDisplay.style.color = examTimeRemaining <= 300 ? 'red' : 'black';
     timerDisplay.style.fontWeight = 'bold';
 
-    if (examTimeRemaining <= 0) {
+    examTimeRemaining--;
+
+    if (examTimeRemaining <= 2) {
       clearInterval(examTimer);
 
       // AUTO submit → no popup
@@ -1431,7 +1548,6 @@ function startExamTimer() {
       return;
     }
 
-    examTimeRemaining--;
   }, 1000);
 }
 
@@ -1440,6 +1556,10 @@ function startExamTimer() {
 function endQuiz() {
   if (quizEnded) return;
   quizEnded = true;
+  // 🔢 Switch numeric keyboard back to FLOATING mode
+  if (window.vKeyboard) {
+    vKeyboard.mode = 'floating';
+  }
   clearInterval(examTimer);
   questionPaperBtn.style.display = 'none';
   quizSection.style.display = 'none';
@@ -1463,7 +1583,7 @@ function submitResponses() {
     const u = userResponses[i] || {
       response: 'Skipped',
       correct: null,
-      responseTime: 'Skipped',
+      responseTime: 0,
       comment: ''
     };
 
@@ -1499,7 +1619,7 @@ function submitResponses() {
       question: q['Question'] || '',
       questionImage: q['Question Image URL'] || '',
       comprehension: q['Comprehension'] || '',
-      options: type === 'NAT' ? '' : options,
+      options: type === 'NAT' ? [] : options,
       correctAnswerIndex,
       type,
       correctAnswer,

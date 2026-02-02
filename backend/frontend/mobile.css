@@ -9,16 +9,27 @@ body {
 
 /* Main quiz box */
 .quiz-container {
+  position: relative; /* REQUIRED */
   background-color: #fff;
   padding: 30px;
   border-radius: 10px;
   width: 100%;
   max-width: 750px;
   margin-left: 120px;
-  /* ✅ Positions it 200px from the left */
   margin-top: 25px;
   margin-bottom: 25px;
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+}
+
+/* Foreground watermark */
+.quiz-container::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: url("../images/watermark.png");
+  z-index: 10;               /* above content */
+  opacity: 0.5;              /* watermark feel */
+  pointer-events: none;      /* clicks pass through */
 }
 
 #questionContainer {
@@ -488,6 +499,7 @@ button:hover {
   z-index: 999;
   box-shadow: 0 0 6px rgba(0, 0, 0, 0.1);
   cursor: pointer;
+  z-index: 99;
 }
 
 .question-navigator h4 {
@@ -613,9 +625,9 @@ button:hover {
 #loadCalc {
   position: fixed;
   overflow: hidden;
-  top: 160px;
+  top: 130px;
   right: 0px;
-  z-index: 100;
+  z-index: 9999;
   height: auto !important;
 }
 
@@ -650,11 +662,12 @@ button:hover {
   font-size: 1em;
   margin-top: 8px;
   display: block;
+  background-color: floralwhite;
 }
 
 @media (max-width: 600px) {
   .nat-input {
-    width: 100px;
+    width: 180px;
     padding: 6px;
     font-size: 1em;
     margin-top: 8px;
@@ -701,7 +714,6 @@ button:hover {
   overflow-y: auto;
   overflow-x: hidden;
 }
-
 
 .quiz .nav-btn {
   width: 30px;

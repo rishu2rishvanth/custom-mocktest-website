@@ -7,39 +7,6 @@ body {
   padding: 0px;
 }
 
-/* Watermark background */
-body::before {
-  content:
-    "5479095978302              5479095978302              5479095978302              5479095978302              5479095978302              5479095978302\A
-                   5479095978302              5479095978302              5479095978302              5479095978302              5479095978302              5479095978302\A
-     5479095978302              5479095978302              5479095978302              5479095978302              5479095978302              5479095978302\A
-                   5479095978302              5479095978302              5479095978302              5479095978302              5479095978302              5479095978302\A
-     5479095978302              5479095978302              5479095978302              5479095978302              5479095978302              5479095978302\A
-                   5479095978302              5479095978302              5479095978302              5479095978302              5479095978302              5479095978302\A
-     5479095978302              5479095978302              5479095978302              5479095978302              5479095978302              5479095978302\A
-                   5479095978302              5479095978302              5479095978302              5479095978302              5479095978302              5479095978302\A
-     5479095978302              5479095978302              5479095978302              5479095978302              5479095978302              5479095978302\A
-                   5479095978302              5479095978302              5479095978302              5479095978302              5479095978302              5479095978302\A
-     5479095978302              5479095978302              5479095978302              5479095978302              5479095978302              5479095978302\A
-                   5479095978302              5479095978302              5479095978302              5479095978302              5479095978302              5479095978302";
-  position: fixed;
-  top: -180%;
-  left: -10%;
-  width: 300%;
-  height: 300%;
-  font-family: fantasy;
-  font-size: 2rem;
-  font-style: italic;
-  color: rgba(0, 0, 0, 0.05);
-  transform: rotate(-45deg);
-  white-space: pre;
-  /* <-- allows the \A line breaks */
-  line-height: 8rem;
-  letter-spacing: 0.001rem;
-  z-index: 99;
-  pointer-events: none;
-}
-
 /* Main quiz box */
 .quiz-container {
   position: relative;
@@ -56,6 +23,17 @@ body::before {
   margin-bottom: 25px;
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
   min-height: 850px;
+}
+
+/* Foreground watermark */
+.quiz-container::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: url("../images/watermark.png");
+  z-index: 10;               /* above content */
+  opacity: 0.5;              /* watermark feel */
+  pointer-events: none;      /* clicks pass through */
 }
 
 #questionContainer {
@@ -676,9 +654,9 @@ button:hover {
 #loadCalc {
   position: fixed;
   overflow: hidden;
-  top: 160px;
+  top: 130px;
   right: 0px;
-  z-index: 100;
+  z-index: 9999;
   height: auto !important;
 }
 
@@ -713,6 +691,7 @@ button:hover {
   font-size: 1em;
   margin-top: 8px;
   display: block;
+  background-color: floralwhite;
 }
 
 @media (max-width: 600px) {
@@ -975,7 +954,7 @@ button:hover {
   justify-content: space-between;
   align-items: center;
   margin-top: 6px 0;
-  margin-bottom: 5.8px;
+  margin-bottom: 3.8px;
 }
 
 /* ===== Number boxes ===== */
@@ -1061,6 +1040,19 @@ button:hover {
   padding-top: 3px;
 }
 
+#count-answered-marked {
+  background-color: #8e44ad; /* purple */
+  background: url(../images/questions-sprite.png) no-repeat;
+  background-position: -9px -87px; 
+  float: left;
+  height: 30px;
+  line-height: 20px;
+  margin-right: 10px;
+  width: 29px;
+  color: #fff;
+  padding-top: 3px;
+}
+
 .questionPaperBtn {
   position: fixed;
   padding: 5px 15px;
@@ -1073,32 +1065,15 @@ button:hover {
   font-size: 12px;
 }
 
-#questionPaperPanel::before {
-  content:
-    "5479095978302              5479095978302              5479095978302              5479095978302              5479095978302              5479095978302\A
-                   5479095978302              5479095978302              5479095978302              5479095978302              5479095978302              5479095978302\A
-     5479095978302              5479095978302              5479095978302              5479095978302              5479095978302              5479095978302\A
-                   5479095978302              5479095978302              5479095978302              5479095978302              5479095978302              5479095978302\A
-     5479095978302              5479095978302              5479095978302              5479095978302              5479095978302              5479095978302\A
-                   5479095978302              5479095978302              5479095978302              5479095978302              5479095978302              5479095978302\A
-     5479095978302              5479095978302              5479095978302              5479095978302              5479095978302              5479095978302\A
-                   5479095978302              5479095978302              5479095978302              5479095978302              5479095978302              5479095978302\A
-     5479095978302              5479095978302              5479095978302              5479095978302              5479095978302              5479095978302\A
-                   5479095978302              5479095978302              5479095978302              5479095978302              5479095978302              5479095978302\A
-     5479095978302              5479095978302              5479095978302              5479095978302              5479095978302              5479095978302\A
-                   5479095978302              5479095978302              5479095978302              5479095978302              5479095978302              5479095978302";
+/* Foreground watermark */
+#questionPaperPanel::after {
+  content: "";
   position: absolute;
-  inset: -25%;
-  font-family: fantasy;
-  font-size: 1.5rem;
-  color: rgba(0, 0, 0, 0.05);
-  transform: rotate(-45deg);
-  white-space: pre;
-  line-height: 6rem;
-  letter-spacing: 0.1rem;
-  pointer-events: none;
-  user-select: none;
-  z-index: 99;
+  inset: 0;
+  background: url("../images/watermark.png");
+  z-index: 10;               /* above content */
+  opacity: 0.5;              /* watermark feel */
+  pointer-events: none;      /* clicks pass through */
 }
 
 .qp-content {

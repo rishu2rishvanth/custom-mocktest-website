@@ -229,13 +229,15 @@
 		}
 	</style>
 </head>
-<!--<body class="unselectable" oncontextmenu="return false;" onselect="return false;" ondragstart="return false;" onmousewheel="return false;">-->
 
-<body>
+<body class="unselectable" oncontextmenu="return false;" onselect="return false;" ondragstart="return false;"
+	onmousewheel="return false;">
+
+	<!-- <body> -->
 	<div role="dialog" aria-modal="false" aria-label="calculator" id="keyPad"
 		class="ui-widget-content calc_container calc_container complexFlag" style="width: 506px !important;">
 		<div id="helptopDiv" class="ui-draggable-handle">
-			<span id="scientificText" style="" tabindex="-1">Scientific Calculator</span>
+			<span id="scientificText" tabindex="-1">Scientific Calculator</span>
 			<span id="normalText" style="display:none" tabindex="-1">Normal Calculator</span>
 			<!--<div class="cpy-btn" style="" onclick="(function(){$('#printcpymsg').show();mockVar.iscopied=1;})()" id="cpyresult">Copy Result</div>-->
 			<div tabindex="0" role="button" aria-label="" class="help_back" id="keyPad_Help" href="#nogo"
@@ -264,7 +266,8 @@
 				<input type="text" id="keyPad_OutputArea" class="keyPad_TextBox caZeroLevel" maxlength="30"
 					readonly="readonly" style="width: 484px !important;">
 				<div class="cpy-btn" style="display:none" onclick="copyclicked();" id="cpyresult" title="Copy Result">
-					<img id="imgcplusbtn" src=""></div>
+					<img id="imgcplusbtn" src="">
+				</div>
 				<span id="memory" class="memoryhide importantRuleMemoryScientific" style="height:22px;">
 					<font size="2">M</font>
 				</span>
@@ -488,6 +491,46 @@
 						<br>
 						<li style="text-align: left;">The range of value supported by the calculator is 10^(-323) to
 							10^(308).</li>
+					</ul> <br> <br>
+				</span>
+				<span id="Japanese" style="display: none;">
+					<h3 style="text-align: center;">
+						<strong>関数電卓の使い方</strong>
+					</h3> 平方根、三角関数、指数関数、対数関数、双曲線関数など、基本的で複雑な数学演算を行います。 <br>
+					画面上のボタンを使って計算機を操作します。 <br> <br>
+					<h3 style="text-decoration: underline; color: green">［操作方法］</h3>
+					<ul style="all: revert;">
+						<li style="text-align: left;">［C］ボタンをクリックしてから、操作してください</li>
+						<li style="text-align: left;">単純に括弧やその他の数学演算を使用する方程式</li>
+						<li style="text-align: left;">定義済みの π (パイ)や log, Exp(対数) を使って演算をすると時間を短縮できます</li>
+						<li style="text-align: left;">メモリ機能を使って、累計を演算をします</li>
+						<strong> [M+]: メモリへ画面に表示されている値を追加します<br>
+							[MR]: メモリに保存している値を再度呼び出します <br>
+							[M-]: メモリから画面に表示されている値を引きます
+						</strong>
+						<li style="text-align: left;">演算をする前に、角度（度数法・弧度法）を選択してください</li>
+						<strong>注意: 既定値は度数法です</strong>
+					</ul>
+					<h3>
+						<span style="text-decoration: underline; color: red">［注意事項］</span>
+					</h3>
+					<ul style="all: revert;">
+						<li style="text-align: left;">一度に複数の演算を行うことはできません</li>
+						<li style="text-align: left;">開き括弧・閉じ括弧の数が合わない、適切な位置に括弧がある</li>
+						<li style="text-align: left;">演算中に角度（度数法・弧度法）を変更することはできません</li>
+					</ul>
+					<h3>
+						<span style="text-decoration: underline;">制限事項：</span>
+					</h3>
+					<ul style="all: revert;">
+						<li style="text-align: left;">キーボード操作はできません</li>
+						<li style="text-align: left;">階乗演算は14桁までの精度で出力されます</li>
+						<li style="text-align: left;">対数関数・双曲線関数の演算結果は5桁までの精度で出力されます</li>
+						<li style="text-align: left;">10進数で15桁以上のモッド演算(mod)を行う場合、演算の精度が下がります</li>
+						<br>
+						<strong> モッド演算は15桁未満の演算で使用してください。（15桁未満の演算に適しています）</strong>
+						<br>
+						<li style="text-align: left;">計算機で演算可能な数値の範囲は 10(-323) ～ 10(308).0です</li>
 					</ul> <br> <br>
 				</span>
 			</div>

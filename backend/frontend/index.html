@@ -85,7 +85,7 @@
     }
     $(function () {
       $('#closeButton1').click(function () {
-        $('#loadCalc').hide();
+        resetCalculator();
         $('#keyPad_UserInput').val(0);
         $('#keyPad_UserInput1').val('');
         $('.calculator-icon-container').focus();
@@ -335,7 +335,7 @@
       <div id="questionStatusPanel" class="question-status-panel quiz" role="complementary"
         aria-label="Question Status">
 
-        <div class="nav-header">Question Status</div>
+        <!--<div class="nav-header">Question Status</div>-->
 
         <div class="nav-status-content">
           <div>Not Visited <span id="count-notVisited">0</span></div>
@@ -343,6 +343,7 @@
           <div>Skipped <span id="count-skipped">0</span></div>
           <div>Answered <span id="count-answered">0</span></div>
           <div>Marked <span id="count-marked">0</span></div>
+          <div>Answered &amp; Marked <span id="count-answered-marked">0</span></div>
         </div>
       </div>
 
@@ -376,7 +377,7 @@
       <div role="dialog" aria-modal="false" aria-label="calculator" id="keyPad"
         class="ui-widget-content calc_container calc_container complexFlag" style="width: 506px !important;">
         <div id="helptopDiv" class="ui-draggable-handle">
-          <span id="scientificText" style="" tabindex="-1">Scientific Calculator</span>
+          <span id="scientificText" tabindex="-1">Scientific Calculator</span>
           <span id="normalText" style="display:none" tabindex="-1">Normal Calculator</span>
           <!--<div class="cpy-btn" style="" onclick="(function(){$('#printcpymsg').show();mockVar.iscopied=1;})()" id="cpyresult">Copy Result</div>-->
           <div tabindex="0" role="button" aria-label="" class="help_back" id="keyPad_Help" href="#nogo"
@@ -678,16 +679,41 @@
   <script type="module" src="script.js"></script>
   <script src="js/chart.js"></script>
   <script>
+    function resetCalculatorPosition() {
+      const calc = document.getElementById('loadCalc');
+      if (!calc) return;
+
+      calc.style.position = 'fixed';
+      calc.style.top = '130px';
+      calc.style.right = '0px';
+      calc.style.left = 'auto';
+      calc.style.transform = 'none';
+    }
+
+    function resetCalculator() {
+      $('#keyPad_btnAllClr').trigger('click');
+      $('#keyPad_MC').trigger('click');
+      resetCalculatorPosition();
+      $('#loadCalc').hide();
+    }
+  </script>
+  <script>
     function toggleCalculator() {
       const wrapper = document.getElementById('loadCalc');
       const isHidden = getComputedStyle(wrapper).display === 'none';
-      wrapper.style.display = isHidden ? 'block' : 'none';
+
+      if (isHidden) {
+        resetCalculatorPosition();
+        wrapper.style.display = 'block';
+      } else {
+        resetCalculator();
+      }
     }
 
     let calculatorWindow = null;
     function openCalculator() {
       if (!calculatorWindow || calculatorWindow.closed) {
-        calculatorWindow = window.open('calculator.html', '_blank', 'width=480,height=350');
+        calculatorWindow = window.open('calculator.html', '_blank', 'width=470,height=320');
       } else {
         calculatorWindow.focus();
       }

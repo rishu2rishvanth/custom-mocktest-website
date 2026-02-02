@@ -565,8 +565,34 @@ function viewResponseDetails(data, username, timestamp) {
     handleScrollButtonsVisibility();
 }
 
-document.addEventListener('click', e => {
-    if (e.target.classList.contains('calc-toggle-btn')) toggleCalculator();
+let calculatorWindow = null;
+
+function isMobileDevice() {
+    return /Android|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i.test(navigator.userAgent);
+}
+
+function openCalculator() {
+    if (!calculatorWindow || calculatorWindow.closed) {
+        calculatorWindow = window.open(
+            'calculator.html',
+            '_blank',
+            'width=470,height=320'
+        );
+    } else {
+        calculatorWindow.focus();
+    }
+}
+
+// ✅ Delegated click handler (works for dynamically added buttons)
+document.addEventListener('click', (e) => {
+    const btn = e.target.closest('.calc-toggle-btn');
+    if (!btn) return;
+
+    if (isMobileDevice()) {
+        openCalculator();
+    } else {
+        toggleCalculator(); // existing desktop inline calculator
+    }
 });
 
 // Fetch and display all results
