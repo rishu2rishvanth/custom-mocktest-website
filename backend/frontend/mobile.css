@@ -9,7 +9,8 @@ body {
 
 /* Main quiz box */
 .quiz-container {
-  position: relative; /* REQUIRED */
+  position: relative;
+  /* REQUIRED */
   background-color: #fff;
   padding: 30px;
   border-radius: 10px;
@@ -27,9 +28,12 @@ body {
   position: absolute;
   inset: 0;
   background: url("../images/watermark.png");
-  z-index: 10;               /* above content */
-  opacity: 0.5;              /* watermark feel */
-  pointer-events: none;      /* clicks pass through */
+  z-index: 10;
+  /* above content */
+  opacity: 0.5;
+  /* watermark feel */
+  pointer-events: none;
+  /* clicks pass through */
 }
 
 #questionContainer {
@@ -83,6 +87,7 @@ button {
   font-size: 16px;
   margin-top: 20px;
   background-color: #004085;
+  /* gray; */
   color: #fff;
   border: none;
   border-radius: 5px;
@@ -92,6 +97,7 @@ button {
 
 button:hover {
   background-color: #003060;
+  /* darkslategray; */
 }
 
 /* ====== Submit Button ====== */
@@ -106,10 +112,12 @@ button:hover {
   width: auto;
   padding: 5px 15px;
   background-color: rgb(5, 154, 0);
+  /* darkolivegreen; */
 }
 
 #submitQuiz:hover {
   background-color: #47ce5d;
+  /* darkgreen; */
 }
 
 /* ====== Skip Button ====== */
@@ -124,10 +132,12 @@ button:hover {
   width: auto;
   padding: 5px 15px;
   background-color: red;
+  /* indianred; */
 }
 
 #skipQuestion:hover {
   background-color: #d32f2f;
+  /* darkred; */
 }
 
 .mark-button {
@@ -154,6 +164,7 @@ button:hover {
 /* ====== Clear Button ====== */
 .clear-response-button {
   background-color: orange;
+  /* coral; */
   color: white;
   padding: 8px 12px;
   border: none;
@@ -942,4 +953,18 @@ button:hover {
   padding: 20px;
   border-radius: 8px;
   position: relative;
+}
+
+.summary-table th,
+.summary-table td {
+  border: 1px solid #ccc;
+  padding: 8px;
+}
+
+.summary-table tr:nth-child(even) {
+  background-color: #fafafa;
+}
+
+.summary-table tr:hover {
+  background-color: #f0f7ff;
 }

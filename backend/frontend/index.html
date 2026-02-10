@@ -278,20 +278,23 @@
         <div class="sysInstPanel">
 
           <div class="sysInstText1">
+
+            <h2 style="text-align:center;">General Instructions</h2>
+
+            <div style="text-align:center;">
+              <img src="images/inst0.png"><br>
+              <img src="images/inst1.png"><br>
+              <img src="images/inst2.png"><br>
+              <img src="images/inst3.png"><br>
+              <img src="images/inst4.png">
+            </div>
+
             <h2 style="text-align:center;">Pattern</h2>
 
             <div style="text-align:center;">
               <img src="images/Pattern.png"><br>
             </div>
 
-            <h2 style="text-align:center;">System Instructions</h2>
-
-            <div style="text-align:center;">
-              <img src="images/inst1.png"><br>
-              <img src="images/inst2.png"><br>
-              <img src="images/inst3.png"><br>
-              <img src="images/inst4.png">
-            </div>
           </div>
         </div>
 
@@ -322,7 +325,7 @@
 
       <div id="commentContainer"></div>
 
-      <button id="nextQuestion" class="next-button" style="display: none;">Next Question</button>
+      <button id="nextQuestion" class="next-button" style="display: none;">Save & Next</button>
 
       <!-- Timer Display -->
       <div class="timer-container">
@@ -679,42 +682,16 @@
   <script type="module" src="script.js"></script>
   <script src="js/chart.js"></script>
   <script>
-    function resetCalculatorPosition() {
-      const calc = document.getElementById('loadCalc');
-      if (!calc) return;
-
-      calc.style.position = 'fixed';
-      calc.style.top = '130px';
-      calc.style.right = '0px';
-      calc.style.left = 'auto';
-      calc.style.transform = 'none';
-    }
-
-    function resetCalculator() {
-      $('#keyPad_btnAllClr').trigger('click');
-      $('#keyPad_MC').trigger('click');
-      resetCalculatorPosition();
-      $('#loadCalc').hide();
-    }
-  </script>
-  <script>
-    function toggleCalculator() {
-      const wrapper = document.getElementById('loadCalc');
-      const isHidden = getComputedStyle(wrapper).display === 'none';
-
-      if (isHidden) {
-        resetCalculatorPosition();
-        wrapper.style.display = 'block';
-      } else {
-        resetCalculator();
-      }
-    }
 
     let calculatorWindow = null;
     function openCalculator() {
       if (!calculatorWindow || calculatorWindow.closed) {
-        calculatorWindow = window.open('calculator.html', '_blank', 'width=470,height=320');
+        calculatorWindow = window.open('calculator.html', '_blank', 'width=520,height=350');
       } else {
+        // 🔥 reset EXTERNAL calculator safely
+        if (calculatorWindow.resetExternalCalculator) {
+          calculatorWindow.resetExternalCalculator();
+        }
         calculatorWindow.focus();
       }
     }

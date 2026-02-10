@@ -38,6 +38,7 @@ let wrong = 0;
 let hasAnswered = false;
 let selectedButton = null;
 let quizEnded = false;
+let natObserver = null;
 
 // -------------------- Helper additions / fixes --------------------
 
@@ -66,6 +67,13 @@ function storeTimeBeforeLeaving() {
   questionStartTime = Date.now();
 }
 
+function clearNatObserver() {
+  if (natObserver) {
+    clearInterval(natObserver);
+    natObserver = null;
+  }
+}
+
 // -------------------- End helpers --------------------
 
 // On page load
@@ -79,7 +87,7 @@ document.addEventListener('DOMContentLoaded', () => {
 const questionPaperBtn = document.createElement('button');
 questionPaperBtn.id = 'questionPaperBtn';
 questionPaperBtn.className = 'questionPaperBtn';
-questionPaperBtn.textContent = '📗 Question Paper';
+questionPaperBtn.innerHTML = '<span class="questionpaper_icon"></span> Question Paper';
 questionPaperBtn.style.display = 'none'; // 🔒 hidden by default
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -112,7 +120,7 @@ function createQuestionPaperPanel() {
     <div class="qp-content">
       <div style="display:flex; flex-direction: column; position: sticky; top: 0; background: #fff; z-index: 1;">
         <div style="display:flex; justify-content:space-between; align-items:center;">
-          <h3 style="margin-bottom: 10px;">Question Paper</h3>
+          <h3 style="margin-bottom: 10px;"><span class="questionpaper_icon"></span>Question Paper</h3>
           <button id="closeQuestionPaper" style="width:auto; margin-top:0px; margin-bottom: 10px; margin-right: 10px; padding:5px 15px;">✖</button>
         </div>
         <hr style="margin:0;">
@@ -435,6 +443,7 @@ restartQuizButton.addEventListener('click', () => {
 
 // Submit quiz button
 submitQuizButton.addEventListener('click', (e) => {
+  clearNatObserver();
   // If triggered by timer, a flag is passed → skip confirmation
   const autoSubmit = e.detail === 'AUTO';
 
@@ -665,11 +674,11 @@ function renderQuestionNavigator() {
     updateNavButtonStyle(i);
 
     btn.onclick = () => {
+      clearNatObserver();
       // save time, then record skip
       storeTimeBeforeLeaving();
-      $('#keyPad_btnAllClr').trigger('click');
-      $('#keyPad_MC').trigger('click');
-      $('#loadCalc').hide();
+      resetCalculator();
+
       // scroll to top
       window.scrollTo({
         top: 0,
@@ -804,6 +813,11 @@ function updateQuestionStatusCounts() {
   }
 }
 
+/* =========================================================
+   GLOBAL CALCULATOR HELPERS
+   (Exposed to window for inline & legacy JS)
+========================================================= */
+
 function resetCalculatorPosition() {
   const calc = document.getElementById('loadCalc');
   if (!calc) return;
@@ -812,10 +826,55 @@ function resetCalculatorPosition() {
   calc.style.top = '130px';
   calc.style.right = '0px';
   calc.style.left = 'auto';
+  calc.style.transform = 'none';
 }
+
+function resetCalculator() {
+  const $calcMinBtn = $('#calc_min');
+  const $helpBackBtn = $('#keyPad_Helpback');
+  const $helpContent = $('#helpContent');
+
+  // If minimized → maximize
+  if ($calcMinBtn.hasClass('calc_max')) {
+    $calcMinBtn.trigger('click');
+  }
+
+  // If help open → back
+  if ($helpContent.is(':visible') && $helpBackBtn.is(':visible')) {
+    $helpBackBtn.trigger('click');
+  }
+
+  // Clear calculator
+  $('#keyPad_btnAllClr').trigger('click');
+  $('#keyPad_MC').trigger('click');
+
+  resetCalculatorPosition();
+  $('#loadCalc').hide();
+}
+
+function toggleCalculator() {
+  const wrapper = document.getElementById('loadCalc');
+  if (!wrapper) return;
+
+  const isHidden = getComputedStyle(wrapper).display === 'none';
+
+  if (isHidden) {
+    resetCalculatorPosition();
+    wrapper.style.display = 'block';
+  } else {
+    resetCalculator();
+    wrapper.style.display = 'none';
+  }
+}
+
+/* 🌍 EXPOSE GLOBALLY (CRITICAL) */
+window.resetCalculator = resetCalculator;
+window.resetCalculatorPosition = resetCalculatorPosition;
+window.toggleCalculator = toggleCalculator;
 
 // Skip current question
 skipQuestionButton.addEventListener('click', () => {
+  clearNatObserver();
   // save time, then record skip
   storeTimeBeforeLeaving();
   recordResponse('Skipped', null);
@@ -825,14 +884,12 @@ skipQuestionButton.addEventListener('click', () => {
 
 // Previous question
 prevQuestionButton.addEventListener('click', () => {
+  clearNatObserver();
   // Save time only
   storeTimeBeforeLeaving();
 
   // Clear calculator & keypad (same as others)
-  $('#keyPad_btnAllClr').trigger('click');
-  $('#keyPad_MC').trigger('click');
-  $('#loadCalc').hide();
-  resetCalculatorPosition();
+  resetCalculator();
 
   // Scroll to top
   window.scrollTo({
@@ -953,10 +1010,7 @@ clearButton.classList.add('clear-response-button');
 skipQuestionButton.parentNode.insertBefore(clearButton, skipQuestionButton.nextSibling);
 
 document.getElementById('clearResponse').addEventListener('click', () => {
-  $('#keyPad_btnAllClr').trigger('click');
-  $('#keyPad_MC').trigger('click');
-  $('#loadCalc').hide();
-  resetCalculatorPosition();
+  resetCalculator();
 
   if (!quizSection.style.display || quizSection.style.display === 'none') return;
 
@@ -1006,6 +1060,7 @@ document.getElementById('clearResponse').addEventListener('click', () => {
 
 // Next button (after answering)
 nextQuestionButton.addEventListener('click', () => {
+  clearNatObserver();
   const current = selectedQuestions[currentQuestionIndex];
   const type = current['Question Type'] || 'MCQ';
 
@@ -1080,10 +1135,7 @@ nextQuestionButton.addEventListener('click', () => {
 
 // Helper: Go to next question or end quiz
 function goToNextOrEnd() {
-  $('#keyPad_btnAllClr').trigger('click');
-  $('#keyPad_MC').trigger('click');
-  $('#loadCalc').hide();
-  resetCalculatorPosition();
+  resetCalculator();
 
   // scroll to top
   window.scrollTo({
@@ -1204,7 +1256,7 @@ function showNextQuestion() {
 
   if (type === 'NAT') {
     const label = document.createElement('label');
-    label.textContent = 'Enter your answer (NAT):';
+    // label.textContent = 'Enter your answer (NAT):';
     const input = document.createElement('input');
     input.type = 'text';  // Use text instead of number to allow selection
     input.id = 'natInput';
@@ -1225,9 +1277,12 @@ function showNextQuestion() {
     }
 
     // After creating the input element
+    // 🔥 clear any old NAT observer
+    clearNatObserver();
+
     let previousValue = '';
 
-    const observer = setInterval(() => {
+    natObserver = setInterval(() => {
       const currentValue = input.value.trim();
       if (currentValue && currentValue !== previousValue) {
         nextQuestionButton.style.display = 'block';
@@ -1236,9 +1291,6 @@ function showNextQuestion() {
       }
     }, 300);
 
-    // Clear on next question
-    nextQuestionButton.addEventListener('click', () => clearInterval(observer));
-    skipQuestionButton.addEventListener('click', () => clearInterval(observer));
   } else {
     for (let i = 1; i <= 4; i++) {
       const text = formatTextWithSuperSubscript(current[`Answer ${i} Text`]);
@@ -1554,6 +1606,7 @@ function startExamTimer() {
 
 // End quiz
 function endQuiz() {
+  clearNatObserver();
   if (quizEnded) return;
   quizEnded = true;
   // 🔢 Switch numeric keyboard back to FLOATING mode

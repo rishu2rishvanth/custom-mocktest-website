@@ -207,6 +207,154 @@ function renderOptionsMSQ(r) {
     return html;
 }
 
+function renderSummaryTable(summary) {
+
+    function rowColor(label) {
+        if (label === 'Total Available') return '#0d6efd'; // blue
+        if (label === 'Total Scored') return 'green';
+        if (label === 'Total Lost') return 'red';
+        if (label === 'Total Left') return 'purple';
+        if (label === 'Negative') return 'darkorange';
+        return '#212529'; // default
+    }
+
+    return `
+    <div class="summary-table-wrapper" style="margin:20px 0; overflow-x:auto;">
+        <table class="summary-table" style="border-collapse:collapse; width:100%; text-align:center; font-size: smaller;">
+            <thead>
+                <tr style="background:#f1f1f1; font-weight:bold;">
+                    <th>Summary</th>
+                    <th>Questions</th>
+                    <th>Marks</th>
+                    <th>1 / 2 Mark(s)</th>
+                    <th>MCQ / MSQ / NAT</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${summary.map(row => {
+        const color = rowColor(row.label);
+        return `
+                    <tr>
+                        <td><b>${sanitize(row.label)}</b></td>
+                        <td style="color:${color}; font-weight:bold;">${sanitize(row.questions)}</td>
+                        <td style="color:${color}; font-weight:bold;">${sanitize(row.marks)}</td>
+                        <td style="color:${color};">${sanitize(row.half)}</td>
+                        <td style="color:${color};">${sanitize(row.types)}</td>
+                    </tr>
+                    `;
+    }).join('')}
+            </tbody>
+        </table>
+    </div>
+    `;
+}
+
+
+function buildSummaryData(responses) {
+    const summary = {
+        available: { q: responses.length, m: 0, h1: 0, h2: 0, mcq: 0, msq: 0, nat: 0 },
+
+        attempted: { q: 0, m: 0, h1: 0, h2: 0, mcq: 0, msq: 0, nat: 0 },
+        left: { q: 0, m: 0, h1: 0, h2: 0, mcq: 0, msq: 0, nat: 0 },
+        lost: { q: 0, m: 0, h1: 0, h2: 0, mcq: 0, msq: 0, nat: 0 },
+        scored: { q: 0, m: 0, h1: 0, h2: 0, mcq: 0, msq: 0, nat: 0 },
+        negative: { q: 0, m: 0, h1: 0, h2: 0, mcq: 0, msq: 0, nat: 0 }
+    };
+
+    responses.forEach(r => {
+        const w = Number(r.weightage) || 1;
+        const type = (r.type || 'MCQ').toLowerCase();
+
+        // AVAILABLE (always increments)
+        summary.available.m += w;
+        if (w === 1) summary.available.h1++;
+        if (w === 2) summary.available.h2++;
+        summary.available[type]++;
+
+        const bucket =
+            r.response === 'Skipped' ? summary.left :
+                r.correct === true ? summary.scored :
+                    r.correct === false ? summary.lost :
+                        null;
+
+        if (!bucket) return;
+
+        bucket.q++;
+        bucket.m += w;
+
+        if (w === 1) bucket.h1++;
+        if (w === 2) bucket.h2++;
+
+        if (type === 'mcq') bucket.mcq++;
+        if (type === 'msq') bucket.msq++;
+        if (type === 'nat') bucket.nat++;
+
+        // Attempted = scored + lost
+        if (bucket === summary.scored || bucket === summary.lost) {
+            summary.attempted.q++;
+            summary.attempted.m += w;
+            if (w === 1) summary.attempted.h1++;
+            if (w === 2) summary.attempted.h2++;
+            summary.attempted[type]++;
+        }
+
+        // Negative marking (MCQ only, same rule as quiz)
+        if (r.correct === false && r.type === 'MCQ') {
+            const neg = w === 1 ? 1 / 3 : w === 2 ? 2 / 3 : 0;
+            summary.negative.q += 1;
+            summary.negative.m += neg;
+            if (w === 1) summary.negative.h1++;
+            if (w === 2) summary.negative.h2++;
+            summary.negative.mcq++;
+        }
+    });
+
+    return [
+        {
+            label: 'Total Available',
+            questions: summary.available.q,
+            marks: summary.available.m,
+            half: `${summary.available.h1} / ${summary.available.h2}`,
+            types: `${summary.available.mcq} / ${summary.available.msq} / ${summary.available.nat}`
+        },
+        {
+            label: 'Total Attempted',
+            questions: summary.attempted.q,
+            marks: summary.attempted.m,
+            half: `${summary.attempted.h1} / ${summary.attempted.h2}`,
+            types: `${summary.attempted.mcq} / ${summary.attempted.msq} / ${summary.attempted.nat}`
+        },
+        {
+            label: 'Total Left',
+            questions: summary.left.q,
+            marks: summary.left.m,
+            half: `${summary.left.h1} / ${summary.left.h2}`,
+            types: `${summary.left.mcq} / ${summary.left.msq} / ${summary.left.nat}`
+        },
+        {
+            label: 'Total Lost',
+            questions: summary.lost.q,
+            marks: summary.lost.m,
+            half: `${summary.lost.h1} / ${summary.lost.h2}`,
+            types: `${summary.lost.mcq} / ${summary.lost.msq} / ${summary.lost.nat}`
+        },
+        {
+            label: 'Total Scored',
+            questions: summary.scored.q,
+            marks: summary.scored.m,
+            half: `${summary.scored.h1} / ${summary.scored.h2}`,
+            types: `${summary.scored.mcq} / ${summary.scored.msq} / ${summary.scored.nat}`
+        },
+        {
+            label: 'Negative',
+            questions: `-${summary.negative.q}`,
+            marks: `-${summary.negative.m.toFixed(2)}`,
+            half: `-${summary.negative.h1} / -${summary.negative.h2}`,
+            types: `${summary.negative.mcq} / 0 / 0`
+        }
+    ];
+}
+
 /* -------------------------
    END NEW HELPERS
    ------------------------- */
@@ -264,12 +412,12 @@ function viewResponseDetails(data, username, timestamp) {
     let html = `<h3>Response Details for ${sanitize(username)}</h3>`;
     html += `<p>Section: <b>${sanitize(sectionName)}</b>  |   Attempted at: <b>${sanitize(timestamp)}</b>  |  Final Score: 
     <b>
-    <span style="font-size: 22px;">
+    <span style="font-size: 22px; color: darkgreen;">
         ${sanitize(CurrentScore)}
     </span>
     </b></p>`;
     html += `
-    <div style="margin-top: 15px; font-size: 15px; line-height: 1.6;">
+    <!-- <div style="margin-top: 15px; font-size: 15px; line-height: 1.6; justify-items: center;">
         <p>
             <b>🧮Total Questions:</b> ${total} |
             <b>📌Attempted:</b> ${attempted} |
@@ -281,7 +429,12 @@ function viewResponseDetails(data, username, timestamp) {
 
             <b>🏁Maximum Marks:</b> <span style="color: #0d6efd; font-weight:bold;">${maxMarks}</span>
         </p>
-    </div>`;
+    </div> --> `;
+    const summaryData = buildSummaryData(responses);
+
+    html += `<h4 style="margin-top:20px;">📊 Analysis</h4>`;
+    html += renderSummaryTable(summaryData);
+
     html += `<button onclick="window.location.reload()">Home</button>`;
 
     responses.forEach((r, index) => {
@@ -426,11 +579,13 @@ function viewResponseDetails(data, username, timestamp) {
     });
 
     html += `
-        <div style="margin-top: 40px;">
-            <h4>Time Distribution</h4>
-            <canvas id="timeHistogram" height="200"></canvas>
+    <div style="margin-top: 40px; justify-items: center;">
+        <h4>⏱ Time vs Question Distribution</h4>
+        <div id="timeChartWrapper" style="width:100%; overflow-x:auto;">
+            <canvas id="timeVsQuestion" height="320"></canvas>
         </div>
-        <br><button onclick="window.location.reload()">Home</button>`;
+    </div>
+    <br><button onclick="window.location.reload()">Home</button>`;
 
     let navHTML = `
         <!-- Toggle Button -->
@@ -453,6 +608,122 @@ function viewResponseDetails(data, username, timestamp) {
     navHTML += `</div>`;
     html = html + navHTML; // Append navigator at end
     container.innerHTML = html;
+
+    // -------------------------
+    // TIME vs QUESTION (SMART BAR CHART)
+    // -------------------------
+
+    const times = responses.map(r => {
+        const t = typeof r.responseTime === 'number'
+            ? r.responseTime
+            : parseFloat(r.responseTime);
+        return isNaN(t) ? 0 : t;
+    });
+
+    const labels = responses.map((_, i) => `Q ${i + 1}`);
+
+    const statusList = responses.map(r => {
+        if (r.response === 'Skipped') return 'Unattempted';
+        if (r.correct === true) return 'Correct';
+        if (r.correct === false) return 'Incorrect';
+        return 'Unknown';
+    });
+
+    const barColors = responses.map(r => {
+        if (r.response === 'Skipped') return 'purple';      // Total Left
+        if (r.correct === true) return 'green';              // Total Scored
+        if (r.correct === false) return 'red';               // Total Lost / Negative
+        return '#6c757d';                                    // Fallback
+    });
+
+    const questionCount = responses.length;
+    const COMPRESS_LIMIT = 150;
+    const isCompressed = questionCount > COMPRESS_LIMIT;
+
+    const canvas = document.getElementById('timeVsQuestion');
+    if (isCompressed) {
+        canvas.style.minWidth = `${questionCount * 12}px`;
+    }
+
+    if (window.timeChart) window.timeChart.destroy();
+
+    const ctx = canvas.getContext('2d');
+
+    window.timeChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels,
+            datasets: [{
+                data: times,
+                backgroundColor: barColors, // #0d3b66
+                borderWidth: 0,
+                categoryPercentage: isCompressed ? 0.85 : 0.8,
+                barPercentage: isCompressed ? 0.9 : 0.8,
+                maxBarThickness: isCompressed ? 6 : 28
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: {
+                    ticks: {
+                        autoSkip: true,
+                        maxTicksLimit: isCompressed ? 15 : 30
+                    },
+                    title: {
+                        display: true,
+                        text: 'Question Number'
+                    }
+                },
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Time (seconds)'
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top',
+                    labels: {
+                        usePointStyle: true,
+                        generateLabels: () => ([
+                            {
+                                text: 'Correct (Scored)',
+                                fillStyle: 'green',
+                                strokeStyle: 'green'
+                            },
+                            {
+                                text: 'Incorrect (Lost)',
+                                fillStyle: 'red',
+                                strokeStyle: 'red'
+                            },
+                            {
+                                text: 'Unattempted (Left)',
+                                fillStyle: 'purple',
+                                strokeStyle: 'purple'
+                            }
+                        ])
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        title: (context) => {
+                            const i = context[0].dataIndex;
+                            return `Q ${i + 1} - ${statusList[i]}`;
+                        },
+                        label: (context) => {
+                            return `Time in Seconds: ${context.raw}`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+
     if (!window.matchMedia('(max-width: 0px)').matches) {
         container.insertAdjacentHTML(
             'afterbegin',
@@ -483,85 +754,6 @@ function viewResponseDetails(data, username, timestamp) {
         nav.classList.toggle('collapsed');
     });
 
-    // Collect valid numeric response times
-    const timeBins = responses
-        .map(r => typeof r.responseTime === 'number' ? r.responseTime : parseFloat(r.responseTime))
-        .filter(time => !isNaN(time));
-
-    // Create histogram data
-    const binSize = 10; // seconds
-    const maxTime = Math.max(...timeBins, 60);
-    const binCount = Math.ceil(maxTime / binSize) + 1; // ✅ +1 for upper bound
-
-    const bins = Array.from({ length: binCount }, () => 0);
-    const questionNumbersPerBin = Array.from({ length: binCount }, () => []);
-
-    timeBins.forEach((time, i) => {
-        const binIndex = Math.floor(time / binSize);
-        if (binIndex >= bins.length || binIndex < 0) {
-            console.warn(`Invalid bin index ${binIndex} for time:`, time);
-            return;
-        }
-
-        bins[binIndex]++;
-        questionNumbersPerBin[binIndex].push(i + 1);
-    });
-
-    const labels = bins.map((_, i) => `${i * binSize}-${(i + 1) * binSize}s`);
-
-    // Destroy old chart if exists
-    if (window.histogramChart) window.histogramChart.destroy();
-
-    // Render histogram
-    const ctx = document.getElementById('timeHistogram').getContext('2d');
-    window.histogramChart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels,
-            datasets: [{
-                label: 'Number of Questions',
-                data: bins,
-                backgroundColor: '#4e79a7'
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                title: {
-                    display: true,
-                    text: 'Time Per Question Distribution'
-                },
-                tooltip: {
-                    callbacks: {
-                        label: function (context) {
-                            const idx = context.dataIndex;
-                            const count = context.dataset.data[idx];
-                            const questions = questionNumbersPerBin[idx];
-                            return [
-                                `Questions: ${questions.join(', ')}`,
-                                `Count: ${count}`
-                            ];
-                        }
-                    }
-                }
-            },
-            scales: {
-                x: {
-                    title: {
-                        display: true,
-                        text: 'Time Range (seconds)'
-                    }
-                },
-                y: {
-                    title: {
-                        display: true,
-                        text: 'Questions'
-                    },
-                    beginAtZero: true
-                }
-            }
-        }
-    });
     handleScrollButtonsVisibility();
 }
 

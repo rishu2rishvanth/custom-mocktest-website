@@ -13,7 +13,7 @@ body {
   background-color: #fff;
   padding: 30px;
   padding-top: 130px;
-  padding-right: 55%;
+  padding-right: 45%;
   border-radius: 10px;
   width: 100%;
   /* max-width: 750px; */
@@ -31,9 +31,12 @@ body {
   position: absolute;
   inset: 0;
   background: url("../images/watermark.png");
-  z-index: 10;               /* above content */
-  opacity: 0.5;              /* watermark feel */
-  pointer-events: none;      /* clicks pass through */
+  z-index: 10;
+  /* above content */
+  opacity: 0.5;
+  /* watermark feel */
+  pointer-events: none;
+  /* clicks pass through */
 }
 
 #questionContainer {
@@ -87,6 +90,7 @@ button {
   font-size: 16px;
   margin-top: 20px;
   background-color: #004085;
+  /* gray; */
   color: #fff;
   border: none;
   border-radius: 5px;
@@ -96,6 +100,7 @@ button {
 
 button:hover {
   background-color: #003060;
+  /* darkslategray; */
 }
 
 /* ====== Submit Button ====== */
@@ -110,10 +115,12 @@ button:hover {
   width: auto;
   padding: 5px 15px;
   background-color: rgb(5, 154, 0);
+  /* darkolivegreen; */
 }
 
 #submitQuiz:hover {
   background-color: #47ce5d;
+  /* darkgreen; */
 }
 
 /* ====== Skip Button ====== */
@@ -128,10 +135,12 @@ button:hover {
   width: auto;
   padding: 5px 15px;
   background-color: red;
+  /* indianred; */
 }
 
 #skipQuestion:hover {
   background-color: #d32f2f;
+  /* darkred; */
 }
 
 .next-button {
@@ -175,6 +184,7 @@ button:hover {
   bottom: 30px;
   left: 290px;
   background-color: orange;
+  /* coral; */
   width: auto;
   color: white;
   padding: 5px 15px;
@@ -711,6 +721,7 @@ button:hover {
   bottom: 80px;
   width: 235px;
   background: #e5f6fd;
+  /* whitesmoke; */
   border: 1px solid #ccc;
   font-family: Arial, sans-serif;
   font-size: 13px;
@@ -889,7 +900,7 @@ button:hover {
 
 /* Left = existing setup form */
 .setup-left {
-  flex: 1;
+  flex: 0.5;
 }
 
 /* Right = instructions */
@@ -1041,9 +1052,10 @@ button:hover {
 }
 
 #count-answered-marked {
-  background-color: #8e44ad; /* purple */
+  background-color: #8e44ad;
+  /* purple */
   background: url(../images/questions-sprite.png) no-repeat;
-  background-position: -9px -87px; 
+  background-position: -9px -87px;
   float: left;
   height: 30px;
   line-height: 20px;
@@ -1051,6 +1063,14 @@ button:hover {
   width: 29px;
   color: #fff;
   padding-top: 3px;
+}
+
+.questionpaper_icon {
+  background: url(../images/Icon-sprite.png) no-repeat -188px -8px;
+  width: 18px;
+  height: 18px;
+  margin-right: 7px;
+  float: left;
 }
 
 .questionPaperBtn {
@@ -1071,9 +1091,12 @@ button:hover {
   position: absolute;
   inset: 0;
   background: url("../images/watermark.png");
-  z-index: 10;               /* above content */
-  opacity: 0.5;              /* watermark feel */
-  pointer-events: none;      /* clicks pass through */
+  z-index: 10;
+  /* above content */
+  opacity: 0.5;
+  /* watermark feel */
+  pointer-events: none;
+  /* clicks pass through */
 }
 
 .qp-content {
@@ -1115,4 +1138,18 @@ button:hover {
   padding: 20px;
   border-radius: 8px;
   position: relative;
+}
+
+.summary-table th,
+.summary-table td {
+  border: 1px solid #ccc;
+  padding: 8px;
+}
+
+.summary-table tr:nth-child(even) {
+  background-color: #fafafa;
+}
+
+.summary-table tr:hover {
+  background-color: #f0f7ff;
 }

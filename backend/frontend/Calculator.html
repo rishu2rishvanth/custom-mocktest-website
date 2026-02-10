@@ -538,6 +538,18 @@
 		</div>
 	</div>
 
+	<script>
+		window.resetExternalCalculator = function () {
+			try {
+				$('#keyPad_btnAllClr').trigger('click');
+				$('#keyPad_MC').trigger('click');
+				$('#keyPad_UserInput').val(0);
+				$('#keyPad_UserInput1').val('');
+			} catch (e) {
+				console.warn('External calculator reset failed', e);
+			}
+		};
+	</script>
 </body>
 
 </html>

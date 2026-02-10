@@ -286,7 +286,9 @@ body {
 /* ENTER a: QUAD WIDTH */
 #keyPad #keyPad_btnEnter {
     background: none repeat scroll 0 0 #2ecc71;
+    /* darkseagreen; */
     border-color: #27ae60;
+    /* darkgreen; */
     bottom: 17px;
     color: #fff;
     font-size: 20px;
@@ -311,16 +313,20 @@ body {
 #keyPad #keyPad_btnInverseSign,
 #keyPad #keyPad_btnAllClr {
     background: none repeat scroll 0 0 #e74c3c;
+    /* indianred; */
     color: #fff;
     border-color: #c0392b;
+    /* darkred; */
     width: 35px !important;
 
 }
 
 #keyPad #keyPad_btnBack {
     background: none repeat scroll 0 0 #e74c3c;
+    /* indianred; */
     color: #fff;
     border-color: #c0392b;
+    /* darkred; */
     width: 76px !important;
 }
 
@@ -362,6 +368,7 @@ body {
     margin-bottom: 5px;
     padding: 10px;
     background-color: #4286f3;
+    /* grey; */
     color: #ffffff;
     cursor: move;
     display: flex;
