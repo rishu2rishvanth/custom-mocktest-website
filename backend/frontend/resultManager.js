@@ -902,29 +902,54 @@ export function initResultsButton() {
     }
 }
 
-function handleScrollButtonsVisibility() {
+export function handleScrollButtonsVisibility() {
     const scrollButtons = document.getElementById('scrollButtons');
+    const quizSection = document.querySelector('.quiz');
+    const resultSection = document.querySelector('.result');
+    const resultsContainer = document.getElementById('resultsContainer');
+
     if (!scrollButtons) return;
 
-    window.addEventListener('scroll', () => {
-        const isResultsVisible = document.getElementById('resultsContainer')?.style.display !== 'none';
+    function isVisible(el) {
+        return el && getComputedStyle(el).display !== 'none';
+    }
+
+    function updateScrollButtons() {
+        const quizVisible = isVisible(quizSection);
+        const resultVisible = isVisible(resultSection);
+        const resultsPageVisible = isVisible(resultsContainer);
+
+        // 🔥 ALWAYS visible during quiz
+        if (quizVisible) {
+            scrollButtons.classList.add('quiz-mode');
+            scrollButtons.style.display = 'flex';
+            return;
+        }
+
+        // 🔹 Normal scroll behavior for results pages
         const scrolled = window.scrollY > 100;
 
-        if (isResultsVisible && scrolled) {
+        if ((resultVisible || resultsPageVisible) && scrolled) {
+            scrollButtons.classList.remove('quiz-mode');
             scrollButtons.style.display = 'flex';
         } else {
+            scrollButtons.classList.remove('quiz-mode');
             scrollButtons.style.display = 'none';
         }
-    });
+    }
 
-    // Scroll actions
-    document.getElementById('goTop').addEventListener('click', () => {
+    window.addEventListener('scroll', updateScrollButtons);
+    window.addEventListener('resize', updateScrollButtons);
+
+    document.getElementById('goTop')?.addEventListener('click', () => {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     });
 
-    document.getElementById('goBottom').addEventListener('click', () => {
+    document.getElementById('goBottom')?.addEventListener('click', () => {
         window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
     });
+
+    updateScrollButtons();
 }
 
 function formatTextWithParagraphs(text) {

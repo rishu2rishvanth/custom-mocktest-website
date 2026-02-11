@@ -1,5 +1,5 @@
 
-import { initResultsButton } from './resultManager.js';
+import { initResultsButton, handleScrollButtonsVisibility } from './resultManager.js';
 
 // DOM Elements
 const startQuizButton = document.getElementById('startQuiz');
@@ -81,6 +81,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initResultsButton();
   if (sectionSearchInput) populateSections();
   addSectionSearchButton();   // ← added here
+  handleScrollButtonsVisibility(quizSection, resultSection);
 });
 
 // -------------------- Question Paper Button --------------------

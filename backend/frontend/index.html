@@ -248,6 +248,18 @@
   <div class="quiz-container">
     <h1>Mock Test</h1>
 
+    <div id="scrollButtons" style="display: none;">
+
+      <button id="goTop" title="Go to Top" aria-label="Go to Top">
+        <img src="images/Up.png" width="30" height="30" alt="Go to Top">
+      </button>
+
+      <button id="goBottom" title="Go to Bottom" aria-label="Go to Bottom">
+        <img src="images/Down.png" width="30" height="30" alt="Go to Bottom">
+      </button>
+
+    </div>
+
     <!-- Setup Section -->
     <div class="setup">
       <label for="numQuestions">Number of Questions per Section:</label>
@@ -675,10 +687,6 @@
     <div id="resultsContainer" style="color: dimgrey; margin-top: 20px;"></div>
   </div>
 
-  <div id="scrollButtons" style="display: none;">
-    <button id="goTop" title="Go to Top">⬆️</button>
-    <button id="goBottom" title="Go to Bottom">⬇️</button>
-  </div>
   <script type="module" src="script.js"></script>
   <script src="js/chart.js"></script>
   <script>
@@ -749,6 +757,11 @@
         behavior: 'smooth'
       });
     });
+
+    window.addEventListener("contextmenu", function (e) {
+      e.preventDefault();
+    }, true);
+
   </script>
 
 </body>
