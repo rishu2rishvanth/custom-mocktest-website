@@ -326,18 +326,20 @@
     <!-- Quiz Section -->
     <div class="quiz" style="display: none; position: relative;">
 
-      <div style="text-align:center;">
+      <div class="headerContainer"></div>
+
+      <!-- <div style="text-align:center;">
         <img id="banner-top" align="absmiddle" class="banner-top" src="images/banner.png">
         <img id="banner-bottom" align="absmiddle" class="banner-bottom" src="images/bottom.png">
-      </div>
+      </div> -->
+
+      <div id="subjectBar" class="subject-bar"></div>
 
       <div id="questionContainer"></div>
 
       <div id="optionsContainer"></div>
 
       <div id="commentContainer"></div>
-
-      <button id="nextQuestion" class="next-button" style="display: none;">Save & Next</button>
 
       <!-- Timer Display -->
       <div class="timer-container">
@@ -362,28 +364,38 @@
         </div>
       </div>
 
-      <button id="toggleNavPanelBtn" class="toggle-nav-panel-btn quiz">☰ Questions</button>
+      <button id="toggleNavPanelBtn" class="toggle-nav-panel-btn quiz">☰ Collapse</button>
       <div id="questionNavPanel" class="question-nav-panel quiz" role="navigation" aria-label="Question Navigator">
         <div class="nav-header">Choose a question</div>
         <div class="nav-content" id="questionNavContent"></div>
       </div>
 
       <!-- Calculator Button -->
-      <div class="calculator-container">
-        <span id="calcToggleBtn" class="icon-0"></span>
+      <div class="utility-container">
+        <div class="calculator-container">
+          <span id="calcToggleBtn" class="icon-0"></span>
+        </div>
       </div>
 
-      <!-- Skip Question Button -->
-      <button id="skipQuestion" class="skip-button">Skip Question</button>
+      <div class="next-container">
 
-      <!-- Mark & Next Question Button -->
-      <button id="markQuestion" class="mark-button">Mark & Next</button>
+        <!-- Skip Question Button -->
+        <button id="skipQuestion" class="skip-button">Skip Question</button>
 
-      <!-- Previous Question Button -->
-      <button id="prevQuestion" class="prev-question-button">Previous</button>
+        <!-- Mark & Next Question Button -->
+        <button id="markQuestion" class="mark-button">Mark & Next</button>
 
-      <!-- Submit Quiz Button -->
-      <button id="submitQuiz" class="submit-button">Submit</button>
+        <!-- Previous Question Button -->
+        <button id="prevQuestion" class="prev-question-button">Previous</button>
+
+        <!-- Next Question Button -->
+        <button id="nextQuestion" class="next-button" style="display: none;">Save & Next</button>
+      </div>
+
+      <div class="submit-container">
+        <!-- Submit Quiz Button -->
+        <button id="submitQuiz" class="submit-button">Submit</button>
+      </div>
     </div>
 
     <!-- Calculator Container -->
@@ -739,8 +751,22 @@
 
     document.getElementById('toggleNavPanelBtn').addEventListener('click', () => {
       const nav = document.getElementById('questionNavPanel');
+      const statusPanel = document.getElementById('questionStatusPanel');
+      const toggleBtn = document.getElementById('toggleNavPanelBtn');
+
       nav.classList.toggle('collapsed');
+
+      if (nav.classList.contains('collapsed')) {
+        toggleBtn.classList.add('moved');
+        statusPanel.classList.add('hidden');
+        toggleBtn.textContent = "☰ Expand";
+      } else {
+        toggleBtn.classList.remove('moved');
+        statusPanel.classList.remove('hidden');
+        toggleBtn.textContent = "☰ Collapse";
+      }
     });
+
   </script>
 
   <script>

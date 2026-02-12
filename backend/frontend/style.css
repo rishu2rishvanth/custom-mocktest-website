@@ -12,7 +12,7 @@ body {
   position: relative;
   background-color: #fff;
   padding: 30px;
-  padding-top: 130px;
+  padding-top: 110px;
   padding-right: 45%;
   border-radius: 10px;
   width: 100%;
@@ -27,6 +27,23 @@ body {
   /* height: calc(100vh - 30px);  adjust if you have header/footer 
   overflow-y: auto;
   overflow-x: hidden; */
+}
+
+.headerContainer {
+  position: fixed;
+  top: 0px;
+  left: 0px;
+  z-index: 1000;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  /* 🔥 aligns to right */
+  align-items: center;
+  padding: 15px 20px;
+  box-sizing: border-box;
+  border: 1px solid #ccc;
+  /* border-radius: 10px; */
+  background: #f8f9fa;
 }
 
 /* Foreground watermark */
@@ -110,8 +127,9 @@ button:hover {
 /* ====== Submit Button ====== */
 .submit-button {
   position: fixed;
-  bottom: 30px;
-  right: 85px;
+  /* bottom: 30px; */
+  /* right: 85px; */
+  margin: 0px;
   z-index: 1000;
 }
 
@@ -127,12 +145,31 @@ button:hover {
   /* darkgreen; */
 }
 
+.submit-container {
+  position: fixed;
+  bottom: 0px;
+  right: 0px;
+  z-index: 1000;
+  width: 21%;
+  display: flex;
+  justify-content: center;
+  /* 🔥 aligns to right */
+  align-items: center;
+  padding: 15px 20px;
+  box-sizing: border-box;
+  border: 1px solid #ccc;
+  /* border-radius: 10px; */
+  background: #e5f6fd;
+  height: 55px;
+}
+
 /* ====== Skip Button ====== */
 .skip-button {
   position: fixed;
-  bottom: 30px;
+  /* bottom: 30px; */
   left: 20px;
   z-index: 1000;
+  margin: 0px;
 }
 
 #skipQuestion {
@@ -147,29 +184,50 @@ button:hover {
   /* darkred; */
 }
 
+.next-container {
+  position: fixed;
+  bottom: 0px;
+  left: 0px;
+  z-index: 1000;
+  width: 79%;
+  display: flex;
+  justify-content: center;
+  /* 🔥 aligns to right */
+  align-items: center;
+  padding: 15px 20px;
+  box-sizing: border-box;
+  border: 1px solid #ccc;
+  /* border-radius: 10px; */
+  background: #f8f9fa;
+  height: 55px;
+}
+
 .next-button {
   position: fixed;
   padding: 5px 15px;
-  bottom: 30px;
+  /* bottom: 30px; */
   right: 260px;
   width: auto;
   z-index: 1000;
+  margin: 0px;
 }
 
 .prev-question-button {
   position: fixed;
   padding: 5px 15px;
-  bottom: 30px;
+  /* bottom: 30px; */
   right: 400px;
   width: auto;
   z-index: 1000;
+  margin: 0px;
 }
 
 .mark-button {
   position: fixed;
-  bottom: 30px;
+  /* bottom: 30px; */
   left: 160px;
   z-index: 1000;
+  margin: 0px;
 }
 
 #markQuestion {
@@ -185,7 +243,7 @@ button:hover {
 /* ====== Clear Button ====== */
 .clear-response-button {
   position: fixed;
-  bottom: 30px;
+  /* bottom: 30px; */
   left: 290px;
   background-color: orange;
   /* coral; */
@@ -194,6 +252,7 @@ button:hover {
   padding: 5px 15px;
   cursor: pointer;
   z-index: 1000;
+  margin: 0px;
 }
 
 .clear-response-button:hover {
@@ -201,9 +260,27 @@ button:hover {
 }
 
 /* ====== Calculator Button ====== */
+.utility-container {
+  position: fixed;
+  top: 60px;
+  right: 0px;
+  width: 100%;
+  padding: 5px 10px;
+  cursor: pointer;
+  z-index: 99;
+  border: 0.5px solid dimgrey;
+  /* border-radius: 10px; */
+  align-items: end;
+  display: flex;
+  justify-content: flex-end;
+  padding-right: 270px;
+  background: #f8f9fa;
+  height: 40px;
+}
+
 .calculator-container {
   position: fixed;
-  top: 85px;
+  top: 62px;
   right: 248px;
   width: auto;
   padding: 5px 10px;
@@ -239,18 +316,19 @@ button:hover {
 
 #timerDisplay {
   position: fixed;
-  top: 105px;
-  right: 240px;
-  margin-right: 10px;
+  top: 80px;
+  right: 0px;
+  width: 100%;
   margin-top: 20px;
+  text-align: end;
   padding: 7px 12px;
-  background: rgba(255, 255, 255, 0.25);
-  color: #000;
-  border-radius: 10px;
-  font-weight: bold;
+  padding-right: 250px !important;
+  background: #f8f9fa;
+  /* background: rgba(255, 255, 255, 0.25); */
+  /* border-radius: 10px; */
   FONT-SIZE: 13px;
   backdrop-filter: blur(10px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.7);
   z-index: 99;
 }
 
@@ -451,7 +529,7 @@ button:hover {
 #scrollButtons.quiz-mode {
   position: absolute;
   top: 180px;
-  bottom: 60px;
+  bottom: 40px;
   right: 250px;
   display: flex !important;
   flex-direction: column-reverse;
@@ -644,13 +722,16 @@ button:hover {
   }
 }
 
-/* Toggle button */
+/* Toggle button - ALWAYS rotated */
 .toggle-nav-panel-btn {
   position: fixed;
   top: 340px;
   max-width: fit-content;
-  right: 20px;
-  z-index: 9;
+  right: 210px;
+  z-index: 99;
+  transform: rotate(-90deg);
+  /* Always rotated */
+  transform-origin: center;
   padding: 8px 12px;
   font-size: 14px;
   background-color: #004085;
@@ -658,10 +739,21 @@ button:hover {
   border: none;
   border-radius: 6px;
   cursor: pointer;
+  /* transition: right 0.3s ease;  Smooth move only */
 }
 
-/* Collapsed navigator (hidden by default) */
+/* Move button when collapsed */
+.toggle-nav-panel-btn.moved {
+  right: 0px;
+}
+
+/* Hide navigator */
 .question-nav-panel.collapsed {
+  display: none;
+}
+
+/* Hide question status panel */
+.question-status-panel.hidden {
   display: none;
 }
 
@@ -683,7 +775,7 @@ button:hover {
 #loadCalc {
   position: fixed;
   overflow: hidden;
-  top: 130px;
+  top: 110px;
   right: 0px;
   z-index: 9999;
   height: auto !important;
@@ -735,9 +827,9 @@ button:hover {
 
 .quiz .question-nav-panel {
   position: fixed;
-  right: 10px;
-  top: 400px;
-  bottom: 80px;
+  right: 0px;
+  top: 365px;
+  bottom: 55px;
   width: 235px;
   background: #e5f6fd;
   /* whitesmoke; */
@@ -746,7 +838,7 @@ button:hover {
   font-size: 13px;
   padding: 5px;
   z-index: 99;
-  border-radius: 8px;
+  /* border-radius: 8px; */
   max-height: 400px;
   /* or something suitable */
   overflow: hidden;
@@ -952,14 +1044,14 @@ button:hover {
 /* ===== Question Status Panel ===== */
 .question-status-panel {
   position: fixed;
-  right: 10px;
-  top: 200px;
+  right: 0px;
+  top: 170px;
   /* ABOVE nav panel */
   width: 235px;
   height: 195px;
   background: #fff;
   border: 1px solid #ccc;
-  border-radius: 10px;
+  /* border-radius: 10px; */
   font-size: 13px;
   z-index: 99;
 }
@@ -1092,16 +1184,33 @@ button:hover {
   float: left;
 }
 
-.questionPaperBtn {
+.question-paper-container {
   position: fixed;
   padding: 5px 15px;
-  top: 32px;
-  right: 10px;
-  margin-left: 10px;
+  top: 30px;
+  right: 0px;
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+  /* 🔥 align to end */
+  align-items: center;
+  box-sizing: border-box;
+  height: 30px;
+  background-color: currentColor;
+  z-index: 999;
+}
+
+.questionPaperBtn {
   width: auto;
   background-color: #333;
   z-index: 99;
-  font-size: 12px;
+  font-size: 15px;
+  margin: 0px;
+  padding: 5px 10px;
+}
+
+#questionPaperBtn:hover {
+  background-color: black;
 }
 
 /* Foreground watermark */
@@ -1127,14 +1236,21 @@ button:hover {
 }
 
 .question-type-row {
+  position: fixed;
+  top: 170px;
+  left: 0px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   font-size: 14px !important;
   font-style: italic;
-  margin-top: 6px;
-  margin-bottom: 6px;
+  margin: 0px;
   gap: 6px;
+  background: #f8f9fa;
+  border: 0.5px solid dimgrey;
+  width: 80%;
+  height: 27px;
+  padding: 7px 12px;
 }
 
 .edit-modal {
@@ -1191,4 +1307,64 @@ html {
 
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(0, 0, 0, 0.4);
+}
+
+.subject-bar {
+  position: fixed;
+  top: 130px;
+  left: 0px;
+  width: 100%;
+  font-size: small;
+  display: flex;
+  gap: 8px;
+  padding-left: 10px !important;
+  padding: 4px;
+  border: 0.5px solid dimgrey;
+  background: #f8f9fa;
+  z-index: 999;
+}
+
+.subject-tab.active {
+  background: #007BB0;
+  color: white;
+}
+
+.subject-tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  background: #e9ecef;
+  font-weight: 500;
+}
+
+.subject-count {
+  font-size: 13px;
+  opacity: 0.8;
+}
+
+#subjectHoverBox {
+  position: absolute;
+  background: #fff;
+  border: 1px solid #ccc;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  padding: 12px 16px;
+  border-radius: 6px;
+  display: none;
+  z-index: 9999;
+  min-width: 220px;
+  font-size: 14px;
+}
+
+.hover-status div {
+  display: flex;
+  justify-content: space-between;
+  margin: 4px 0;
+}
+
+.hover-title {
+  font-weight: bold;
+  margin-bottom: 4px;
 }

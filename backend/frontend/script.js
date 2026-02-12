@@ -39,8 +39,21 @@ let hasAnswered = false;
 let selectedButton = null;
 let quizEnded = false;
 let natObserver = null;
+let subjectMap = {};
+let activeSubject = null;
+let subjectLastVisited = {};
 
 // -------------------- Helper additions / fixes --------------------
+
+let subjectHoverBox = null;
+
+function createSubjectHoverBox() {
+  if (subjectHoverBox) return;
+
+  subjectHoverBox = document.createElement('div');
+  subjectHoverBox.id = 'subjectHoverBox';
+  document.body.appendChild(subjectHoverBox);
+}
 
 // Clean raw text for storage (remove any HTML tags that may have been inserted when rendering)
 function cleanTextForStorage(str) {
@@ -74,6 +87,19 @@ function clearNatObserver() {
   }
 }
 
+function syncActiveSubjectWithQuestion() {
+  const q = selectedQuestions[currentQuestionIndex];
+  if (!q) return;
+
+  const subject = (q['Subject'] && q['Subject'].trim()) || 'Uncategorized';
+
+  if (subject !== activeSubject) {
+    activeSubject = subject;
+    renderSubjectTabs();
+    renderQuestionNavigator();
+  }
+}
+
 // -------------------- End helpers --------------------
 
 // On page load
@@ -82,6 +108,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (sectionSearchInput) populateSections();
   addSectionSearchButton();   // ← added here
   handleScrollButtonsVisibility(quizSection, resultSection);
+  createSubjectHoverBox();
 });
 
 // -------------------- Question Paper Button --------------------
@@ -92,9 +119,17 @@ questionPaperBtn.innerHTML = '<span class="questionpaper_icon"></span> Question 
 questionPaperBtn.style.display = 'none'; // 🔒 hidden by default
 
 document.addEventListener('DOMContentLoaded', () => {
-  const quizHeader = timerDisplay.parentNode; // QUIZ area
-  quizHeader.appendChild(questionPaperBtn);
-  questionPaperBtn.style.display = 'none'; // hidden initially
+
+  const qpContainer = document.createElement('div');
+  qpContainer.id = 'questionPaperContainer';
+  qpContainer.className = 'question-paper-container';
+
+  qpContainer.appendChild(questionPaperBtn);
+
+  // Append inside quiz section (top area)
+  quizSection.prepend(qpContainer);
+
+  questionPaperBtn.style.display = 'none';
 });
 
 function createQuestionPaperPanel() {
@@ -637,14 +672,59 @@ function startQuiz(section) {
       return;
     }
 
-    // 🔢 Switch numeric keyboard to STATIC mode during quiz
     if (window.vKeyboard) {
       vKeyboard.mode = 'static';
     }
 
-    // ✅ SAFE TO START
-    selectedQuestions = shuffleArray([...sections[section]]).slice(0, numQuestions);
+    // ✅ STEP 1: Select & shuffle overall pool first
+    let pool = shuffleArray([...sections[section]]).slice(0, numQuestions);
+
+    // ✅ STEP 2: Group by subject
+    let tempSubjectMap = {};
+
+    pool.forEach(q => {
+      const subject = (q['Subject'] && q['Subject'].trim()) || 'Uncategorized';
+
+      if (!tempSubjectMap[subject]) {
+        tempSubjectMap[subject] = [];
+      }
+
+      tempSubjectMap[subject].push(q);
+    });
+
+    // ✅ STEP 3: Sort subjects in ascending order
+    const sortedSubjects = Object.keys(tempSubjectMap).sort();
+
+    // ✅ STEP 4: Shuffle inside each subject
+    sortedSubjects.forEach(subject => {
+      tempSubjectMap[subject] = shuffleArray(tempSubjectMap[subject]);
+    });
+
+    // ✅ STEP 5: Serially append subject after subject
+    selectedQuestions = [];
+
+    sortedSubjects.forEach(subject => {
+      selectedQuestions.push(...tempSubjectMap[subject]);
+    });
+
+    // ✅ STEP 6: Build subjectMap based on new serial order
+    subjectMap = {};
+
+    selectedQuestions.forEach((q, index) => {
+      const subject = (q['Subject'] && q['Subject'].trim()) || 'Uncategorized';
+
+      if (!subjectMap[subject]) {
+        subjectMap[subject] = [];
+      }
+
+      subjectMap[subject].push(index);
+    });
+
+    activeSubject = sortedSubjects[0];
+
+    // Reset state
     userResponses = Array(selectedQuestions.length).fill(null);
+    subjectLastVisited = {};
     currentQuestionIndex = 0;
     score = 0;
     wrong = 0;
@@ -653,6 +733,8 @@ function startQuiz(section) {
 
     setupSection.style.display = 'none';
     quizSection.style.display = 'block';
+
+    renderSubjectTabs();
     questionPaperBtn.style.display = 'inline-block';
     showNextQuestion();
     renderQuestionNavigator();
@@ -662,11 +744,162 @@ function startQuiz(section) {
   });
 }
 
+
+function renderSubjectTabs() {
+  const bar = document.getElementById('subjectBar');
+  if (!bar) return;
+
+  bar.innerHTML = '';
+
+  Object.keys(subjectMap).forEach(subject => {
+
+    const total = subjectMap[subject].length;
+
+    // Count answered in this subject
+    let answeredCount = 0;
+
+    subjectMap[subject].forEach(index => {
+      const resp = userResponses[index];
+      if (resp && typeof resp.correct === 'boolean') {
+        answeredCount++;
+      }
+    });
+
+    const tab = document.createElement('div');
+    tab.className = 'subject-tab';
+
+    tab.innerHTML = `
+      <span class="subject-name">${subject}</span>
+      <span class="subject-count">(${answeredCount}/${total})</span>
+    `;
+
+    if (subject === activeSubject) {
+      tab.classList.add('active');
+    }
+
+    tab.addEventListener('mouseenter', () => {
+      showSubjectHover(subject, tab);
+    });
+
+    tab.addEventListener('mouseleave', () => {
+      hideSubjectHover();
+    });
+
+    tab.addEventListener('click', () => {
+      activeSubject = subject;
+      renderSubjectTabs();
+      renderQuestionNavigator();
+
+      // Restore last visited question if exists
+      if (subjectLastVisited[subject] !== undefined) {
+        currentQuestionIndex = subjectLastVisited[subject];
+      } else {
+        currentQuestionIndex = subjectMap[subject][0];
+      }
+
+      showNextQuestion();
+      updateNavButtonStyle(currentQuestionIndex);
+    });
+
+
+    bar.appendChild(tab);
+  });
+}
+
+function showSubjectHover(subject, element) {
+  if (!subjectHoverBox) return;
+
+  const indices = subjectMap[subject];
+
+  let notVisited = 0;
+  let unanswered = 0;
+  let skipped = 0;
+  let answered = 0;
+  let markedOnly = 0;
+  let answeredAndMarked = 0;
+
+  indices.forEach(index => {
+    const resp = userResponses[index];
+
+    // 1️⃣ Not visited
+    if (!resp) {
+      notVisited++;
+      return;
+    }
+
+    const isMarked = resp.marked === true;
+    const isAnswered = typeof resp.correct === 'boolean';
+
+    // 2️⃣ Skipped
+    if (resp.response === 'Skipped') {
+      skipped++;
+      return;
+    }
+
+    // 3️⃣ Answered & Marked
+    if (isAnswered && isMarked) {
+      answeredAndMarked++;
+      return;
+    }
+
+    // 4️⃣ Answered only
+    if (isAnswered) {
+      answered++;
+      return;
+    }
+
+    // 5️⃣ Marked only
+    if (isMarked) {
+      markedOnly++;
+      return;
+    }
+
+    // 6️⃣ Visited but unanswered
+    unanswered++;
+  });
+
+  subjectHoverBox.innerHTML = `
+    <div class="hover-status">
+      <div class="hover-title">${subject}</div>
+      <hr>
+      <div>Not Visited <span>${notVisited}</span></div>
+      <div>Unanswered <span>${unanswered}</span></div>
+      <div>Skipped <span>${skipped}</span></div>
+      <div>Answered <span>${answered}</span></div>
+      <div>Marked <span>${markedOnly}</span></div>
+      <div>Answered & Marked <span>${answeredAndMarked}</span></div>
+    </div>
+  `;
+
+  const rect = element.getBoundingClientRect();
+
+  subjectHoverBox.style.top =
+    rect.bottom + window.scrollY + 6 + 'px';
+
+  subjectHoverBox.style.left =
+    rect.left + window.scrollX + 'px';
+
+  subjectHoverBox.style.display = 'block';
+}
+
+function hideSubjectHover() {
+  if (subjectHoverBox) {
+    subjectHoverBox.style.display = 'none';
+  }
+}
+
+
 function renderQuestionNavigator() {
   const container = document.getElementById('questionNavContent');
   container.innerHTML = '';
 
-  selectedQuestions.forEach((_, i) => {
+  selectedQuestions.forEach((q, i) => {
+
+    const subject =
+      (q['Subject'] && q['Subject'].trim()) || 'Uncategorized';
+
+    if (activeSubject && subject !== activeSubject) return;
+
     const btn = document.createElement('button');
     btn.textContent = i + 1;
     btn.className = 'nav-btn';
@@ -679,6 +912,7 @@ function renderQuestionNavigator() {
       // save time, then record skip
       storeTimeBeforeLeaving();
       resetCalculator();
+      expandNavPanel();
 
       // scroll to top
       window.scrollTo({
@@ -819,12 +1053,25 @@ function updateQuestionStatusCounts() {
    (Exposed to window for inline & legacy JS)
 ========================================================= */
 
+function expandNavPanel() {
+  const nav = document.getElementById('questionNavPanel');
+  const statusPanel = document.getElementById('questionStatusPanel');
+  const toggleBtn = document.getElementById('toggleNavPanelBtn');
+
+  if (!nav || !nav.classList.contains('collapsed')) return;
+
+  nav.classList.remove('collapsed');
+  toggleBtn.classList.remove('moved');
+  statusPanel.classList.remove('hidden');
+  toggleBtn.textContent = "☰ Collapse";
+}
+
 function resetCalculatorPosition() {
   const calc = document.getElementById('loadCalc');
   if (!calc) return;
 
   calc.style.position = 'fixed';
-  calc.style.top = '130px';
+  calc.style.top = '110px';
   calc.style.right = '0px';
   calc.style.left = 'auto';
   calc.style.transform = 'none';
@@ -880,6 +1127,7 @@ skipQuestionButton.addEventListener('click', () => {
   storeTimeBeforeLeaving();
   recordResponse('Skipped', null);
   updateQuestionStatusCounts();
+  renderSubjectTabs();
   goToNextOrEnd();
 });
 
@@ -891,6 +1139,7 @@ prevQuestionButton.addEventListener('click', () => {
 
   // Clear calculator & keypad (same as others)
   resetCalculator();
+  expandNavPanel();
 
   // Scroll to top
   window.scrollTo({
@@ -904,7 +1153,7 @@ prevQuestionButton.addEventListener('click', () => {
   } else {
     currentQuestionIndex = selectedQuestions.length - 1;
   }
-
+  syncActiveSubjectWithQuestion();
   showNextQuestion();
   updateNavButtonStyle(currentQuestionIndex);
 });
@@ -1000,6 +1249,7 @@ markQuestionButton.addEventListener('click', () => {
 
   updateNavButtonStyle(currentQuestionIndex);
   updateQuestionStatusCounts();
+  renderSubjectTabs();
   goToNextOrEnd();
 });
 
@@ -1012,6 +1262,7 @@ skipQuestionButton.parentNode.insertBefore(clearButton, skipQuestionButton.nextS
 
 document.getElementById('clearResponse').addEventListener('click', () => {
   resetCalculator();
+  expandNavPanel();
 
   if (!quizSection.style.display || quizSection.style.display === 'none') return;
 
@@ -1056,6 +1307,7 @@ document.getElementById('clearResponse').addEventListener('click', () => {
   hasAnswered = false;
   updateNavButtonStyle(currentQuestionIndex);
   updateQuestionStatusCounts();
+  renderSubjectTabs();
   nextQuestionButton.style.display = 'block';
 });
 
@@ -1137,6 +1389,7 @@ nextQuestionButton.addEventListener('click', () => {
 // Helper: Go to next question or end quiz
 function goToNextOrEnd() {
   resetCalculator();
+  expandNavPanel();
 
   // scroll to top
   window.scrollTo({
@@ -1149,6 +1402,8 @@ function goToNextOrEnd() {
     // loop back to first question
     currentQuestionIndex = 0;
   }
+  // 🔥 NEW: auto-sync subject
+  syncActiveSubjectWithQuestion();
   showNextQuestion();
   updateNavButtonStyle(currentQuestionIndex);
 }
@@ -1166,6 +1421,12 @@ function shuffleArray(array) {
 function showNextQuestion() {
   const current = selectedQuestions[currentQuestionIndex];
   if (!current) return console.error('No question at index', currentQuestionIndex);
+  // Remember last visited question for this subject
+  const currentSubject =
+    (selectedQuestions[currentQuestionIndex]['Subject']?.trim()) || 'Uncategorized';
+
+  subjectLastVisited[currentSubject] = currentQuestionIndex;
+
 
   questionContainer.innerHTML = '';
   optionsContainer.innerHTML = '';
@@ -1578,6 +1839,7 @@ function recordResponse(response, correct, timeSpent = null) {
   hasAnswered = true;
   updateNavButtonStyle(currentQuestionIndex);
   updateQuestionStatusCounts();
+  renderSubjectTabs();
 }
 
 // Start exam timer
