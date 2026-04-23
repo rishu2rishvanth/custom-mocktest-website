@@ -240,6 +240,19 @@
       user-select: none;
     }
   </style>
+  <script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [['\\(', '\\)']],
+        displayMath: [['\\[', '\\]']]
+      },
+      svg: {
+        fontCache: 'global'
+      }
+    };
+  </script>
+
+  <script src="js/tex-svg.js"></script>
 </head>
 
 <body class="unselectable" oncontextmenu="return false;" onselect="return false;" onmousewheel="return false;"
@@ -343,6 +356,8 @@
 
       <!-- Timer Display -->
       <div class="timer-container">
+        <div style="font-size: smaller; font-weight: bold;">Subjects</div>
+
         <div id="timerDisplay">
           <b>All the Best! <span id="timeInMins"></span></b>
         </div>
@@ -372,6 +387,7 @@
 
       <!-- Calculator Button -->
       <div class="utility-container">
+        <div id="activeSectionName" class="subject-tab active" style="font-size: smaller;"></div>
         <div class="calculator-container">
           <span id="calcToggleBtn" class="icon-0"></span>
         </div>
@@ -696,7 +712,7 @@
     </div>
 
     <!-- Results Table -->
-    <div id="resultsContainer" style="color: dimgrey; margin-top: 20px;"></div>
+    <div id="resultsContainer" class="results-container"></div>
   </div>
 
   <script type="module" src="script.js"></script>

@@ -224,6 +224,26 @@ button:hover {
   z-index: 1000;
 }
 
+/* ============================= */
+/* MOBILE UI CLEANUP            */
+/* ============================= */
+
+/* Hide subject tabs */
+#subjectBar,
+.subject-bar {
+  display: none !important;
+}
+
+/* Hide active section name */
+#activeSectionName {
+  display: none !important;
+}
+
+/* Hide static "Subjects" label */
+.timer-container>div:first-child {
+  display: none !important;
+}
+
 /* ====== Answer Options ====== */
 #optionsContainer {
   display: grid;

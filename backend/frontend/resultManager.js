@@ -727,7 +727,7 @@ function viewResponseDetails(data, username, timestamp) {
     if (!window.matchMedia('(max-width: 0px)').matches) {
         container.insertAdjacentHTML(
             'afterbegin',
-            '<div class="calculator-container"><span class="calc-toggle-btn icon-0"></span></div>'
+            '<div class="utility-container"><div class="calculator-container"><span class="calc-toggle-btn icon-0"></span></div></div?'
         );
     }
 

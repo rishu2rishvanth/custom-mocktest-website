@@ -217,6 +217,7 @@ function renderQuestionPaper() {
     `;
 
     container.appendChild(qDiv);
+    typesetMath(container);
   });
 }
 
@@ -471,6 +472,11 @@ restartQuizButton.addEventListener('click', () => {
   questionPaperBtn.style.display = 'none';
   resultSection.style.display = 'none';
   setupSection.style.display = 'block';
+  const sectionLabel = document.getElementById('activeSectionName');
+  if (sectionLabel) {
+    sectionLabel.textContent = '';
+  }
+
   // 🔢 Restore floating keyboard on home
   if (window.vKeyboard) {
     vKeyboard.mode = 'floating';
@@ -733,6 +739,11 @@ function startQuiz(section) {
 
     setupSection.style.display = 'none';
     quizSection.style.display = 'block';
+    // 🔥 Dynamically set section name in header
+    const sectionLabel = document.getElementById('activeSectionName');
+    if (sectionLabel) {
+      sectionLabel.textContent = section;
+    }
 
     renderSubjectTabs();
     questionPaperBtn.style.display = 'inline-block';
@@ -862,12 +873,12 @@ function showSubjectHover(subject, element) {
     <div class="hover-status">
       <div class="hover-title">${subject}</div>
       <hr>
-      <div>Not Visited <span>${notVisited}</span></div>
-      <div>Unanswered <span>${unanswered}</span></div>
-      <div>Skipped <span>${skipped}</span></div>
-      <div>Answered <span>${answered}</span></div>
-      <div>Marked <span>${markedOnly}</span></div>
-      <div>Answered & Marked <span>${answeredAndMarked}</span></div>
+      <div>Not Visited <span class="hover-notVisited">${notVisited}</span></div>
+      <div>Unanswered <span class="hover-unanswered">${unanswered}</span></div>
+      <div>Skipped <span class="hover-skipped">${skipped}</span></div>
+      <div>Answered <span class="hover-answered">${answered}</span></div>
+      <div>Marked <span class="hover-marked">${markedOnly}</span></div>
+      <div>Answered & Marked <span class="hover-answered-marked">${answeredAndMarked}</span></div>
     </div>
   `;
 
@@ -905,8 +916,6 @@ function renderQuestionNavigator() {
     btn.className = 'nav-btn';
     btn.id = `nav-q-${i}`;
 
-    updateNavButtonStyle(i);
-
     btn.onclick = () => {
       clearNatObserver();
       // save time, then record skip
@@ -924,6 +933,7 @@ function renderQuestionNavigator() {
     };
 
     container.appendChild(btn);
+    updateNavButtonStyle(i);
   });
 }
 
@@ -951,7 +961,7 @@ function updateNavButtonStyle(index, state) {
     }
     if (!user) {
       // Visited but no record yet
-      btn.classList.add('visited');
+      btn.classList.add('not-visited');
     }
     else if (user._noAnswer) {
       // Time recorded but no answer
@@ -1484,16 +1494,20 @@ function showNextQuestion() {
   );
 
   // ---- Append row ----
-  typeTag.append(leftDiv, rightDiv);
-  questionContainer.appendChild(typeTag);
 
-  // ---- Spacer line ----
-  const spacer = document.createElement('hr');
-  spacer.style.border = '0';
-  spacer.style.borderTop = '1px solid #ddd';
-  spacer.style.margin = '6px 0 12px 0';
+  // Show Question Type row ONLY while quiz is active
+  if (!quizEnded) {
+    typeTag.append(leftDiv, rightDiv);
+    questionContainer.appendChild(typeTag);
 
-  questionContainer.appendChild(spacer);
+    const spacer = document.createElement('hr');
+    spacer.style.border = '0';
+    spacer.style.borderTop = '1px solid #ddd';
+    spacer.style.margin = '6px 0 12px 0';
+
+    questionContainer.appendChild(spacer);
+  }
+
 
   if (current['Comprehension']) {
     const comp = document.createElement('div');
@@ -1743,6 +1757,7 @@ function showNextQuestion() {
   updatePrevButtonVisibility();
   nextQuestionButton.style.display = 'block';
   skipQuestionButton.style.display = 'block';
+  typesetMath();
 }
 
 // Handle selected answer
@@ -1885,6 +1900,7 @@ function endQuiz() {
     `Final Score: <b>${finalScore.toFixed(2)}</b><br><br>
      Check the breakup in results page.<br>
      Thank you for your patience & Good Luck!`;
+  typesetMath(resultSection);
   submitResponses();
 }
 
@@ -1990,4 +2006,12 @@ function formatTextWithSuperSubscript(text) {
 // Combined formatter
 function formatText(raw) {
   return formatTextWithSuperSubscript(formatTextWithParagraphs(raw));
+}
+
+function typesetMath(container = document.body) {
+  if (window.MathJax) {
+    MathJax.typesetPromise([container]).catch(err =>
+      console.error('MathJax error:', err)
+    );
+  }
 }

@@ -260,32 +260,41 @@ button:hover {
 }
 
 /* ====== Calculator Button ====== */
-.utility-container {
+.quiz .utility-container {
   position: fixed;
   top: 60px;
   right: 0px;
   width: 100%;
   padding: 5px 10px;
-  cursor: pointer;
-  z-index: 99;
+  padding-right: 270px !important;
   border: 0.5px solid dimgrey;
   /* border-radius: 10px; */
-  align-items: end;
   display: flex;
-  justify-content: flex-end;
-  padding-right: 270px;
+  justify-content: space-between;
+  align-items: center;
   background: #f8f9fa;
   height: 40px;
+  z-index: 99;
+}
+
+.results-container .utility-container {
+  position: fixed;
+  top: 60px;
+  right: 250px;
+  width: auto;
+  padding: 6px 12px;
+  background: transparent;
+  border-radius: 6px;
+  border: none;
+  z-index: 999;
 }
 
 .calculator-container {
-  position: fixed;
-  top: 62px;
-  right: 248px;
-  width: auto;
+  position: static;
+  display: flex;
   padding: 5px 10px;
+  align-items: center;
   cursor: pointer;
-  z-index: 99;
 }
 
 .calculator-container:hover {
@@ -307,29 +316,29 @@ button:hover {
 
 /* ====== Timer ====== */
 .timer-container {
-  position: relative;
+  position: fixed;
+  top: 80px;
+  right: 0;
+  width: 100%;
+  height: 30px;
+  margin-top: 20px;
+  padding: 5px 10px;
+  padding-right: 250px !important;
+  border: 0.5px solid dimgrey;
+  background: #f8f9fa;
   display: flex;
-  justify-content: center;
-  width: 0;
-  height: 0;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 99;
 }
 
 #timerDisplay {
-  position: fixed;
-  top: 80px;
-  right: 0px;
-  width: 100%;
-  margin-top: 20px;
-  text-align: end;
-  padding: 7px 12px;
-  padding-right: 250px !important;
-  background: #f8f9fa;
-  /* background: rgba(255, 255, 255, 0.25); */
-  /* border-radius: 10px; */
-  FONT-SIZE: 13px;
-  backdrop-filter: blur(10px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.7);
-  z-index: 99;
+  position: static;
+  margin: 0;
+  padding: 0;
+  font-size: 13px;
+  background: none;
+  box-shadow: none;
 }
 
 /* ====== Answer Options ====== */
@@ -385,6 +394,12 @@ button:hover {
 }
 
 /* ====== Results Section ====== */
+.results-container {
+  color: dimgrey;
+  margin-top: 20px;
+  display: block;
+}
+
 .result {
   text-align: center;
   color: #004085;
@@ -559,7 +574,7 @@ button:hover {
   background: white;
   border: 1px solid #ccc;
   border-top: none;
-  max-height: 250px;
+  max-height: 200px;
   overflow-y: auto;
   z-index: 100;
   display: none;
@@ -1093,7 +1108,8 @@ button:hover {
 }
 
 /* ===== Individual colors ===== */
-#count-notVisited {
+#count-notVisited,
+.hover-notVisited {
   background-color: #fff;
   background: url(../images/questions-sprite.png) no-repeat;
   background-position: -107px -56px;
@@ -1104,9 +1120,11 @@ button:hover {
   width: 29px;
   color: #474747;
   padding-top: 3px;
+  font-weight: bold;
 }
 
-#count-unanswered {
+#count-unanswered,
+.hover-unanswered {
   background-color: #e44507;
   color: snow;
   background: url(../images/questions-sprite.png) no-repeat;
@@ -1118,9 +1136,11 @@ button:hover {
   width: 29px;
   color: #fff;
   padding-top: 3px;
+  font-weight: bold;
 }
 
-#count-skipped {
+#count-skipped,
+.hover-skipped {
   background-color: #6b6e6f;
   color: snow;
   background: url(../images/questions-sprite.png) no-repeat;
@@ -1132,9 +1152,11 @@ button:hover {
   width: 29px;
   color: #fff;
   padding-top: 3px;
+  font-weight: bold;
 }
 
-#count-answered {
+#count-answered,
+.hover-answered {
   background-color: #64b41c;
   color: snow;
   background: url(../images/questions-sprite.png) no-repeat;
@@ -1146,9 +1168,11 @@ button:hover {
   width: 29px;
   color: #fff;
   padding-top: 3px;
+  font-weight: bold;
 }
 
-#count-marked {
+#count-marked,
+.hover-marked {
   background-color: #745295;
   color: snow;
   background: url(../images/questions-sprite.png) no-repeat;
@@ -1160,9 +1184,11 @@ button:hover {
   width: 29px;
   color: #fff;
   padding-top: 3px;
+  font-weight: bold;
 }
 
-#count-answered-marked {
+#count-answered-marked,
+.hover-answered-marked {
   background-color: #8e44ad;
   /* purple */
   background: url(../images/questions-sprite.png) no-repeat;
@@ -1174,6 +1200,7 @@ button:hover {
   width: 29px;
   color: #fff;
   padding-top: 3px;
+  font-weight: bold;
 }
 
 .questionpaper_icon {
@@ -1235,7 +1262,7 @@ button:hover {
   /* scroll here */
 }
 
-.question-type-row {
+.quiz .question-type-row {
   position: fixed;
   top: 170px;
   left: 0px;
@@ -1295,6 +1322,7 @@ html {
 
 ::-webkit-scrollbar {
   width: 8px;
+  height: 8px;
 }
 
 ::-webkit-scrollbar-thumb {
@@ -1309,40 +1337,79 @@ html {
   background: rgba(0, 0, 0, 0.4);
 }
 
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb:active {
+  background: #007BB0; /* Blue */
+}
+
+/* ===== Subject Bar ===== */
 .subject-bar {
   position: fixed;
   top: 130px;
-  left: 0px;
+  left: 0;
   width: 100%;
   font-size: small;
   display: flex;
+  align-items: center;
   gap: 8px;
-  padding-left: 10px !important;
-  padding: 4px;
+  padding: 4px 10px;
   border: 0.5px solid dimgrey;
   background: #f8f9fa;
   z-index: 999;
+  height: 40px;
+
+  /* Horizontal scroll */
+  overflow-x: auto;
+  overflow-y: hidden;
+  flex-wrap: nowrap;
+  scrollbar-width: thin;
 }
 
+/* Individual Tab */
+.subject-tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 4px;
+  cursor: pointer;
+  background: #e9ecef;
+  font-weight: 500;
+
+  max-width: 220px;   /* controls total tab width */
+  flex-shrink: 0;
+}
+
+/* 🔥 THIS is key — truncate only name */
+.subject-tab .subject-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0; /* required for flex truncation */
+  flex: 1;
+}
+
+/* Count should NEVER shrink */
+.subject-count {
+  font-size: 13px;
+  opacity: 0.8;
+  flex-shrink: 0;
+}
+
+/* Active tab */
 .subject-tab.active {
   background: #007BB0;
   color: white;
 }
 
-.subject-tab {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 16px;
-  border-radius: 4px;
-  cursor: pointer;
-  background: #e9ecef;
-  font-weight: 500;
-}
-
-.subject-count {
-  font-size: 13px;
-  opacity: 0.8;
+/* Mobile full width */
+@media (max-width: 768px) {
+  .subject-bar {
+    right: 0;
+  }
 }
 
 #subjectHoverBox {
@@ -1355,13 +1422,15 @@ html {
   display: none;
   z-index: 9999;
   min-width: 220px;
-  font-size: 14px;
+  font-size: 13px;
 }
 
 .hover-status div {
   display: flex;
   justify-content: space-between;
   margin: 4px 0;
+  text-align: center;
+  align-items: center;
 }
 
 .hover-title {
