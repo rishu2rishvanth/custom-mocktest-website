@@ -110,6 +110,7 @@ app.post('/api/response', (req, res) => {
         timestamp: moment(examStartTime).format('YYYY-MM-DD HH:mm:ss'),
         username,
         section: section || 'unknown',
+        subject: r.subject,
         question: r.question,
         questionImage: r.questionImage || '',
         comprehension: r.comprehension || '',
@@ -271,6 +272,7 @@ app.post('/api/edit/save-question', (req, res) => {
     const {
     section,
     questionId,
+    subject,
     question,
     comprehension,
     options,
@@ -304,6 +306,7 @@ app.post('/api/edit/save-question', (req, res) => {
         return res.status(404).json({ message: 'QuestionID not found.' });
         }
 
+        q.Subject = subject;
         q.Question = question;
         q.Comprehension = comprehension;
         q['Question Type'] = type;
@@ -361,6 +364,7 @@ app.post('/api/edit/save-question', (req, res) => {
                 } else {
                    r.options = '';
                 }
+                r.subject = subject;
                 r.question = question;
                 r.comprehension = comprehension;
             });
@@ -406,6 +410,7 @@ app.post('/api/edit/get-question', (req, res) => {
             questionId: r.QuestionID,
             rowIndex,
             section,
+            subject: r.Subject || '',
             question: r.Question,
             comprehension: r.Comprehension,
             questionImage: r['Question Image URL'],

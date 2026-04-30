@@ -360,7 +360,7 @@ function buildSummaryData(responses) {
    ------------------------- */
 
 // Show response details for a given attempt
-function viewResponseDetails(data, username, timestamp) {
+export function viewResponseDetails(data, username, timestamp) {
     const container = document.getElementById('resultsContainer');
     const responses = data.filter(r => r.username === username && r.timestamp === timestamp);
 
@@ -441,6 +441,7 @@ function viewResponseDetails(data, username, timestamp) {
         let questionHTML = '';
         if (r.type || r.weightage) {
             const questionType = r.type || 'MCQ';
+            const subject = r.subject || 'Unknown';
             const weightage = Number(r.weightage) || 1;
 
             // ---- Negative marking logic (same as quiz page) ----
@@ -456,8 +457,8 @@ function viewResponseDetails(data, username, timestamp) {
                             font-size:15px; margin-bottom:6px;">
                     
                     <!-- LEFT -->
-                    <div style="font-weight:bold;">
-                        Question Type: ${sanitize(questionType)}
+                    <div>
+                        <b>Question Type:</b> ${sanitize(questionType)}
                     </div>
 
                     <!-- RIGHT -->
@@ -472,6 +473,10 @@ function viewResponseDetails(data, username, timestamp) {
                             ${negMarking}
                         </span>
                     </div>
+                </div>
+
+                <div>
+                    <b>Subject:</b> ${sanitize(subject)}
                 </div>
             `;
         }
@@ -572,7 +577,10 @@ function viewResponseDetails(data, username, timestamp) {
             <p><b>Time Taken:</b> ${timeTaken} seconds</p>
             <button class="edit-question-btn"
                 data-section="${sanitize(sectionName)}"
-                data-question-id="${sanitize(r.questionId)}">
+                data-question-id="${sanitize(r.questionId)}"
+                data-username="${sanitize(username)}"
+                data-timestamp="${sanitize(timestamp)}"
+                data-target="q${index + 1}">
                     ✏️ Edit
             </button>
         </div>`;

@@ -1,10 +1,19 @@
-import { fetchAndRenderResults } from './resultManager.js';
+import { fetchAndRenderResults, viewResponseDetails } from './resultManager.js';
 
 document.addEventListener('click', async (e) => {
     if (!e.target.classList.contains('edit-question-btn')) return;
 
     const section = e.target.dataset.section;
     const questionId = e.target.dataset.questionId;
+    const username = e.target.dataset.username;
+    const timestamp = e.target.dataset.timestamp;
+    const target = e.target.dataset.target;
+
+    sessionStorage.setItem('editRestore', JSON.stringify({
+        username,
+        timestamp,
+        target
+    }));
 
     if (!section || !questionId) {
         alert('❌ Missing section or QuestionID. Cannot edit.');
@@ -46,6 +55,86 @@ function openEditModal(data) {
 
       <h3>Edit Question</h3>
 
+        <label>Subject</label>
+
+        <select id="eq-subject-select">
+        <option value="">-- Select Subject --</option>
+        ${[
+            'Engineering Mathematics',
+            'Linear Algebra',
+            'Calculus',
+            'Probability and Statistics',
+            'Vector Calculus',
+            'Differential Equations',
+            'Laplace Transforms',
+            'Numerical Methods',
+            'Aerodynamics',
+            'Gas Dynamics',
+            'Jet Propulsion',
+            'Aircraft Performance',
+            'Aircraft Structures',
+            'Aircraft Stability',
+            'Rocket Propulsion',
+            'Vibrations',
+            'Space Dynamics',
+            'Thermodynamics',
+            'Fluid Mechanics',
+            'Manufacturing',
+            'Refrigeration and Air Conditioning',
+            'Machine Design',
+            'IC Engines',
+            'Heat Transfer',
+            'Industrial Engineering',
+            'Engineering Mechanics',
+            'Strength of Materials',
+            'Theory of Machines',
+            'General Aptitude',
+            'Other'
+        ].map(sub => `
+            <option value="${sub}" ${data.subject === sub ? 'selected' : ''}>
+            ${sub}
+            </option>
+        `).join('')}
+        </select>
+
+        <input
+        id="eq-subject-custom"
+        placeholder="Or type new subject"
+        value="${data.subject && ![
+            'Engineering Mathematics',
+            'Linear Algebra',
+            'Calculus',
+            'Probability and Statistics',
+            'Vector Calculus',
+            'Differential Equations',
+            'Laplace Transforms',
+            'Numerical Methods',
+            'Aerodynamics',
+            'Gas Dynamics',
+            'Jet Propulsion',
+            'Aircraft Performance',
+            'Aircraft Structures',
+            'Aircraft Stability',
+            'Rocket Propulsion',
+            'Vibrations',
+            'Space Dynamics',
+            'Thermodynamics',
+            'Fluid Mechanics',
+            'Manufacturing',
+            'Refrigeration and Air Conditioning',
+            'Machine Design',
+            'IC Engines',
+            'Heat Transfer',
+            'Industrial Engineering',
+            'Engineering Mechanics',
+            'Strength of Materials',
+            'Theory of Machines',
+            'General Aptitude',
+            'Other'
+        ].includes(data.subject) ? data.subject : ''}"
+        style="margin-top:6px;"
+        >
+
       <label>Comprehension</label>
       <textarea id="eq-comprehension">${data.comprehension ?? ''}</textarea>
 
@@ -77,10 +166,20 @@ function openEditModal(data) {
     `;
 
     document.body.appendChild(modal);
+    const subSelect = document.getElementById('eq-subject-select');
+    const subCustom = document.getElementById('eq-subject-custom');
+
+    if (subSelect && subCustom) {
+        subSelect.addEventListener('change', () => {
+            subCustom.value = subSelect.value;
+            subCustom.focus();
+        });
+    }
     document.body.style.overflow = 'hidden';
 
     // ⌨️ Attach Virtual Keyboard
     [
+        'eq-subject-custom',
         'eq-comprehension',
         'eq-question',
         'eq-options',
@@ -112,6 +211,9 @@ function openEditModal(data) {
         const payload = {
             section: data.section,
             questionId: data.questionId,
+            subject:
+            document.getElementById('eq-subject-custom').value.trim() ||
+            document.getElementById('eq-subject-select').value.trim(),
             comprehension: document.getElementById('eq-comprehension').value.trim(),
             question: document.getElementById('eq-question').value.trim(),
             options,
@@ -138,7 +240,40 @@ function openEditModal(data) {
             alert(r.message || 'Saved');
             modal.remove();
             document.body.style.overflow = '';
-            fetchAndRenderResults();
+
+            const restore = JSON.parse(
+                sessionStorage.getItem('editRestore') || '{}'
+            );
+
+            // ensure results screen visible
+            document.querySelector('.setup').style.display = 'none';
+            document.querySelector('.quiz').style.display = 'none';
+            document.querySelector('.result').style.display = 'none';
+            document.getElementById('resultsContainer').style.display = 'block';
+
+            // fetch latest data
+            const response = await fetch('/api/all-responses');
+            const allData = await response.json();
+
+            // rebuild detailed attempt view
+            viewResponseDetails(
+                allData,
+                restore.username,
+                restore.timestamp
+            );
+
+            // scroll after DOM render
+            setTimeout(() => {
+                const el = document.getElementById(restore.target);
+                if (el) {
+                    el.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            }, 500);
+
+            sessionStorage.removeItem('editRestore');
         } catch (err) {
             console.error(err);
             alert(`❌ Failed to save.\n${err.message}`);

@@ -1833,6 +1833,7 @@ function recordResponse(response, correct, timeSpent = null) {
   const merged = {
     ...(prev || {}),
     questionId: current.QuestionID,
+    subject: current['Subject'],
     question: current['Question'] || '',
     questionImage: current['Question Image URL'] || '',
     comprehension: current['Comprehension'] || '',
@@ -1948,6 +1949,7 @@ function submitResponses() {
 
     return {
       questionId: q.QuestionID,
+      subject: q['Subject'] || '',
       question: q['Question'] || '',
       questionImage: q['Question Image URL'] || '',
       comprehension: q['Comprehension'] || '',
