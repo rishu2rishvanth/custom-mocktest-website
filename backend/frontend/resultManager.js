@@ -269,7 +269,9 @@ function buildSummaryData(responses) {
         summary.available.m += w;
         if (w === 1) summary.available.h1++;
         if (w === 2) summary.available.h2++;
-        summary.available[type]++;
+        if (type === 'mcq') summary.available.mcq++;
+        if (type === 'msq') summary.available.msq++;
+        if (type === 'nat') summary.available.nat++;
 
         const bucket =
             r.response === 'Skipped' ? summary.left :
@@ -295,7 +297,9 @@ function buildSummaryData(responses) {
             summary.attempted.m += w;
             if (w === 1) summary.attempted.h1++;
             if (w === 2) summary.attempted.h2++;
-            summary.attempted[type]++;
+            if (type === 'mcq') summary.attempted.mcq++;
+            if (type === 'msq') summary.attempted.msq++;
+            if (type === 'nat') summary.attempted.nat++;
         }
 
         // Negative marking (MCQ only, same rule as quiz)
@@ -353,6 +357,78 @@ function buildSummaryData(responses) {
             types: `${summary.negative.mcq} / 0 / 0`
         }
     ];
+}
+
+function groupBySubject(responses) {
+    const map = {};
+
+    responses.forEach(r => {
+        const subject = r.subject || 'Unknown';
+        if (!map[subject]) map[subject] = [];
+        map[subject].push(r);
+    });
+
+    return map;
+}
+
+/* =========================
+   SUBJECT ANALYTICS ENGINE
+   ========================= */
+
+function buildSubjectMetrics(responses) {
+    const map = groupBySubject(responses);
+    const result = {};
+
+    Object.entries(map).forEach(([subject, list]) => {
+        let correct = 0, wrong = 0, skipped = 0, time = 0;
+
+        list.forEach(r => {
+            if (r.response === 'Skipped') skipped++;
+            else if (r.correct === true) correct++;
+            else if (r.correct === false) wrong++;
+
+            const t = parseFloat(r.responseTime);
+            if (!isNaN(t)) time += t;
+        });
+
+        const attempted = correct + wrong;
+        const accuracy = attempted ? (correct / attempted) * 100 : 0;
+
+        result[subject] = {
+            total: list.length,
+            correct,
+            wrong,
+            skipped,
+            accuracy: +accuracy.toFixed(1),
+            time
+        };
+    });
+
+    return result;
+}
+
+function getFocusSuggestion(metrics) {
+    const entries = Object.entries(metrics);
+
+    if (!entries.length) return "No data available.";
+
+    const [subject, m] = entries.sort((a, b) => a[1].accuracy - b[1].accuracy)[0];
+
+    if (m.accuracy < 40) {
+        return `🚨 Focus on ${subject}: Very low accuracy (${m.accuracy}%). Relearn concepts.`;
+    }
+
+    if (m.accuracy < 70) {
+        return `⚠️ Improve ${subject}: Moderate accuracy (${m.accuracy}%). Practice more.`;
+    }
+
+    return `✅ ${subject} is strong. Focus on speed optimization.`;
+}
+
+function formatTime(sec) {
+    const m = Math.floor(sec / 60);
+    const s = Math.floor(sec % 60);
+    return `${m}m ${s}s`;
 }
 
 /* -------------------------
@@ -435,6 +511,45 @@ export function viewResponseDetails(data, username, timestamp) {
     html += `<h4 style="margin-top:20px;">📊 Analysis</h4>`;
     html += renderSummaryTable(summaryData);
 
+    /* =========================
+    SUBJECT DROPDOWN ANALYSIS
+    ========================= */
+
+    const subjectMap = groupBySubject(responses);
+    const metrics = buildSubjectMetrics(responses);
+    const subjects = Object.keys(subjectMap);
+
+    html += `
+        <h4 style="margin-top:20px;">📚 Subject-wise Analysis</h4>
+
+        <select id="subjectDropdown" style="padding:6px; font-size:14px;">
+            <option value="">-- Select Subject --</option>
+            ${subjects.map(s => {
+                const m = metrics[s];
+                return `<option value="${s}">
+                    ${s} (${m.accuracy}% | ${m.correct}/${m.total})
+                </option>`;
+            }).join('')}
+        </select>
+
+        <div id="subjectSummaryContainer"></div>
+    `;
+
+    // ✅ MOVE SUGGESTION HERE
+    const suggestion = getFocusSuggestion(metrics);
+
+    html += `
+        <div style="
+            margin-top:15px;
+            padding:12px;
+            background:#fff3cd;
+            border-left:5px solid orange;
+            font-weight:500;
+        ">
+            🧠 ${suggestion}
+        </div>
+    `;
+
     html += `<button onclick="window.location.reload()">Home</button>`;
 
     responses.forEach((r, index) => {
@@ -442,6 +557,7 @@ export function viewResponseDetails(data, username, timestamp) {
         if (r.type || r.weightage) {
             const questionType = r.type || 'MCQ';
             const subject = r.subject || 'Unknown';
+            const difficulty = r.difficulty || 'Undefined';
             const weightage = Number(r.weightage) || 1;
 
             // ---- Negative marking logic (same as quiz page) ----
@@ -452,16 +568,11 @@ export function viewResponseDetails(data, username, timestamp) {
             }
 
             questionHTML += `
-                <div class="question-type-row"
-                    style="display:flex; justify-content:space-between; align-items:center;
-                            font-size:15px; margin-bottom:6px;">
-                    
-                    <!-- LEFT -->
+                <!-- ROW 1: Question Type and Marks -->
+                <div class="question-row" style="display:flex; justify-content:space-between; font-size:15px; margin-bottom:6px;">
                     <div>
                         <b>Question Type:</b> ${sanitize(questionType)}
                     </div>
-
-                    <!-- RIGHT -->
                     <div>
                         <span>Marks for correct Answer: </span>
                         <span style="color:green; font-weight:bold;">
@@ -475,8 +586,14 @@ export function viewResponseDetails(data, username, timestamp) {
                     </div>
                 </div>
 
-                <div>
-                    <b>Subject:</b> ${sanitize(subject)}
+                <!-- ROW 2: Subject and Difficulty -->
+                <div class="question-row" style="display:flex; justify-content:space-between; font-size:15px;">
+                    <div>
+                        <b>Subject:</b> ${sanitize(subject)}
+                    </div>
+                    <div>
+                        <b>Difficulty:</b> ${sanitize(difficulty)}
+                    </div>
                 </div>
             `;
         }
@@ -484,7 +601,7 @@ export function viewResponseDetails(data, username, timestamp) {
             questionHTML += `<div>${formatText(sanitize(r.question))}</div>`;
         }
         if (r.questionImage) {
-            questionHTML += `<div><img src="http://192.168.1.2:5000${r.questionImage}" alt="Question Image" style="max-width: 100%; margin-top: 8px;"></div>`;
+            questionHTML += `<div><img src="http://192.168.1.9:5000${r.questionImage}" alt="Question Image" style="max-width: 100%; margin-top: 8px;"></div>`;
         }
         if (!questionHTML) {
             questionHTML = 'N/A';
@@ -616,6 +733,47 @@ export function viewResponseDetails(data, username, timestamp) {
     navHTML += `</div>`;
     html = html + navHTML; // Append navigator at end
     container.innerHTML = html;
+
+    /* =========================
+    DROPDOWN INTERACTION
+    ========================= */
+
+    const dropdown = document.getElementById('subjectDropdown');
+    const output = document.getElementById('subjectSummaryContainer');
+
+    if (dropdown) {
+        dropdown.addEventListener('change', () => {
+            const selected = dropdown.value;
+
+            if (!selected) {
+                output.innerHTML = '';
+                return;
+            }
+
+            const summary = buildSummaryData(subjectMap[selected]);
+            const m = metrics[selected];
+
+            output.innerHTML = `
+                <div style="margin-top:10px;">
+                    <b>Accuracy:</b> ${m.accuracy}% ||
+                    <b>Correct:</b> ${m.correct} / ${m.total} ||
+                    <b>Wrong:</b> ${m.wrong} ||
+                    <b>Skipped:</b> ${m.skipped} ||
+                    <b>Time Spent:</b> ${formatTime(m.time)} sec
+                </div>
+                ${renderSummaryTable(summary)}
+            `;
+        });
+
+        // 🔥 AUTO-SELECT WEAKEST SUBJECT
+        const weakest = Object.entries(metrics)
+            .sort((a, b) => a[1].accuracy - b[1].accuracy)[0]?.[0];
+
+        // if (weakest) {
+        //     dropdown.value = weakest;
+        //     dropdown.dispatchEvent(new Event('change'));
+        // }
+    }
 
     // -------------------------
     // TIME vs QUESTION (SMART BAR CHART)

@@ -111,6 +111,7 @@ app.post('/api/response', (req, res) => {
         username,
         section: section || 'unknown',
         subject: r.subject,
+        difficulty: r.difficulty,
         question: r.question,
         questionImage: r.questionImage || '',
         comprehension: r.comprehension || '',
@@ -273,6 +274,7 @@ app.post('/api/edit/save-question', (req, res) => {
     section,
     questionId,
     subject,
+    difficulty,
     question,
     comprehension,
     options,
@@ -307,6 +309,7 @@ app.post('/api/edit/save-question', (req, res) => {
         }
 
         q.Subject = subject;
+        q.Difficulty = difficulty;
         q.Question = question;
         q.Comprehension = comprehension;
         q['Question Type'] = type;
@@ -339,9 +342,22 @@ app.post('/api/edit/save-question', (req, res) => {
                 let correct = null;
 
                 if (type === 'MCQ') {
+                    const normalize = (v) => {
+                        if (v === null || v === undefined) return '';
+
+                        if (!isNaN(v) && v !== '') {
+                            return String(Number(v));
+                        }
+
+                        return String(v).trim();
+                    };
+
                     const opt = options[correctAnswerIndex];
                     const correctVal = opt.image || opt.text;
-                    correct = r.response === correctVal;
+
+                    correct =
+                        normalize(r.response) === normalize(correctVal);
+
                     r.correctAnswer = correctVal;
                 }
                 else if (type === 'MSQ') {
@@ -350,9 +366,37 @@ app.post('/api/edit/save-question', (req, res) => {
                     r.correctAnswer = msqAnswers;
                 }
                 else if (type === 'NAT') {
-                    const [lo, hi] = natRange.split('-').map(Number);
-                    const v = Number(r.response);
-                    correct = !isNaN(v) && v >= lo && v <= hi;
+
+                    const value = Number(r.response);
+                    correct = false;
+
+                    if (!isNaN(value)) {
+
+                        const parts = String(natRange)
+                            .split(/\s+OR\s+/i);
+
+                        for (const part of parts) {
+
+                            const match = part.match(
+                                /(-?\d+(?:\.\d+)?)\s*-\s*(-?\d+(?:\.\d+)?)/
+                            );
+
+                            if (!match) continue;
+
+                            let low = Number(match[1]);
+                            let high = Number(match[2]);
+
+                            if (low > high) {
+                                [low, high] = [high, low];
+                            }
+
+                            if (value >= low && value <= high) {
+                                correct = true;
+                                break;
+                            }
+                        }
+                    }
+
                     r.correctAnswer = natRange;
                 }
 
@@ -365,6 +409,7 @@ app.post('/api/edit/save-question', (req, res) => {
                    r.options = '';
                 }
                 r.subject = subject;
+                r.difficulty = difficulty;
                 r.question = question;
                 r.comprehension = comprehension;
             });
@@ -411,6 +456,7 @@ app.post('/api/edit/get-question', (req, res) => {
             rowIndex,
             section,
             subject: r.Subject || '',
+            difficulty: r.Difficulty || '',
             question: r.Question,
             comprehension: r.Comprehension,
             questionImage: r['Question Image URL'],

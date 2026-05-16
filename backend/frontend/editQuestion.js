@@ -135,6 +135,17 @@ function openEditModal(data) {
         style="margin-top:6px;"
         >
 
+      <label>Difficulty</label>
+
+        <select id="eq-difficulty">
+            <option value="">-- Select Difficulty --</option>
+            ${['Easy', 'Medium', 'Hard'].map(level => `
+                <option value="${level}" ${data.difficulty === level ? 'selected' : ''}>
+                    ${level}
+                </option>
+            `).join('')}
+        </select>
+
       <label>Comprehension</label>
       <textarea id="eq-comprehension">${data.comprehension ?? ''}</textarea>
 
@@ -180,6 +191,7 @@ function openEditModal(data) {
     // ⌨️ Attach Virtual Keyboard
     [
         'eq-subject-custom',
+        'eq-difficulty',
         'eq-comprehension',
         'eq-question',
         'eq-options',
@@ -214,6 +226,7 @@ function openEditModal(data) {
             subject:
             document.getElementById('eq-subject-custom').value.trim() ||
             document.getElementById('eq-subject-select').value.trim(),
+            difficulty: document.getElementById('eq-difficulty').value.trim(),
             comprehension: document.getElementById('eq-comprehension').value.trim(),
             question: document.getElementById('eq-question').value.trim(),
             options,

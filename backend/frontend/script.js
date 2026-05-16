@@ -199,7 +199,7 @@ function renderQuestionPaper() {
     const questionText = formatText(q['Question'] || '');
     const questionImage = q['Question Image URL']
       ? `<img 
-            src="http://192.168.1.2:5000${q['Question Image URL']}" 
+            src="http://192.168.1.9:5000${q['Question Image URL']}" 
             style="max-width:60%; margin-top:8px; display:block;"
             alt="Question Image"
         >`
@@ -286,7 +286,7 @@ function addSectionSearchButton() {
 
 // Load section names and their questions
 function populateSections() {
-  fetch('http://192.168.1.2:5000/api/questions/sections')
+  fetch('http://192.168.1.9:5000/api/questions/sections')
     .then(res => res.json())
     .then(data => {
       if (!Array.isArray(data)) return;
@@ -1520,7 +1520,7 @@ function showNextQuestion() {
 
   if (current['Question Image URL']) {
     const img = document.createElement('img');
-    img.src = `http://192.168.1.2:5000${current['Question Image URL']}`;
+    img.src = `http://192.168.1.9:5000${current['Question Image URL']}`;
     img.alt = 'Question Image';
     questionContainer.appendChild(img);
   }
@@ -1579,7 +1579,7 @@ function showNextQuestion() {
       if (text) btn.innerHTML = text;
       if (imgUrl) {
         const img = document.createElement('img');
-        img.src = `http://192.168.1.2:5000${imgUrl}`;
+        img.src = `http://192.168.1.9:5000${imgUrl}`;
         img.alt = text || `Option ${i}`;
         btn.appendChild(img);
       }
@@ -1692,7 +1692,7 @@ function showNextQuestion() {
         const idx = parseInt(btn.dataset.index, 10);
         const optTextRaw = cleanTextForStorage(q[`Answer ${idx + 1} Text`] || '');
         const optImgRel = normalize(q[`Answer ${idx + 1} Image URL`]); // likely relative path
-        const fullImg = optImgRel ? `http://192.168.1.2:5000${optImgRel}` : '';
+        const fullImg = optImgRel ? `http://192.168.1.9:5000${optImgRel}` : '';
 
         // saved.response could be an image path or raw text
         const savedResp = normalize(saved.response || '');
@@ -1834,6 +1834,7 @@ function recordResponse(response, correct, timeSpent = null) {
     ...(prev || {}),
     questionId: current.QuestionID,
     subject: current['Subject'],
+    difficulty: current['Difficulty'],
     question: current['Question'] || '',
     questionImage: current['Question Image URL'] || '',
     comprehension: current['Comprehension'] || '',
@@ -1950,6 +1951,7 @@ function submitResponses() {
     return {
       questionId: q.QuestionID,
       subject: q['Subject'] || '',
+      difficulty: q['Difficulty'] || '',
       question: q['Question'] || '',
       questionImage: q['Question Image URL'] || '',
       comprehension: q['Comprehension'] || '',
@@ -1971,7 +1973,7 @@ function submitResponses() {
   });
 
   // Send responses
-  fetch('http://192.168.1.2:5000/api/response', {
+  fetch('http://192.168.1.9:5000/api/response', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ username, responses, score: finalScore, section, examStartTime, submitTime })
@@ -1981,7 +1983,7 @@ function submitResponses() {
     .catch(err => console.error('Error submitting responses:', err));
 
   // Send score summary
-  fetch('http://192.168.1.2:5000/api/score', {
+  fetch('http://192.168.1.9:5000/api/score', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ username, score: finalScore, wrong })
